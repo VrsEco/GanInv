@@ -19,6 +19,7 @@ def get_imoveis():
     session = Session()
     company_id = request.args.get('company_id', 1)
     status_filter = request.args.get('status')
+    bairro_filter = request.args.get('bairro')
     show_descartados = request.args.get('descartados', 'false') == 'true'
     motivo_filter = request.args.get('motivo')
     
@@ -26,6 +27,9 @@ def get_imoveis():
     
     if status_filter:
         query = query.filter(Imovel.status == status_filter)
+    
+    if bairro_filter:
+        query = query.filter(Imovel.bairro == bairro_filter)
     
     if not show_descartados:
         query = query.filter(Imovel.descartado == False)
@@ -55,6 +59,18 @@ def get_imoveis():
         })
     session.close()
     return jsonify(output)
+
+@imoveis_bp.route('/bairros', methods=['GET'])
+def get_bairros():
+    session = Session()
+    company_id = request.args.get('company_id', 1)
+    bairros = session.query(Imovel.bairro).filter(
+        Imovel.company_id == company_id,
+        Imovel.bairro != None,
+        Imovel.bairro != ""
+    ).distinct().all()
+    session.close()
+    return jsonify([b[0] for b in bairros if b[0]])
 
 @imoveis_bp.route('/<int:id>', methods=['GET'])
 def get_imovel(id):
@@ -215,6 +231,7 @@ def register_manual():
         new_im = Imovel(
             company_id=1,
             endereco=data.get('endereco'),
+            bairro=data.get('bairro'),
             cidade=data.get('cidade'),
             estado=data.get('estado'),
             status='Em análise',
@@ -281,6 +298,7 @@ def update_cadastro(id):
 
         # Dados Básicos
         i.endereco = data.get('endereco')
+        i.bairro = data.get('bairro')
         i.cidade = data.get('cidade')
         i.estado = data.get('estado')
         i.valor_avaliacao = float(data.get('valor_avaliacao') or 0)
