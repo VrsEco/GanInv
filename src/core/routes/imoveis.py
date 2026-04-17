@@ -113,7 +113,7 @@ def get_imovel(id):
         "data_venda": i.data_venda.isoformat() if i.data_venda else "",
         "leiloes": leiloes,
         "financeiro": {
-            "itbi": f.itbi if f else 0,
+            "itbi": f.itiv_vlr if f else 0,
             "registro": f.registro_cartorio if f else 0,
             "reforma": f.reforma_prevista if f else 0,
             "desocupacao": f.desocupacao if f else 0,
