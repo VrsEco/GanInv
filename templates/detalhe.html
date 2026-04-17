@@ -971,10 +971,13 @@
             const isPostPurchase = POST_PURCHASE_TABS.includes(tabId);
             const isUnlocked = POST_PURCHASE_STATUSES.includes(currentStatus);
 
+            // Bloqueio temporariamente desativado a pedido do usuário
+            /*
             if (isPostPurchase && !isUnlocked) {
                 alert("Acesso Bloqueado: Estas abas só ficam disponíveis após a Arrematação do imóvel.");
                 return;
             }
+            */
 
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
