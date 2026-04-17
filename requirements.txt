@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+psycopg2-binary
+pydantic
+python-dotenv
+openai
+langgraph
+alembic
+pytest
+beautifulsoup4
+requests

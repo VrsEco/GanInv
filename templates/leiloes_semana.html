@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Monitor de Leilões</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar { background-color: #0f172a; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar Reusado -->
+    <aside class="w-64 sidebar text-white flex-col hidden md:flex">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 text-center">Auction Intelligence</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-th-large mr-3 w-4"></i> Pipeline Geral
+                    </a>
+                    <a href="/triagem" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-filter mr-3 w-4"></i> Triagem / Descarte
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Leilão</p>
+                <div class="space-y-1">
+                    <a href="/calendario" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
+                    </a>
+                    <a href="/leiloes-semana" class="flex items-center p-2 bg-slate-800 rounded-lg text-emerald-400 border-l-4 border-emerald-400 text-sm">
+                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pós-Leilão</p>
+                <div class="space-y-1">
+                    <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8">
+        <header class="mb-8">
+            <h2 class="text-3xl font-bold text-slate-800">Monitor de Leilões: Próximos 7 Dias</h2>
+            <p class="text-slate-500">Acompanhamento centralizado de pregões e metas de lance.</p>
+        </header>
+
+        <div id="loading" class="text-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent mx-auto"></div>
+            <p class="text-slate-400 mt-4 font-bold uppercase tracking-widest text-xs">Sincronizando editais...</p>
+        </div>
+
+        <div id="empty-state" class="hidden text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+             <i class="fas fa-calendar-times text-5xl text-slate-200 mb-4"></i>
+             <p class="text-slate-500">Nenhum leilão agendado para esta semana.</p>
+        </div>
+
+        <div id="grid-leiloes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- JS Injection -->
+        </div>
+    </main>
+
+    <script>
+        async function loadLeiloes() {
+            try {
+                const res = await fetch('/api/imoveis/leiloes-semana').then(r => r.json());
+                const loading = document.getElementById('loading');
+                const empty = document.getElementById('empty-state');
+                const grid = document.getElementById('grid-leiloes');
+
+                loading.classList.add('hidden');
+                
+                if (res.length === 0) {
+                    empty.classList.remove('hidden');
+                    return;
+                }
+
+                grid.innerHTML = res.map(l => {
+                    const data = new Date(l.data_hora);
+                    const formattedData = data.toLocaleDateString('pt-BR');
+                    const formattedHora = data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    return `
+                        <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-shadow group">
+                            <!-- Header do Card -->
+                            <div class="p-5 bg-slate-50 border-b flex justify-between items-center">
+                                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase">${l.tipo} LEILÃO</span>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Gandu ID</p>
+                                    <p class="text-xs font-mono font-bold text-slate-700">${l.codigo}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Body -->
+                            <div class="p-6 space-y-4">
+                                <div>
+                                    <p class="text-xs text-slate-400 mb-1"><i class="fas fa-map-marker-alt mr-1"></i> ${l.cidade}</p>
+                                    <h3 class="font-bold text-slate-800 line-clamp-2 h-10">${l.endereco}</h3>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-slate-900 text-white rounded-2xl">
+                                    <div>
+                                        <p class="text-[9px] text-slate-400 uppercase font-bold">Data & Hora</p>
+                                        <p class="text-sm font-bold text-emerald-400">${formattedData} às ${formattedHora}</p>
+                                    </div>
+                                    <i class="fas fa-clock text-slate-700 text-xl"></i>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="p-3 border rounded-2xl bg-slate-50">
+                                        <p class="text-[9px] text-slate-400 uppercase font-bold">Mínimo</p>
+                                        <p class="text-xs font-bold text-slate-700">R$ ${l.valor_minimo.toLocaleString('pt-BR')}</p>
+                                    </div>
+                                    <div class="p-3 border-2 border-emerald-500/20 rounded-2xl bg-emerald-50">
+                                        <p class="text-[9px] text-emerald-600 uppercase font-bold">Teto Sugerido</p>
+                                        <p class="text-xs font-bold text-emerald-700">R$ ${l.teto_sugerido.toLocaleString('pt-BR')}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Footer -->
+                            <div class="p-4 bg-slate-50 border-t flex space-x-2">
+                                <a href="/imovel/${l.id}" class="flex-1 text-center py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-700 transition">
+                                    Ver Estratégia
+                                </a>
+                                <button class="px-4 py-2 border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar monitor.");
+            }
+        }
+
+        loadLeiloes();
+    </script>
+</body>
+</html>

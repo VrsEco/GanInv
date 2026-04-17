@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Detalhes do Imóvel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .sidebar { background-color: #0f172a; }
+        .tab-active { border-bottom: 2px solid #10b981; color: #10b981; font-weight: bold; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background-color: white; }
+            .card { border: 1px solid #ddd; box-shadow: none; }
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar (Reused) -->
+    <aside class="w-64 sidebar text-white flex-col hidden md:flex no-print">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Auction Intelligence</p>
+        </div>
+        <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-th-large mr-3 w-4"></i> Pipeline Geral
+                    </a>
+                    <a href="/triagem" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-filter mr-3 w-4"></i> Triagem / Descarte
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Leilão</p>
+                <div class="space-y-1">
+                    <a href="/calendario" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
+                    </a>
+                    <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pós-Leilão</p>
+                <div class="space-y-1">
+                    <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
+                    </a>
+                </div>
+            </div>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <a href="/" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                    <i class="fas fa-arrow-left mr-3 w-4"></i> Voltar ao Início
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 no-print">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h1 class="text-3xl font-bold text-slate-800" id="detail-codigo">--</h1>
+                    <span id="detail-status-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">--</span>
+                </div>
+                <p class="text-slate-500" id="detail-endereco">--</p>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="window.print()" class="bg-white border text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
+                    <i class="fas fa-print mr-2"></i> PDF Executivo
+                </button>
+                <button class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 shadow-lg transition">
+                    <i class="fas fa-edit mr-2"></i> Editar
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-slate-200 mb-6 space-x-8 no-print overflow-x-auto">
+            <button onclick="switchTab('tab-resumo')" id="btn-tab-resumo" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-emerald-500 text-emerald-600">
+                <i class="fas fa-chart-pie mr-2"></i> Resumo
+            </button>
+            <button onclick="switchTab('tab-cadastro')" id="btn-tab-cadastro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-address-card mr-2"></i> Cadastro
+            </button>
+            <button onclick="switchTab('tab-analise')" id="btn-tab-analise" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-search mr-2"></i> Avaliação
+            </button>
+            <button onclick="switchTab('tab-financeiro')" id="btn-tab-financeiro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-file-invoice-dollar mr-2"></i> Ficha Financeira
+            </button>
+            <button onclick="switchTab('tab-documentacao')" id="btn-tab-documentacao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-file-contract mr-2"></i> Documentação
+            </button>
+            <button onclick="switchTab('tab-reforma')" id="btn-tab-reforma" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-tools mr-2"></i> Reforma
+            </button>
+            <button onclick="switchTab('tab-venda')" id="btn-tab-venda" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+                <i class="fas fa-shopping-cart mr-2"></i> Venda
+            </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <!-- Tab Resumo -->
+        <div id="tab-resumo" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">ROI Previsto</p>
+                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-roi">0%</h2>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Lucro Bruto</p>
+                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-lucro">R$ 0</h2>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Investimento Total</p>
+                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-investimento">R$ 0</h2>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-purple-500">
+                    <p class="text-xs font-bold text-slate-400 uppercase">Margem Venda</p>
+                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-margem">0%</h2>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Lado Esquerdo: Avaliação / Financeiro (Col 3) -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Avaliação & Financeiro</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Venda Normal</span>
+                                <span class="font-bold text-slate-700" id="resumo-venda-normal">R$ 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b text-emerald-600">
+                                <span class="text-slate-500">Venda Rápida</span>
+                                <span class="font-bold" id="resumo-venda-rapida">R$ 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b text-red-500">
+                                <span class="text-slate-500">Débitos Condo/IPTU</span>
+                                <span class="font-bold" id="resumo-debitos">R$ 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Está Ocupado?</span>
+                                <span class="font-bold text-slate-700" id="resumo-ocupado">--</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Total de Custos</span>
+                                <span class="font-bold text-slate-700" id="resumo-total-custos">R$ 0</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Total Despesas</span>
+                                <span class="font-bold text-slate-700" id="resumo-total-despesas">R$ 0</span>
+                            </div>
+                            <div class="pt-2">
+                                <p class="text-[9px] font-bold text-emerald-600 uppercase mb-1">Lance Máximo Recomendado</p>
+                                <p class="text-xl font-black text-slate-900" id="resumo-lance-max">R$ 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Centro: Fotos (Col 6) -->
+                <div class="lg:col-span-6">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 h-full">
+                        <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden relative group">
+                            <img src="/static/img/placeholder-imovel.jpg" alt="Imóvel" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
+                                <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-left"></i></button>
+                                <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">1 / 5</div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 mt-4">
+                            <div class="aspect-square bg-slate-100 rounded-lg"></div>
+                            <div class="aspect-square bg-slate-100 rounded-lg"></div>
+                            <div class="aspect-square bg-slate-100 rounded-lg"></div>
+                            <div class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold">+2</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lado Direito: Histórico de Leilão / Resultado (Col 3) -->
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Histórico do Pregão</h3>
+                        <div class="space-y-3" id="resumo-lista-leiloes">
+                            <!-- Leilões injetados via JS -->
+                            <div class="text-center py-4 text-slate-300"><i class="fas fa-spinner animate-spin"></i></div>
+                        </div>
+
+                        <!-- Resultado Final -->
+                        <div class="mt-6 pt-6 border-t border-slate-100">
+                             <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Lance Vencedor</p>
+                             <div class="flex items-center justify-between">
+                                 <h4 class="text-xl font-bold text-slate-800" id="resumo-lance-vencedor">R$ 0</h4>
+                                 <span class="px-2 py-1 rounded text-[9px] font-bold" id="resumo-resultado-status">PENDENTE</span>
+                             </div>
+                             <p class="text-[10px] text-slate-500 mt-1" id="resumo-resultado-data">--</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
+                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2"><i class="fas fa-robot mr-2"></i> IA Insight</h4>
+                        <p class="text-[11px] text-slate-300 italic italic">A análise de mercado sugere que o 2º leilão é a melhor janela de oportunidade, dada a baixa concorrência recente na região.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Cadastro -->
+        <div id="tab-cadastro" class="tab-content hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-bold text-slate-800">Ficha Cadastral Completa</h3>
+                    <button onclick="saveCadastro()" class="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center">
+                        <i class="fas fa-save mr-2"></i> Atualizar Cadastro
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    
+                    <!-- Seção 1: Localização -->
+                    <div class="md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl">
+                        <div class="md:col-span-2">
+                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Endereço Completo</label>
+                             <input type="text" id="cad-endereco-full" class="w-full p-2 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cidade</label>
+                             <input type="text" id="cad-cidade" class="w-full p-2 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">UF (Estado)</label>
+                             <input type="text" id="cad-uf" class="w-full p-2 border rounded-lg text-sm" maxlength="2">
+                        </div>
+                    </div>
+
+                    <!-- Seção 2: Leilão e Valores -->
+                    <div class="md:col-span-4 space-y-4">
+                        <div class="flex items-center justify-between border-b pb-2">
+                             <h4 class="text-xs font-bold text-slate-800 uppercase tracking-widest">Controle Dinâmico de Pregões</h4>
+                             <div class="flex items-center space-x-2">
+                                 <label class="text-[10px] text-slate-400 font-bold uppercase">Avaliação Global (R$):</label>
+                                 <input type="text" id="cad-vlr-av" class="bg-slate-100 border-none p-2 rounded font-bold text-slate-700 w-40 mask-money">
+                                 <button onclick="addLeilaoRow()" class="bg-emerald-100 text-emerald-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-emerald-200 transition">
+                                     <i class="fas fa-plus mr-1"></i> Adicionar Leilão
+                                 </button>
+                             </div>
+                        </div>
+
+                        <div id="leiloes-container" class="space-y-3">
+                            <!-- Injetado dinamicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Seção 3: Tipo e Áreas -->
+                    <div class="md:col-span-2 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-widest border-b pb-2">Características e Áreas</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] text-slate-500">Tipo de Imóvel</label>
+                                <input type="text" id="cad-tipo" placeholder="Ex: Apartamento" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500">Banco Credor</label>
+                                <input type="text" id="cad-banco" placeholder="Ex: Caixa / Itau" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                             <div>
+                                <label class="block text-[10px] text-slate-500">Área Priv. (m²)</label>
+                                <input type="number" id="cad-area-priv" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500">Área Constr. (m²)</label>
+                                <input type="number" id="cad-area-const" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500">Área Terr. (m²)</label>
+                                <input type="number" id="cad-area-terr" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                        </div>
+                        <div>
+                             <label class="block text-[10px] text-slate-500">Descrição Básica</label>
+                             <textarea id="cad-desc" rows="3" class="w-full p-2 border rounded-lg text-sm"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Seção 4: Documentação e Registro -->
+                    <div class="md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-6 mt-6">
+                        <div>
+                             <label class="block text-[10px] text-slate-500 font-bold uppercase">Matrícula</label>
+                             <input type="text" id="cad-matr" class="w-full p-2 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                             <label class="block text-[10px] text-slate-500 font-bold uppercase">Comarca / Cartório</label>
+                             <input type="text" id="cad-comarca" class="w-full p-2 border rounded-lg text-sm">
+                        </div>
+                        <div>
+                             <label class="block text-[10px] text-slate-500 font-bold uppercase">Link do Leilão</label>
+                             <input type="text" id="cad-link" class="w-full p-2 border rounded-lg text-sm text-blue-600">
+                        </div>
+                    </div>
+
+                    <!-- Seção de Documentos -->
+                    <div class="mt-8 border-t pt-6">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Central de Documentos (PDF/Docs)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Edital -->
+                            <div id="doc-card-edital" onclick="triggerUpload('Edital')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
+                                <div class="flex items-center">
+                                    <i id="doc-icon-edital" class="far fa-file-pdf text-slate-300 text-xl mr-3"></i>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-700 uppercase">Edital do Leilão</p>
+                                        <p id="doc-status-edital" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                                    </div>
+                                </div>
+                                <i id="doc-action-edital" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                            </div>
+
+                            <!-- Certidão -->
+                            <div id="doc-card-matricula" onclick="triggerUpload('Matricula')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
+                                <div class="flex items-center">
+                                    <i id="doc-icon-matricula" class="far fa-file-alt text-slate-300 text-xl mr-3"></i>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-700 uppercase">Certidão de Ônus</p>
+                                        <p id="doc-status-matricula" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                                    </div>
+                                </div>
+                                <i id="doc-action-matricula" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                            </div>
+
+                            <!-- Outros -->
+                            <div id="doc-card-outros" onclick="triggerUpload('Outros')" class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between border-dashed group hover:border-emerald-500 transition cursor-pointer">
+                                <div class="flex items-center">
+                                    <i class="fas fa-plus-circle text-slate-400 text-xl mr-3"></i>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-500">Outros Documentos</p>
+                                        <p id="doc-status-outros" class="text-[9px] text-slate-400 font-bold uppercase">Upar Arquivo</p>
+                                    </div>
+                                </div>
+                                <i class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-analise" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Coluna Principal: Formulário de Avaliação (Lef side) -->
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <!-- Bloco 1: Diligência e Contatos -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800 flex items-center">
+                                <i class="fas fa-users-viewfinder text-emerald-500 mr-2"></i> Reporte de Diligência / Visita
+                            </h3>
+                            <button onclick="saveAvaliacao()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 transition">
+                                <i class="fas fa-save mr-2"></i> Salvar Avaliação
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Status de Ocupação</label>
+                                    <select id="eval-ocupado" class="w-full p-2 bg-slate-50 border rounded-lg text-sm">
+                                        <option value="true">Ocupado</option>
+                                        <option value="false">Desocupado (Vazio)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center space-x-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                    <input type="checkbox" id="eval-contato-morador" class="w-4 h-4 rounded text-emerald-600">
+                                    <label for="eval-contato-morador" class="text-sm text-slate-700">Contato com Morador Realizado?</label>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Relato Contato Morador</label>
+                                    <textarea id="eval-relato-morador" rows="3" class="w-full p-2 bg-slate-50 border rounded-lg text-sm" placeholder="Disposição para sair, atendimento, etc."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="p-4 bg-red-50 rounded-2xl border border-red-100 space-y-3">
+                                    <p class="text-[10px] font-bold text-red-600 uppercase">Resumo de Dívidas</p>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[9px] text-red-400">IPTU Atrasado (R$)</label>
+                                            <input type="text" id="eval-debito-iptu" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[9px] text-red-400">Condomínio Atrasado (R$)</label>
+                                            <input type="text" id="eval-debito-condo" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] text-red-400">Outros Débitos (R$)</label>
+                                        <input type="text" id="eval-vlr-outros" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
+                                    </div>
+                                    <div class="pt-2 border-t border-red-200 flex justify-between items-center">
+                                        <span class="text-xs font-bold text-red-600">TOTAL DE DÉBITOS</span>
+                                        <span class="text-lg font-black text-red-700" id="eval-total-debitos">R$ 0</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center space-x-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                                    <input type="checkbox" id="eval-contato-sindico" class="w-4 h-4 rounded text-emerald-600">
+                                    <label for="eval-contato-sindico" class="text-sm text-slate-700">Contato com Síndico Realizado?</label>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Relato Contato Síndico</label>
+                                    <textarea id="eval-relato-sindico" rows="2" class="w-full p-2 bg-slate-50 border rounded-lg text-sm" placeholder="Dívidas, estado do prédio, etc."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco 2: Características e Descritivo -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-6 flex items-center">
+                            <i class="fas fa-building text-emerald-500 mr-2"></i> Características do Imóvel e Prédio
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor Condomínio (R$)</label>
+                                <input type="text" id="eval-valor-condo" class="w-full p-2 bg-slate-50 border rounded-lg text-sm mask-money">
+                            </div>
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Idade do Prédio (Anos)</label>
+                                <input type="number" id="eval-idade" class="w-full p-2 bg-slate-50 border rounded-lg text-sm">
+                            </div>
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor m² na Região (R$)</label>
+                                <input type="text" id="eval-valor-m2" class="w-full p-2 bg-slate-50 border rounded-lg text-sm mask-money">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descritivo do Prédio</label>
+                                <textarea id="eval-desc-predio" rows="4" class="w-full p-2 bg-slate-50 border rounded-lg text-sm" placeholder="Conservação, áreas comuns, fachada..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descritivo do Imóvel</label>
+                                <textarea id="eval-desc-imovel" rows="4" class="w-full p-2 bg-slate-50 border rounded-lg text-sm" placeholder="Divisão interna, estado aparente..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                         <h3 class="font-bold text-slate-800 mb-6 flex items-center">
+                            <i class="fas fa-triangle-exclamation text-amber-500 mr-2"></i> Débitos e Riscos Identificados
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Débitos Condomínio (R$)</label>
+                                <input type="number" id="eval-debito-condo" class="w-full p-2 bg-red-50/50 border border-red-100 rounded-lg text-sm">
+                            </div>
+                             <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Débitos IPTU (R$)</label>
+                                <input type="number" id="eval-debito-iptu" class="w-full p-2 bg-red-50/50 border border-red-100 rounded-lg text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Outras Observações Relevantes</label>
+                            <textarea id="eval-observacoes" rows="3" class="w-full p-2 bg-slate-50 border rounded-lg text-sm" placeholder="Pendências jurídicas, problemas estruturais graves..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 space-y-6">
+                    <!-- Painel de Valorização -->
+                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 opacity-10"><i class="fas fa-coins text-8xl"></i></div>
+                        <h3 class="font-bold mb-6 flex items-center relative z-10">
+                            <i class="fas fa-chart-line text-emerald-400 mr-2"></i> Expectativa de Venda
+                        </h3>
+                        <div class="space-y-4 relative z-10">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cenário: Venda Normal (Mercado)</label>
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-slate-400">R$</span>
+                                    <input type="text" id="eval-venda-normal" onchange="updateROIPreview()" class="w-full bg-slate-800 border-slate-700 rounded-lg p-2 text-xl font-bold text-white focus:ring-emerald-500 mask-money">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-emerald-400 uppercase mb-1">Cenário: Venda Rápida (Liquidez)</label>
+                                <div class="flex items-center">
+                                    <span class="mr-2 text-slate-400">R$</span>
+                                    <input type="text" id="eval-venda-rapida" onchange="updateROIPreview()" class="w-full bg-slate-800 border-slate-700 rounded-lg p-2 text-xl font-bold text-emerald-400 focus:ring-emerald-500 mask-money">
+                                </div>
+                                <p class="text-[9px] text-slate-500 mt-1">* Utilizado para cálculo do Teto de Lance Seguro.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ficha Cadastral Rápida -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wider">Dados Básicos Oriundos do Edital</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between border-b pb-2">
+                                <span class="text-slate-500">Cidade/UF</span>
+                                <span id="detail-cidade-uf">--</span>
+                            </div>
+                            <div class="flex justify-between border-b pb-2">
+                                <span class="text-slate-500">Leiloeiro</span>
+                                <span id="detail-leiloeiro">--</span>
+                            </div>
+                            <div class="flex justify-between border-b pb-2">
+                                <span class="text-slate-500">Bairro</span>
+                                <span id="detail-bairro">--</span>
+                            </div>
+                            <div class="pt-2">
+                                <a id="detail-link" href="#" target="_blank" class="text-emerald-600 font-semibold hover:underline text-xs flex items-center">
+                                    Link do Edital/Leilão <i class="fas fa-external-link-alt ml-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Galeria de Fotos Mini -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800 text-sm">Fotos Diligência</h3>
+                            <button class="text-emerald-600 text-xs font-bold">+ Upload</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
+                                <i class="fas fa-plus text-slate-300 group-hover:text-emerald-500"></i>
+                            </div>
+                            <div class="aspect-square bg-slate-200 rounded-lg"></div>
+                        </div>
+                    </div>
+
+                    <!-- Histórico de Leilões Mini -->
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-3 text-xs uppercase">Histórico de Datas</h3>
+                        <div class="space-y-2" id="list-leiloes">
+                            <!-- JS Injection -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Documentação -->
+        <div id="tab-documentacao" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Checklist Col -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800 text-lg">Checklist de Regularização</h3>
+                            <button onclick="saveDoc()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 transition">
+                                <i class="fas fa-save mr-2"></i> Salvar Progresso
+                            </button>
+                        </div>
+                        
+                        <div id="checklist-container" class="space-y-4">
+                            <!-- Items via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & Docs Col -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4">Status da Documentação</h3>
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
+                            <p class="text-xs text-slate-500 uppercase font-bold mb-1">Fase Atual</p>
+                            <p class="font-bold text-slate-700" id="doc-status-text">Pendente</p>
+                        </div>
+                        <div class="space-y-2">
+                             <div class="flex items-center text-xs text-slate-500">
+                                <i class="fas fa-clock mr-2"></i> Atualizado em: <span id="doc-updated" class="ml-1">--</span>
+                             </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-slate-800">Documentos Anexos</h3>
+                            <button class="text-emerald-600 text-xs font-bold">+ Novo</button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 hover:bg-slate-50 rounded-lg border border-transparent hover:border-slate-100 transition cursor-pointer group">
+                                <i class="fas fa-file-pdf text-red-500 mr-3 text-xl"></i>
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-slate-700">Edital do Leilão</p>
+                                    <p class="text-[10px] text-slate-400">PDF • 1.2 MB</p>
+                                </div>
+                                <i class="fas fa-download text-slate-300 group-hover:text-emerald-500"></i>
+                            </div>
+                            <div class="flex items-center p-3 opacity-50">
+                                <i class="fas fa-file-image text-slate-300 mr-3 text-xl"></i>
+                                <div class="flex-1">
+                                    <p class="text-xs font-bold text-slate-400">Guia ITBI Paga</p>
+                                    <p class="text-[10px] text-slate-300">Aguardando upload</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Financeiro (Full Sheet) -->
+        <!-- Tab Ficha Financeira -->
+        <div id="tab-financeiro" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Coluna de Input (Left) -->
+                <div class="lg:col-span-8 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-slate-800 uppercase text-xs tracking-widest">
+                                <i class="fas fa-calculator text-emerald-500 mr-2"></i> Fluxo de Aquisição e Operação
+                            </h3>
+                            <button onclick="saveFinanceiro()" class="bg-slate-900 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg">
+                                <i class="fas fa-sync-alt mr-2"></i> Gravar e Calcular
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Bloco A: Arrematação -->
+                            <div class="space-y-4">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">A. Arrematação</p>
+                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
+                                    <div>
+                                        <label class="text-[10px] text-slate-500 uppercase font-bold">Valor do Lance (R$)</label>
+                                        <input type="text" id="fin-lance" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm font-bold border-emerald-200 mask-money">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Comissão Leilão (%)</label>
+                                            <input type="number" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm" value="5">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
+                                            <div id="calc-com-leilao" class="p-2 text-sm font-bold text-slate-600">R$ 0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">B. Impostos e Taxas (s/ Lance)</p>
+                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
+                                    <div class="grid grid-cols-2 gap-2 border-b pb-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">ITIV / ITBI (%)</label>
+                                            <input type="number" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Valor ITIV</label>
+                                            <div id="calc-vlr-itiv" class="p-2 text-sm font-bold text-slate-800">R$ 0</div>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Taxa Registro (%)</label>
+                                            <input type="number" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Valor Registro</label>
+                                            <div id="calc-vlr-reg" class="p-2 text-sm font-bold text-slate-800">R$ 0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Bloco C: Despesas Extras -->
+                            <div class="space-y-4">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">C. Custos Operacionais</p>
+                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">IPTU Atrasado</label>
+                                            <input type="text" id="fin-iptu-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">IPTU Futuro</label>
+                                            <input type="text" id="fin-iptu-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Condo Atrasado</label>
+                                            <input type="text" id="fin-condo-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                        </div>
+                                        <div>
+                                            <label class="text-[9px] text-slate-500 uppercase">Condo Futuro</label>
+                                            <input type="text" id="fin-condo-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Reforma / Limpeza / Desocupação</label>
+                                        <input type="text" id="fin-reforma" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Contingência / Outros</label>
+                                        <input type="text" id="fin-conting" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coluna de Sumário (Right) -->
+                <div class="lg:col-span-4 space-y-6">
+                    <!-- Bloco Venda Projetada -->
+                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl border-t-4 border-emerald-500">
+                        <h3 class="font-bold mb-4 uppercase text-xs tracking-widest text-emerald-400">Projeção Comercial</h3>
+                        <div class="space-y-4">
+                             <div>
+                                <label class="text-[10px] text-slate-400 uppercase">Valor de Venda Alvo (R$)</label>
+                                <input type="text" id="fin-venda-proj" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-2 rounded-lg text-xl font-bold text-white outline-none mask-money">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-4">
+                                <div>
+                                    <label class="text-[9px] text-slate-400">Corretores (%)</label>
+                                    <input type="number" id="fin-com-corr-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white" value="5">
+                                    <div id="calc-vlr-corretor" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-slate-400">Impostos Venda (%)</label>
+                                    <input type="number" id="fin-imp-venda-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white" value="0">
+                                    <div id="calc-vlr-impvenda" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-emerald-950/40 p-4 rounded-xl border border-emerald-800/50 space-y-2">
+                                <div class="flex justify-between items-center text-xs text-emerald-100">
+                                    <span>Venda Bruta</span>
+                                    <span id="res-venda-bruta">R$ 0</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-red-400">Despesas s/ Venda</span>
+                                    <span id="res-total-desp-venda" class="text-xs text-red-400">- R$ 0</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-emerald-800">
+                                    <span class="text-xs font-bold text-emerald-400">VENDA LÍQUIDA</span>
+                                    <span id="calc-venda-liq" class="text-lg font-black text-white">R$ 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco ROI & Resultado -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-end">
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Invest. Total</p>
+                                    <p class="text-xl font-bold text-slate-800" id="calc-inv-total">--</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Lucro Estimado</p>
+                                    <p class="text-xl font-bold text-emerald-600" id="calc-lucro-estimado">--</p>
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-slate-100">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-bold text-slate-500">ROI PROJETADO</span>
+                                    <span class="text-2xl font-black text-slate-900" id="calc-roi-per">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const pathParts = window.location.pathname.split('/');
+        const imovelId = pathParts[pathParts.length - 1];
+        let currentStatus = '';
+        const POST_PURCHASE_STATUSES = ['Arrematado', 'Em reforma', 'Vendido'];
+
+        // Máscara Monetária BRL
+        function applyMoneyMask(e) {
+            let value = e.target.value.replace(/\D/g, "");
+            if (!value) return e.target.value = "";
+            value = (value / 100).toFixed(2) + "";
+            value = value.replace(".", ",");
+            value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+            e.target.value = value;
+        }
+
+        function formatBRL(val) {
+            if (val === undefined || val === null || isNaN(val) || val === '') return "0,00";
+            return parseFloat(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function unmaskMoney(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            let clean = val.replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+            return parseFloat(clean) || 0;
+        }
+
+        function initMasks() {
+            document.querySelectorAll('.mask-money').forEach(input => {
+                input.addEventListener('input', applyMoneyMask);
+            });
+        }
+
+        async function triggerUpload(categoria) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = async () => {
+                const file = input.files[0];
+                if (!file) return;
+
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('categoria', categoria);
+
+                try {
+                    const res = await fetch(`/api/imoveis/${imovelId}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    }).then(r => r.json());
+
+                    if (res.error) throw new Error(res.error);
+                    alert("Sucesso: " + res.message);
+                    loadDetail();
+                } catch (err) {
+                    alert("Erro no upload: " + err.message);
+                }
+            };
+            input.click();
+        }
+
+        function addLeilaoRow(data = {}) {
+            const container = document.getElementById('leiloes-container');
+            const rowId = 'row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+            
+            const div = document.createElement('div');
+            div.id = rowId;
+            div.className = "grid grid-cols-1 md:grid-cols-12 gap-2 items-end bg-white p-3 rounded-xl border border-slate-200 shadow-sm transition hover:shadow-md";
+            
+            // Format value if coming from data
+            let displayVal = data.valor || '';
+            if (displayVal && typeof displayVal === 'number') displayVal = displayVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            div.innerHTML = `
+                <div class="md:col-span-2">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Ordem</label>
+                    <input type="text" class="l-ordem w-full p-2 border rounded-lg text-xs bg-slate-50 font-bold" value="${data.tipo || ''}" placeholder="1º Leilão">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Tipo</label>
+                    <input type="text" class="l-tipo w-full p-2 border rounded-lg text-xs" value="${data.modalidade || ''}" placeholder="Online">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Data/Hora</label>
+                    <input type="datetime-local" class="l-data w-full p-2 border rounded-lg text-xs" value="${data.data ? data.data.slice(0, 16) : ''}">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Lance (R$)</label>
+                    <input type="text" class="l-valor mask-money w-full p-2 border rounded-lg text-xs font-bold text-slate-700" value="${displayVal}">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Obs.</label>
+                    <input type="text" class="l-obs w-full p-2 border rounded-lg text-xs" value="${data.observacoes || ''}">
+                </div>
+                <div class="md:col-span-1 text-center">
+                    <button onclick="document.getElementById('${rowId}').remove()" class="text-red-300 hover:text-red-500 p-1"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+            
+            container.appendChild(div);
+            initMasks();
+        }
+
+        function switchTab(tabId) {
+            // Todas as abas liberadas para análise de decisão e gestão
+
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            // Show target
+            document.getElementById(tabId).classList.remove('hidden');
+
+            // Style buttons
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('border-emerald-500', 'text-emerald-600');
+                b.classList.add('border-transparent', 'text-slate-400');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            activeBtn.classList.remove('border-transparent', 'text-slate-400');
+            activeBtn.classList.add('border-emerald-500', 'text-emerald-600');
+        }
+
+        function updateFinanceCalcs() {
+            const lance = unmaskMoney(document.getElementById('fin-lance').value);
+            const comLeilaoPer = parseFloat(document.getElementById('fin-com-leilao-per').value) || 0;
+            const itivPer = parseFloat(document.getElementById('fin-itiv-per').value) || 0;
+            const regPer = parseFloat(document.getElementById('fin-reg-per').value) || 0;
+            
+            // Calc A and B
+            const vlrComLeilao = lance * (comLeilaoPer / 100);
+            const vlrItiv = lance * (itivPer / 100);
+            const vlrReg = lance * (regPer / 100);
+            
+            document.getElementById('calc-com-leilao').innerText = 'R$ ' + vlrComLeilao.toLocaleString('pt-BR');
+            document.getElementById('calc-vlr-itiv').innerText = 'R$ ' + vlrItiv.toLocaleString('pt-BR');
+            document.getElementById('calc-vlr-reg').innerText = 'R$ ' + vlrReg.toLocaleString('pt-BR');
+
+            // Coluna C: Outros Custos
+            const iptuAttr = unmaskMoney(document.getElementById('fin-iptu-attr').value);
+            const iptuFut = unmaskMoney(document.getElementById('fin-iptu-fut').value);
+            const condoAttr = unmaskMoney(document.getElementById('fin-condo-attr').value);
+            const condoFut = unmaskMoney(document.getElementById('fin-condo-fut').value);
+            const reforma = unmaskMoney(document.getElementById('fin-reforma').value);
+            const conting = unmaskMoney(document.getElementById('fin-conting').value);
+
+            const totalInvest = lance + vlrComLeilao + vlrItiv + vlrReg + iptuAttr + iptuFut + condoAttr + condoFut + reforma + conting;
+            document.getElementById('calc-inv-total').innerText = 'R$ ' + totalInvest.toLocaleString('pt-BR');
+
+            // Projeção Comercial
+            const vlrVenda = unmaskMoney(document.getElementById('fin-venda-proj').value);
+            const comCorrPer = parseFloat(document.getElementById('fin-com-corr-per').value) || 0;
+            const impVendaPer = parseFloat(document.getElementById('fin-imp-venda-per').value) || 0;
+
+            const vlrCorretor = vlrVenda * (comCorrPer / 100);
+            const vlrImpVenda = vlrVenda * (impVendaPer / 100);
+            const vendaLiq = vlrVenda - vlrCorretor - vlrImpVenda;
+
+            document.getElementById('calc-vlr-corretor').innerText = 'R$ ' + vlrCorretor.toLocaleString('pt-BR');
+            document.getElementById('calc-vlr-impvenda').innerText = 'R$ ' + vlrImpVenda.toLocaleString('pt-BR');
+            document.getElementById('res-venda-bruta').innerText = 'R$ ' + vlrVenda.toLocaleString('pt-BR');
+            document.getElementById('res-total-desp-venda').innerText = '- R$ ' + (vlrCorretor + vlrImpVenda).toLocaleString('pt-BR');
+            document.getElementById('calc-venda-liq').innerText = 'R$ ' + vendaLiq.toLocaleString('pt-BR');
+
+            // ROI
+            const lucro = vendaLiq - totalInvest;
+            const roi = totalInvest > 0 ? (lucro / totalInvest) * 100 : 0;
+
+            document.getElementById('calc-lucro-estimado').innerText = 'R$ ' + lucro.toLocaleString('pt-BR');
+            document.getElementById('calc-roi-per').innerText = roi.toFixed(1) + '%';
+        }
+
+        let checklistData = {};
+        const DEFAULT_CHECKLIST = [
+            { id: "auto", label: "Auto de Arrematação Assinado", desc: "Documento emitido pelo leiloeiro após o lance vencedor." },
+            { id: "itbi", label: "Pagamento de ITBI", desc: "Imposto de Transmissão de Bens Imóveis (Guia Municipal)." },
+            { id: "carta", label: "Carta de Arrematação / Mandado", desc: "Expedição pelo juiz ou leiloeira para registro." },
+            { id: "registro", label: "Registro em Cartório (Matrícula)", desc: "Averbação da propriedade na matrícula do imóvel." },
+            { id: "iptu", label: "Levantamento e Quitação de IPTU", desc: "Certidão negativa de débitos municipais." },
+            { id: "posse", label: "Imissão na Posse / Entrega de Chaves", desc: "Momento da entrada física no imóvel." }
+        ];
+
+        function renderChecklist(dbChecklist) {
+            checklistData = dbChecklist || {};
+            const container = document.getElementById('checklist-container');
+            
+            container.innerHTML = DEFAULT_CHECKLIST.map(item => {
+                const checked = checklistData[item.id] || false;
+                return `
+                    <div class="flex items-start p-4 bg-slate-50 rounded-xl border ${checked ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100'} transition group">
+                        <div class="mt-1 mr-4">
+                            <input type="checkbox" ${checked ? 'checked' : ''} 
+                                   onchange="toggleItem('${item.id}')"
+                                   class="w-5 h-5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer">
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold ${checked ? 'text-emerald-800' : 'text-slate-700'}">${item.label}</h4>
+                            <p class="text-[11px] text-slate-500">${item.desc}</p>
+                        </div>
+                        ${checked ? '<i class="fas fa-check-circle text-emerald-500 mt-1"></i>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Calculate progress status
+            const total = DEFAULT_CHECKLIST.length;
+            const done = Object.values(checklistData).filter(v => v === true).length;
+            document.getElementById('doc-status-text').innerText = `${done}/${total} Itens Concluídos`;
+        }
+
+        function toggleItem(id) {
+            checklistData[id] = !checklistData[id];
+            renderChecklist(checklistData);
+        }
+
+        async function saveFinanceiro() {
+            try {
+                const data = {
+                    valor_arrematacao: unmaskMoney(document.getElementById('fin-lance').value),
+                    comissao_leiloeiro_percent: document.getElementById('fin-com-leilao-per').value,
+                    itiv_percent: document.getElementById('fin-itiv-per').value,
+                    registro_cartorio_percent: document.getElementById('fin-reg-per').value,
+                    iptu_atrasado: unmaskMoney(document.getElementById('fin-iptu-attr').value),
+                    iptu_futuro: unmaskMoney(document.getElementById('fin-iptu-fut').value),
+                    condominio_atrasado: unmaskMoney(document.getElementById('fin-condo-attr').value),
+                    condominio_futuro: unmaskMoney(document.getElementById('fin-condo-fut').value),
+                    reforma_prevista: unmaskMoney(document.getElementById('fin-reforma').value),
+                    contingencia: unmaskMoney(document.getElementById('fin-conting').value),
+                    valor_venda_projetado: unmaskMoney(document.getElementById('fin-venda-proj').value),
+                    comissao_corretor_percent: document.getElementById('fin-com-corr-per').value,
+                    impostos_venda_percent: document.getElementById('fin-imp-venda-per').value
+                };
+
+                const res = await fetch(`/api/imoveis/${imovelId}/financeiro`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+                alert("Ficha financeira salva!");
+                loadDetail();
+            } catch (err) {
+                alert("Erro ao salvar financeiro: " + err.message);
+            }
+        }
+
+        async function saveCadastro() {
+            try {
+                const data = {
+                    endereco: document.getElementById('cad-endereco-full').value,
+                    cidade: document.getElementById('cad-cidade').value,
+                    estado: document.getElementById('cad-uf').value,
+                    valor_avaliacao: unmaskMoney(document.getElementById('cad-vlr-av').value),
+                    tipo_imovel: document.getElementById('cad-tipo').value,
+                    banco: document.getElementById('cad-banco').value,
+                    area_privativa: document.getElementById('cad-area-priv').value,
+                    area_construida: document.getElementById('cad-area-const').value,
+                    area_terreno: document.getElementById('cad-area-terr').value,
+                    descritivo_imovel: document.getElementById('cad-desc').value,
+                    inscricao_imobiliaria: document.getElementById('cad-insc-imob').value,
+                    matricula: document.getElementById('cad-matr').value,
+                    comarca: document.getElementById('cad-comarca').value,
+                    link_leilao: document.getElementById('cad-link').value,
+                    leiloes: Array.from(document.querySelectorAll('#leiloes-container > div')).map(row => ({
+                        tipo: row.querySelector('.l-ordem').value,
+                        modalidade: row.querySelector('.l-tipo').value,
+                        data: row.querySelector('.l-data').value,
+                        valor: unmaskMoney(row.querySelector('.l-valor').value),
+                        observacoes: row.querySelector('.l-obs').value
+                    }))
+                };
+
+                const res = await fetch(`/api/imoveis/${imovelId}/cadastro`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+                alert("Cadastro atualizado com sucesso!");
+                loadDetail();
+            } catch (err) {
+                alert("Erro ao salvar cadastro: " + err.message);
+            }
+        }
+
+        async function saveAvaliacao() {
+            try {
+                const data = {
+                    valor_condominio: unmaskMoney(document.getElementById('eval-valor-condo').value),
+                    idade_predio: document.getElementById('eval-idade').value,
+                    descritivo_predio: document.getElementById('eval-desc-predio').value,
+                    descritivo_imovel: document.getElementById('eval-desc-imovel').value,
+                    valor_m2_regiao: unmaskMoney(document.getElementById('eval-valor-m2').value),
+                    ocupado: document.getElementById('eval-ocupado').value === 'true',
+                    contato_morador: document.getElementById('eval-contato-morador').checked,
+                    relato_morador: document.getElementById('eval-relato-morador').value,
+                    contato_sindico: document.getElementById('eval-contato-sindico').checked,
+                    relato_sindico: document.getElementById('eval-relato-sindico').value,
+                    outros_debitos: unmaskMoney(document.getElementById('eval-vlr-outros').value),
+                    observacoes_internas: document.getElementById('eval-observacoes').value,
+                    valor_venda_normal: unmaskMoney(document.getElementById('eval-venda-normal').value),
+                    valor_estimado_venda: unmaskMoney(document.getElementById('eval-venda-rapida').value),
+                    debitos_condominio: unmaskMoney(document.getElementById('eval-debito-condo').value),
+                    debitos_iptu: unmaskMoney(document.getElementById('eval-debito-iptu').value)
+                };
+
+                const res = await fetch(`/api/imoveis/${imovelId}/avaliacao`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+                alert("Avaliação salva com sucesso!");
+                loadDetail(); // Reload to update UI components
+            } catch (err) {
+                alert("Erro ao salvar: " + err.message);
+            }
+        }
+
+        async function saveDoc() {
+            try {
+                const res = await fetch(`/api/imoveis/${imovelId}/documentacao`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        checklist: checklistData,
+                        status_doc: document.getElementById('doc-status-text').innerText
+                    })
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+                alert("Progresso salvo com sucesso!");
+            } catch (err) {
+                alert("Erro ao salvar: " + err.message);
+            }
+        }
+
+        async function loadDetail() {
+            try {
+                const res = await fetch(`/api/imoveis/${imovelId}`).then(r => r.json());
+                
+                currentStatus = res.status;
+                const isUnlocked = POST_PURCHASE_STATUSES.includes(currentStatus);
+
+                // Header
+                document.getElementById('detail-codigo').innerText = res.codigo;
+                document.getElementById('detail-endereco').innerText = res.endereco;
+                document.getElementById('detail-status').innerText = res.status;
+                document.getElementById('detail-cidade-uf').innerText = `${res.cidade} - ${res.estado}`;
+                document.getElementById('detail-leiloeiro').innerText = res.leiloeiro;
+                document.getElementById('detail-bairro').innerText = res.bairro || 'Não informado';
+                document.getElementById('detail-link').href = res.link_leilao;
+
+                // 1. Tab Resumo (KPIs & Refactored Layout)
+                if (res.kpis) {
+                    document.getElementById('kpi-roi').innerText = res.kpis.roi + '%';
+                    document.getElementById('kpi-lucro').innerText = 'R$ ' + res.kpis.lucro_bruto.toLocaleString('pt-BR');
+                    document.getElementById('kpi-investimento').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
+                    document.getElementById('kpi-margem').innerText = res.kpis.margem_venda + '%';
+                    
+                    // Left Column
+                    document.getElementById('resumo-venda-normal').innerText = 'R$ ' + (res.avaliacao.valor_venda_normal || 0).toLocaleString('pt-BR');
+                    document.getElementById('resumo-venda-rapida').innerText = 'R$ ' + (res.valor_estimado || 0).toLocaleString('pt-BR');
+                    document.getElementById('resumo-debitos').innerText = 'R$ ' + (res.financeiro.iptu_atrasado + res.financeiro.condominio_atrasado).toLocaleString('pt-BR');
+                    document.getElementById('resumo-ocupado').innerText = res.avaliacao.ocupado ? 'SIM' : 'NÃO';
+                    document.getElementById('resumo-total-custos').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
+                    document.getElementById('resumo-total-despesas').innerText = 'R$ ' + (res.kpis.comissao_vlr + res.kpis.impostos_vlr).toLocaleString('pt-BR');
+                    
+                    // Simple Bid Cap using Rule
+                    const costs = (res.financeiro.iptu_atrasado || 0) + (res.financeiro.condominio_atrasado || 0) + (res.financeiro.reforma || 0);
+                    const bidMax = (res.valor_estimado * 0.7) - costs;
+                    document.getElementById('resumo-lance-max').innerText = 'R$ ' + Math.max(0, bidMax).toLocaleString('pt-BR');
+                }
+
+                // Right Column: Auctions History
+                const auctionList = document.getElementById('resumo-lista-leiloes');
+                auctionList.innerHTML = res.leiloes.map(l => `
+                    <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-800">${l.tipo}</p>
+                            <p class="text-[9px] text-slate-500">${l.data}</p>
+                        </div>
+                        <p class="text-[11px] font-bold text-slate-700">R$ ${l.valor.toLocaleString('pt-BR')}</p>
+                    </div>
+                `).join('') || '<p class="text-[10px] text-slate-400">Nenhum leilão.</p>';
+
+                // Get Vencedor (simplified, usually the last arrematado or highest bid)
+                const vencedor = res.leiloes.find(l => l.status === 'Ganhamos' || l.status === 'Arrematado');
+                if (vencedor) {
+                    document.getElementById('resumo-lance-vencedor').innerText = 'R$ ' + vencedor.valor.toLocaleString('pt-BR');
+                    document.getElementById('resumo-resultado-status').innerText = 'VENCEMOS';
+                    document.getElementById('resumo-resultado-status').className = "px-2 py-1 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700";
+                    document.getElementById('resumo-resultado-data').innerText = vencedor.data;
+                } else {
+                    document.getElementById('resumo-lance-vencedor').innerText = '--';
+                    document.getElementById('resumo-resultado-status').innerText = 'PENDENTE';
+                    document.getElementById('resumo-resultado-status').className = "px-2 py-1 rounded text-[9px] font-bold bg-slate-100 text-slate-500";
+                }
+
+                // 2. Tab Cadastro
+                document.getElementById('cad-endereco-full').value = res.endereco || '';
+                document.getElementById('cad-cidade').value = res.cidade || '';
+                document.getElementById('cad-uf').value = res.estado || '';
+                document.getElementById('cad-area-priv').value = res.area_privativa || 0;
+                document.getElementById('cad-area-const').value = res.area_construida || 0;
+                document.getElementById('cad-area-terr').value = res.area_terreno || 0;
+                document.getElementById('cad-vlr-av').value = formatBRL(res.valor_avaliacao);
+                document.getElementById('cad-tipo').value = res.tipo_imovel || '';
+                document.getElementById('cad-banco').value = res.banco || '';
+                document.getElementById('cad-desc').value = res.descritivo_imovel || '';
+                document.getElementById('cad-insc-imob').value = res.inscricao_imobiliaria || '';
+                document.getElementById('cad-matr').value = res.matricula || '';
+                document.getElementById('cad-comarca').value = res.comarca || '';
+                document.getElementById('cad-link').value = res.link_leilao || '';
+
+                // Preços, Datas e Modalidades de Leilão (DINÂMICO)
+                const leilaoContainer = document.getElementById('leiloes-container');
+                leilaoContainer.innerHTML = ''; // Limpa
+                if (res.leiloes && res.leiloes.length > 0) {
+                    res.leiloes.forEach(l => {
+                        addLeilaoRow({
+                            tipo: l.tipo,
+                            modalidade: l.modalidade,
+                            data: l.data_iso,
+                            valor: l.valor,
+                            observacoes: l.observacoes
+                        });
+                    });
+                } else {
+                    addLeilaoRow({tipo: '1º Leilão'}); // Default
+                }
+
+                // 3. Tab Avaliação
+                const av = res.avaliacao;
+                document.getElementById('eval-valor-condo').value = formatBRL(av.valor_condominio);
+                document.getElementById('eval-idade').value = av.idade_predio;
+                document.getElementById('eval-desc-predio').value = av.descritivo_predio;
+                document.getElementById('eval-desc-imovel').value = av.descritivo_imovel;
+                document.getElementById('eval-valor-m2').value = formatBRL(av.valor_m2_regiao);
+                document.getElementById('eval-ocupado').value = (av.ocupado || false).toString();
+                document.getElementById('eval-contato-morador').checked = av.contato_morador;
+                document.getElementById('eval-relato-morador').value = av.relato_morador;
+                document.getElementById('eval-contato-sindico').checked = av.contato_sindico;
+                document.getElementById('eval-relato-sindico').value = av.relato_sindico;
+                document.getElementById('eval-vlr-outros').value = formatBRL(av.outros_debitos);
+                document.getElementById('eval-debito-iptu').value = formatBRL(res.financeiro.iptu_atrasado);
+                document.getElementById('eval-debito-condo').value = formatBRL(res.financeiro.condominio_atrasado);
+                document.getElementById('eval-observacoes').value = av.observacoes_internas;
+                document.getElementById('eval-venda-normal').value = formatBRL(av.valor_venda_normal);
+                document.getElementById('eval-venda-rapida').value = formatBRL(res.valor_estimado);
+                
+                calcTotalDebitos();
+                document.getElementById('eval-observacoes').value = av.observacoes_internas;
+                document.getElementById('eval-venda-normal').value = av.valor_venda_normal;
+                document.getElementById('eval-venda-rapida').value = res.valor_estimado;
+                document.getElementById('eval-debito-condo').value = res.financeiro.condominio_atrasado;
+                document.getElementById('eval-debito-iptu').value = res.financeiro.iptu_atrasado;
+
+                // 4. Tab Ficha Financeira
+                const fin = res.financeiro.full_data;
+                document.getElementById('fin-lance').value = formatBRL(fin.valor_arrematacao);
+                document.getElementById('fin-com-leilao-per').value = fin.comissao_leiloeiro_percent;
+                document.getElementById('fin-itiv-per').value = fin.itiv_percent;
+                document.getElementById('fin-reg-per').value = fin.registro_cartorio_percent;
+                document.getElementById('fin-iptu-attr').value = formatBRL(res.financeiro.iptu_atrasado);
+                document.getElementById('fin-iptu-fut').value = formatBRL(fin.iptu_futuro);
+                document.getElementById('fin-condo-attr').value = formatBRL(res.financeiro.condominio_atrasado);
+                document.getElementById('fin-condo-fut').value = formatBRL(fin.condominio_futuro);
+                document.getElementById('fin-reforma').value = formatBRL(res.financeiro.reforma);
+                document.getElementById('fin-conting').value = formatBRL(fin.contingencia);
+                document.getElementById('fin-venda-proj').value = formatBRL(fin.valor_venda_projetado);
+                document.getElementById('fin-com-corr-per').value = fin.comissao_corretor_percent;
+                document.getElementById('fin-imp-venda-per').value = fin.impostos_venda_percent;
+                
+                updateFinanceCalcs();
+                
+                // Update UI Calcs
+                if (res.kpis) {
+                    document.getElementById('calc-com-leilao').innerText = 'R$ ' + res.kpis.custos_detalhe.comissao_leiloeiro.toLocaleString('pt-BR');
+                    document.getElementById('calc-venda-liq').innerText = 'R$ ' + res.kpis.venda_liquida_02.toLocaleString('pt-BR');
+                    document.getElementById('calc-inv-total').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
+                    document.getElementById('calc-lucro-estimado').innerText = 'R$ ' + res.kpis.lucro_bruto.toLocaleString('pt-BR');
+                    document.getElementById('calc-roi-per').innerText = res.kpis.roi + '%';
+                }
+
+                // Others
+                renderChecklist(res.documentacao.checklist);
+                document.getElementById('resumo-status-doc').innerText = res.documentacao.status;
+
+                // Documentos UI Reset
+                document.getElementById('doc-status-edital').innerText = 'Pendente';
+                document.getElementById('doc-status-edital').classList.remove('text-emerald-500');
+                document.getElementById('doc-icon-edital').className = 'far fa-file-pdf text-slate-300 text-xl mr-3';
+                document.getElementById('doc-card-edital').onclick = () => triggerUpload('Edital');
+                document.getElementById('doc-action-edital').className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
+
+                document.getElementById('doc-status-matricula').innerText = 'Pendente';
+                document.getElementById('doc-status-matricula').classList.remove('text-emerald-500');
+                document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-slate-300 text-xl mr-3';
+                document.getElementById('doc-card-matricula').onclick = () => triggerUpload('Matricula');
+                document.getElementById('doc-action-matricula').className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
+
+                res.anexos.forEach(a => {
+                    if (a.categoria === 'Edital') {
+                        document.getElementById('doc-status-edital').innerText = 'Disponível';
+                        document.getElementById('doc-status-edital').classList.add('text-emerald-500');
+                        document.getElementById('doc-icon-edital').className = 'far fa-file-pdf text-red-500 text-xl mr-3';
+                        document.getElementById('doc-card-edital').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
+                        document.getElementById('doc-action-edital').className = 'fas fa-download text-emerald-500';
+                    }
+                    if (a.categoria === 'Matricula') {
+                        document.getElementById('doc-status-matricula').innerText = 'Disponível';
+                        document.getElementById('doc-status-matricula').classList.add('text-emerald-500');
+                        document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-blue-500 text-xl mr-3';
+                        document.getElementById('doc-card-matricula').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
+                        document.getElementById('doc-action-matricula').className = 'fas fa-download text-emerald-500';
+                    }
+                });
+
+                // Status Badge logic (keep existing)
+                const badge = document.getElementById('detail-status-badge');
+                badge.innerText = res.status;
+                if(isUnlocked) {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+                } else {
+                    badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700";
+                }
+
+                // Leiloes list
+                const list = document.getElementById('list-leiloes');
+                list.innerHTML = res.leiloes.map(l => `
+                    <div class="flex items-center p-2 bg-slate-50 rounded border text-[10px]">
+                        <div class="flex-1">
+                            <p class="font-bold">${l.tipo}</p>
+                            <p class="text-slate-500">${l.data}</p>
+                        </div>
+                        <p class="font-bold">R$ ${l.valor.toLocaleString('pt-BR')}</p>
+                    </div>
+                `).join('');
+
+                // Listeners
+                initMasks();
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        
+        switchTab('tab-resumo');
+        loadDetail();
+    </script>
+</body>
+</html>

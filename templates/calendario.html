@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Calendário de Leilões</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar { background-color: #0f172a; }
+        .fc-toolbar-title { font-size: 1.2rem !important; font-weight: bold; color: #1e293b; }
+        .fc-button-primary { background-color: #10b981 !important; border-color: #10b981 !important; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+    <aside class="w-64 sidebar text-white flex-col hidden md:flex">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
+             <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Auction Intelligence</p>
+        </div>
+        <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-th-large mr-3 w-4"></i> Pipeline Geral
+                    </a>
+                    <a href="/triagem" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-filter mr-3 w-4"></i> Triagem / Descarte
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Leilão</p>
+                <div class="space-y-1">
+                    <a href="/calendario" class="flex items-center p-2 bg-slate-800 rounded-lg text-emerald-400 border-l-4 border-emerald-400 text-sm">
+                        <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
+                    </a>
+                    <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                    </a>
+                </div>
+            </div>
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pós-Leilão</p>
+                <div class="space-y-1">
+                    <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Agenda de Leilões</h2>
+            <div id='calendar'></div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            var calendarEl = document.getElementById('calendar');
+            
+            const events = await fetch('/api/imoveis/calendar').then(r => r.json());
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'pt-br',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                events: events,
+                eventClick: function(info) {
+                    window.location.href = '/imovel/' + info.event.id;
+                }
+            });
+            calendar.render();
+        });
+    </script>
+</body>
+</html>

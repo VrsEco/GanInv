@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar { background-color: #0f172a; }
+        .card-premium { transition: transform 0.2s; }
+        .card-premium:hover { transform: translateY(-4px); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="w-64 sidebar text-white flex-col hidden md:flex">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Auction Intelligence</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
+            <!-- Grupo 1: Funil -->
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center p-2 bg-slate-800 rounded-lg text-emerald-400 border-l-4 border-emerald-400 text-sm">
+                        <i class="fas fa-th-large mr-3 w-4"></i> Pipeline Geral
+                    </a>
+                    <a href="/triagem" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-filter mr-3 w-4"></i> Triagem / Descarte
+                    </a>
+                </div>
+            </div>
+
+            <!-- Grupo 2: Leilão -->
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Leilão</p>
+                <div class="space-y-1">
+                    <a href="/calendario" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
+                    </a>
+                    <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                    </a>
+                </div>
+            </div>
+
+            <!-- Grupo 3: Pós-Leilão -->
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pós-Leilão</p>
+                <div class="space-y-1">
+                    <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
+                    </a>
+                    <a href="#" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-file-contract mr-3 w-4"></i> Documentação
+                    </a>
+                    <a href="#" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-tools mr-3 w-4"></i> Reforma
+                    </a>
+                    <a href="#" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-bullhorn mr-3 w-4"></i> Marketing e Vendas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Outros -->
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <a href="/logout" class="flex items-center p-2 hover:bg-red-900/20 text-slate-500 hover:text-red-400 rounded-lg transition text-sm">
+                    <i class="fas fa-sign-out-alt mr-3 w-4"></i> Sair do Sistema
+                </a>
+            </div>
+        </nav>
+
+        <div class="p-4 bg-slate-900/50">
+            <div class="flex items-center p-2 rounded-xl bg-slate-800/50">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center mr-3 font-bold text-slate-900">AD</div>
+                <div class="overflow-hidden">
+                    <p class="text-xs font-bold truncate">Admin Gandu</p>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-tighter">Investidor Master</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+        <!-- Top Bar -->
+        <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
+            <div class="flex items-center md:hidden">
+                <h1 class="text-xl font-bold text-slate-800">GanduInvest</h1>
+            </div>
+            <div class="relative w-96 hidden md:block">
+                <input type="text" placeholder="Buscar imóvel, código ou leiloeiro..." class="w-full bg-slate-100 border-none rounded-full py-2 px-10 focus:ring-2 focus:ring-emerald-500 text-sm">
+                <i class="fas fa-search absolute left-4 top-3 text-slate-400 text-sm"></i>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="toggleModal('modal-import')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">
+                    <i class="fas fa-bolt mr-2"></i> Importar Speed
+                </button>
+            </div>
+        </header>
+
+        <!-- Modal Import -->
+        <div id="modal-import" class="fixed inset-0 bg-slate-900/50 hidden z-[25000] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div class="p-6 border-b flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-slate-800">Importação por Link</h3>
+                    <button onclick="toggleModal('modal-import')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-sm text-slate-500">Cole o link do leilão (Zukerman, Mega Leilões, etc) abaixo para pré-cadastro automático.</p>
+                    <input type="text" id="import-url" placeholder="https://www.zukerman.com.br/imovel/..." class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    <button id="btn-do-import" onclick="doImport()" class="w-full bg-slate-800 text-white p-3 rounded-lg font-bold hover:bg-slate-700 transition flex justify-center items-center">
+                        <span id="import-text">Processar Link</span>
+                        <div id="import-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent ml-2"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Body -->
+        <div class="p-6 space-y-6">
+            <!-- KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 card-premium">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-500 text-sm font-medium">Total de Imóveis</span>
+                        <i class="fas fa-database text-blue-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-slate-800" id="stat-total">--</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 card-premium">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-500 text-sm font-medium">Em Análise</span>
+                        <i class="fas fa-microscope text-orange-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-slate-800" id="stat-analise">--</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 card-premium">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-500 text-sm font-medium">Arrematados</span>
+                        <i class="fas fa-crown text-emerald-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-slate-800" id="stat-arrematados">--</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 card-premium">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-500 text-sm font-medium">ROI Médio (Projetado)</span>
+                        <i class="fas fa-percentage text-purple-500"></i>
+                    </div>
+                    <p class="text-2xl font-bold text-slate-800">24.5%</p>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100">
+                <div class="p-4 border-b flex justify-between items-center">
+                    <h2 class="font-bold text-slate-800" id="pipeline-title">Pipeline de Operações</h2>
+                    <div class="flex space-x-2">
+                        <button class="text-xs bg-slate-100 px-3 py-1 rounded border hover:bg-slate-200">Exportar PDF</button>
+                        <button class="text-xs bg-slate-100 px-3 py-1 rounded border hover:bg-slate-200">Filtros Avançados</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase">
+                            <tr>
+                                <th class="p-4">Cód.</th>
+                                <th class="p-4">Imóvel</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Avaliação</th>
+                                <th class="p-4">Leiloeiro</th>
+                                <th class="p-4 text-right">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="imoveis-table" class="text-sm divide-y">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleModal(id) {
+            const m = document.getElementById(id);
+            m.classList.toggle('hidden');
+        }
+
+        async function doImport() {
+            const url = document.getElementById('import-url').value;
+            const btn = document.getElementById('btn-do-import');
+            const text = document.getElementById('import-text');
+            const spinner = document.getElementById('import-spinner');
+
+            if(!url) return alert("Insira uma URL");
+
+            btn.disabled = true;
+            text.innerText = "Extraindo Inteligência...";
+            spinner.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/imoveis/import', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url})
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+
+                toggleModal('modal-import');
+                document.getElementById('import-url').value = '';
+                loadDashboard(); // Refresh
+            } catch (err) {
+                alert("Erro: " + err.message);
+            } finally {
+                btn.disabled = false;
+                text.innerText = "Processar Link";
+                spinner.classList.add('hidden');
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const statusFilter = urlParams.get('status');
+                if (statusFilter) {
+                    document.getElementById('pipeline-title').innerText = `Pipeline: ${statusFilter}`;
+                }
+
+                // Load Stats
+                const stats = await fetch('/api/imoveis/stats').then(r => r.json());
+                document.getElementById('stat-total').innerText = stats.total;
+                document.getElementById('stat-analise').innerText = stats.em_analise;
+                document.getElementById('stat-arrematados').innerText = stats.arrematados;
+
+                // Load Table
+                const apiUrl = statusFilter ? `/api/imoveis/?status=${encodeURIComponent(statusFilter)}` : '/api/imoveis/';
+                const imoveis = await fetch(apiUrl).then(r => r.json());
+                const tbody = document.getElementById('imoveis-table');
+                tbody.innerHTML = imoveis.map(i => `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-4 font-mono font-bold text-emerald-600">${i.codigo}</td>
+                        <td class="p-4">
+                            <div class="font-semibold text-slate-800">${i.endereco}</div>
+                            <div class="text-xs text-slate-500">${i.cidade} - ${i.estado}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                ${i.status === 'Arrematado' ? 'bg-emerald-100 text-emerald-700' : 
+                                  i.status === 'Em análise' ? 'bg-blue-100 text-blue-700' : 
+                                  i.status === 'Leilão agendado' ? 'bg-orange-100 text-orange-700' : 
+                                  'bg-slate-100 text-slate-700'}">
+                                ${i.status}
+                            </span>
+                        </td>
+                        <td class="p-4 font-semibold text-slate-700">R$ ${i.valor_avaliacao.toLocaleString('pt-BR')}</td>
+                        <td class="p-4 text-slate-500">${i.leiloeiro}</td>
+                        <td class="p-4 text-right">
+                            <a href="/imovel/${i.id}" class="text-slate-400 hover:text-emerald-600"><i class="fas fa-eye"></i></a>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Erro ao carregar dashboard:", err);
+            }
+        }
+        loadDashboard();
+    </script>
+</body>
+</html>

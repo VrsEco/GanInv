@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .bg-login { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
+    </style>
+</head>
+<body class="bg-login flex items-center justify-center min-vh-100 h-screen">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">Gandu<span class="text-emerald-500">Invest</span></h1>
+            <p class="text-slate-400 text-sm mt-2">Acesse sua plataforma de inteligência</p>
+        </div>
+        
+        {% if error %}
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+            <p class="text-red-700 text-xs font-bold">{{ error }}</p>
+        </div>
+        {% endif %}
+        
+        <form action="/login" method="POST" class="space-y-6">
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">E-mail ou Usuário</label>
+                <input type="email" name="email" value="admin@ganduinvest.com.br" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Senha</label>
+                <input type="password" name="password" value="gandu123" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <div class="flex items-center justify-between text-xs">
+                <label class="flex items-center text-slate-500 cursor-pointer">
+                    <input type="checkbox" class="mr-2"> Lembrar de mim
+                </label>
+                <a href="#" class="text-emerald-600 font-bold hover:underline">Esqueci a senha</a>
+            </div>
+            <button type="submit" class="w-full bg-slate-800 text-white p-4 rounded-xl font-bold hover:bg-slate-700 transition transform hover:scale-[1.02]">
+                Entrar no Sistema
+            </button>
+        </form>
+    </div>
+</body>
+</html>

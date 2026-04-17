@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GanduInvest | Triagem de Oportunidades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar { background-color: #0f172a; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar Reusado -->
+    <aside class="w-64 sidebar text-white flex-col hidden md:flex">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Auction Intelligence</p>
+        </div>
+        
+        <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
+            <div>
+                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
+                <div class="space-y-1">
+                    <a href="/" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                        <i class="fas fa-th-large mr-3 w-4"></i> Pipeline Geral
+                    </a>
+                    <a href="/triagem" class="flex items-center p-2 bg-slate-800 rounded-lg text-emerald-400 border-l-4 border-emerald-400 text-sm">
+                        <i class="fas fa-filter mr-3 w-4"></i> Triagem / Descarte
+                    </a>
+                </div>
+            </div>
+            <!-- ... outros itens ... -->
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+        <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
+            <h2 class="text-xl font-bold text-slate-800">Triagem e Qualificação</h2>
+            <div class="flex items-center space-x-4">
+                <select id="filter-mode" onchange="loadTriagem()" class="bg-slate-100 border-none rounded-lg py-2 px-4 text-sm focus:ring-2 focus:ring-emerald-500">
+                    <option value="active">Apenas Ativos (Não Descartados)</option>
+                    <option value="discarded">Apenas Descartados (Lixo)</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                        <thead class="bg-slate-50 text-slate-500 text-[9px] uppercase tracking-wider font-black">
+                            <tr>
+                                <th class="p-4">Cód.</th>
+                                <th class="p-4 text-rose-600">Motivo Descarte</th>
+                                <th class="p-4">Data Descarte</th>
+                                <th class="p-4">Imóvel / Endereço</th>
+                                <th class="p-4">Localidade</th>
+                                <th class="p-4">Avaliação</th>
+                                <th class="p-4 text-center">Ações de Gestão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="triagem-table" class="text-sm divide-y">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Descarte -->
+    <div id="modal-descarte" class="fixed inset-0 bg-slate-900/50 hidden z-[25000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center bg-red-50">
+                <h3 class="font-bold text-lg text-red-800"><i class="fas fa-trash-alt mr-2"></i> Descartar Oportunidade</h3>
+                <button onclick="toggleModal('modal-descarte')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo do Descarte</label>
+                    <select id="disc-motivo" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none">
+                        <option value="Localização fora do radar">a) Localização fora do radar</option>
+                        <option value="Localização ruim">b) Localização ruim</option>
+                        <option value="Valor fora da faixa alvo">c) Valor fora da faixa alvo</option>
+                        <option value="Prédio sem conservação">d) Prédio sem conservação</option>
+                        <option value="Documentação Irregular">e) Documentação Irregular</option>
+                        <option value="Sem dados para decisão">f) Sem dados para decisão</option>
+                        <option value="Ocupante problemático">g) Ocupante problemático</option>
+                        <option value="Outros">h) Outros (especificar abaixo)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Observações / Detalhes</label>
+                    <textarea id="disc-obs" rows="4" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none" placeholder="Explique o motivo do descarte..."></textarea>
+                </div>
+                <div class="flex space-x-3 pt-2">
+                    <button onclick="toggleModal('modal-descarte')" class="flex-1 bg-slate-100 text-slate-600 p-3 rounded-lg font-bold hover:bg-slate-200 transition">Cancelar</button>
+                    <button onclick="confirmDescarte()" class="flex-1 bg-red-600 text-white p-3 rounded-lg font-bold hover:bg-red-700 transition">Confirmar Descarte</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedImovelId = null;
+
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function openDescarteModal(id) {
+            selectedImovelId = id;
+            toggleModal('modal-descarte');
+        }
+
+        async function confirmDescarte() {
+            const motivo = document.getElementById('disc-motivo').value;
+            const obs = document.getElementById('disc-obs').value;
+
+            try {
+                const res = await fetch(`/api/imoveis/${selectedImovelId}/descartar`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ motivo, observacao: obs })
+                }).then(r => r.json());
+
+                if (res.error) throw new Error(res.error);
+                
+                toggleModal('modal-descarte');
+                loadTriagem();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function loadTriagem() {
+            const mode = document.getElementById('filter-mode').value;
+            const isDiscarded = mode === 'discarded';
+            
+            try {
+                const res = await fetch(`/api/imoveis/?descartados=${isDiscarded}`).then(r => r.json());
+                const tbody = document.getElementById('triagem-table');
+                
+                tbody.innerHTML = res.map(i => {
+                    const isDisc = i.descartado;
+                    return `
+                        <tr class="hover:bg-slate-50 transition ${isDisc ? 'bg-rose-50/20' : ''}">
+                            <td class="p-4 font-mono font-bold text-slate-500 text-[10px]">${i.codigo}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${isDisc ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
+                                    ${isDisc ? (i.motivo_descarte || 'DESCARTADO') : 'DISPONÍVEL / ATIVO'}
+                                </span>
+                            </td>
+                            <td class="p-4 text-xs font-semibold text-slate-500">
+                                ${i.data_descarte ? new Date(i.data_descarte).toLocaleDateString() : '--'}
+                            </td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-800 text-xs">${i.endereco}</div>
+                                <div class="text-[9px] text-slate-400 italic">${i.obs_descarte ? i.obs_descarte.substring(0, 50) + '...' : 'Ficha Limpa'}</div>
+                            </td>
+                            <td class="p-4 text-[10px] text-slate-600 font-medium">${i.cidade} - ${i.estado}</td>
+                            <td class="p-4 font-black text-slate-700 text-xs">R$ ${i.valor_avaliacao.toLocaleString('pt-BR')}</td>
+                            <td class="p-4">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <button class="bg-emerald-600 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-emerald-700 transition shadow-sm">SALVAR</button>
+                                    <a href="/imovel/${i.id}" class="bg-slate-800 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-slate-900 transition text-center uppercase shadow-sm">EDITAR</a>
+                                    <button onclick="openDescarteModal(${i.id})" class="bg-rose-600 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-rose-700 transition uppercase shadow-sm">EXCLUIR</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        loadTriagem();
+    </script>
+</body>
+</html>
