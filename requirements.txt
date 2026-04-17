@@ -9,3 +9,4 @@ alembic
 pytest
 beautifulsoup4
 requests
+gunicorn

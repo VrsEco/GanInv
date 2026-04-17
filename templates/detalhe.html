@@ -88,26 +88,29 @@
 
         <!-- Tab Navigation -->
         <div class="flex border-b border-slate-200 mb-6 space-x-8 no-print overflow-x-auto">
-            <button onclick="switchTab('tab-resumo')" id="btn-tab-resumo" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-emerald-500 text-emerald-600">
+            <button onclick="switchTab('tab-resumo')" id="btn-tab-resumo" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-emerald-500 text-emerald-600 whitespace-nowrap">
                 <i class="fas fa-chart-pie mr-2"></i> Resumo
             </button>
-            <button onclick="switchTab('tab-cadastro')" id="btn-tab-cadastro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+            <button onclick="switchTab('tab-cadastro')" id="btn-tab-cadastro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
                 <i class="fas fa-address-card mr-2"></i> Cadastro
             </button>
-            <button onclick="switchTab('tab-analise')" id="btn-tab-analise" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+            <button onclick="switchTab('tab-analise')" id="btn-tab-analise" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
                 <i class="fas fa-search mr-2"></i> Avaliação
             </button>
-            <button onclick="switchTab('tab-financeiro')" id="btn-tab-financeiro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
+            <button onclick="switchTab('tab-leilao')" id="btn-tab-leilao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
+                <i class="fas fa-gavel mr-2"></i> O Leilão
+            </button>
+            <button onclick="switchTab('tab-financeiro')" id="btn-tab-financeiro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
                 <i class="fas fa-file-invoice-dollar mr-2"></i> Ficha Financeira
             </button>
-            <button onclick="switchTab('tab-documentacao')" id="btn-tab-documentacao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
-                <i class="fas fa-file-contract mr-2"></i> Documentação
+            <button onclick="switchTab('tab-documentacao')" id="btn-tab-documentacao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap flex items-center">
+                <i class="fas fa-file-contract mr-2"></i> Documentação <i class="fas fa-lock ml-2 text-[10px] hidden" id="lock-tab-documentacao"></i>
             </button>
-            <button onclick="switchTab('tab-reforma')" id="btn-tab-reforma" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
-                <i class="fas fa-tools mr-2"></i> Reforma
+            <button onclick="switchTab('tab-reforma')" id="btn-tab-reforma" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap flex items-center">
+                <i class="fas fa-tools mr-2"></i> Reforma <i class="fas fa-lock ml-2 text-[10px] hidden" id="lock-tab-reforma"></i>
             </button>
-            <button onclick="switchTab('tab-venda')" id="btn-tab-venda" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400">
-                <i class="fas fa-shopping-cart mr-2"></i> Venda
+            <button onclick="switchTab('tab-venda')" id="btn-tab-venda" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap flex items-center">
+                <i class="fas fa-shopping-cart mr-2"></i> Venda <i class="fas fa-lock ml-2 text-[10px] hidden" id="lock-tab-venda"></i>
             </button>
         </div>
 
@@ -621,6 +624,68 @@
             </div>
         </div>
 
+        <!-- Tab Leilão (Resultado Real) -->
+        <div id="tab-leilao" class="tab-content hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-8">
+                            <h3 class="font-bold text-slate-800 text-xl flex items-center">
+                                <i class="fas fa-gavel text-emerald-500 mr-3"></i> O Evento: Resultado do Pregão
+                            </h3>
+                            <span class="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold uppercase tracking-widest">Controle de Arrematação</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Desfecho do Leilão</label>
+                                <select id="lei-status" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-700 focus:border-emerald-500 outline-none transition">
+                                    <option value="Pendente">Aguardando Leilão</option>
+                                    <option value="Arrematado">Arrematamos (Vencemos)</option>
+                                    <option value="Perdido">Perdemos (Deu lance maior)</option>
+                                    <option value="Deserto">Leilão Deserto (Sem lances)</option>
+                                    <option value="Suspenso">Leilão Suspenso / Cancelado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Valor de Arremate Final (R$)</label>
+                                <input type="text" id="lei-vlr-final" class="w-full p-4 bg-emerald-50 border-2 border-emerald-100 rounded-2xl text-2xl font-black text-emerald-800 outline-none mask-money transition focus:border-emerald-500" placeholder="0,00">
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Ata do Leilão / Notas do Evento</label>
+                            <textarea id="lei-obs" rows="6" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:border-emerald-500 outline-none transition" placeholder="Descreva os detalhes da disputa, nome do arrematante (se não for nós), lances dados, etc..."></textarea>
+                        </div>
+
+                        <div class="mt-10 flex justify-end">
+                            <button onclick="saveLeilaoResult()" class="bg-slate-900 text-white px-10 py-4 rounded-2xl font-bold hover:bg-emerald-600 shadow-xl transition-all flex items-center">
+                                <i class="fas fa-check-double mr-3"></i> Salvar e Atualizar Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-emerald-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 opacity-10 rotate-12">
+                            <i class="fas fa-hand-holding-dollar text-9xl"></i>
+                        </div>
+                        <h4 class="font-bold mb-4 flex items-center text-emerald-300">
+                            <i class="fas fa-shield-halved mr-2"></i> Próximos Passos
+                        </h4>
+                        <p class="text-xs text-emerald-100/70 leading-relaxed mb-6">
+                            Ao confirmar a **Arrematação**, o imóvel mudará de status global e as abas de Documentação, Reforma e Venda ficarão totalmente disponíveis para a gestão do pós-venda.
+                        </p>
+                        <div class="p-4 bg-emerald-800/50 rounded-2xl border border-emerald-700/50">
+                            <p class="text-[9px] uppercase font-bold text-emerald-400 mb-1">Dica do Squad</p>
+                            <p class="text-[11px] italic">"Mesmo se perdermos, registre o valor vencedor e observações para aprimorar nossos algoritmos de mercado."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tab Financeiro (Full Sheet) -->
         <!-- Tab Ficha Financeira -->
         <div id="tab-financeiro" class="tab-content hidden">
@@ -786,6 +851,101 @@
                 </div>
             </div>
         </div>
+        <!-- Tab Reforma -->
+        <div id="tab-reforma" class="tab-content hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Cronograma de Obras & Reformas</h3>
+                        <p class="text-sm text-slate-500">Gestão de melhorias para valorização do ativo.</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Orçamento Aprovado</p>
+                        <p class="text-2xl font-black text-slate-800">R$ 0,00</p>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Gasto Realizado</p>
+                        <p class="text-2xl font-black text-slate-800">R$ 0,00</p>
+                    </div>
+                    <div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
+                        <p class="text-[10px] font-bold text-emerald-600 uppercase mb-2">Valorização Estimada</p>
+                        <p class="text-2xl font-black text-emerald-800">+ 15%</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-12 border-2 border-dashed border-slate-200 rounded-3xl text-center">
+                    <i class="fas fa-hard-hat text-4xl text-slate-300 mb-4"></i>
+                    <h4 class="text-lg font-bold text-slate-700">Módulo de Reforma em Desenvolvimento</h4>
+                    <p class="text-slate-500 max-w-md mx-auto">Em breve você poderá gerenciar fornecedores, compras de materiais e fotos do progresso da obra diretamente por aqui.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Venda -->
+        <div id="tab-venda" class="tab-content hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <div class="flex items-center space-x-4 mb-8">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-xl">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">Comercialização & Desinvestimento</h3>
+                        <p class="text-sm text-slate-500">Gestão de corretores, anúncios e fechamento.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="md:col-span-3 space-y-6">
+                        <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                            <h4 class="font-bold text-slate-700 mb-4">Anúncios Ativos</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-slate-100 rounded-lg mr-3 flex items-center justify-center text-slate-400"><i class="fas fa-home"></i></div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-700">Zap Imóveis</p>
+                                            <p class="text-[10px] text-emerald-500 font-bold uppercase">Ativo</p>
+                                        </div>
+                                    </div>
+                                    <button class="text-slate-400 hover:text-slate-600"><i class="fas fa-external-link-alt"></i></button>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-slate-100 rounded-lg mr-3 flex items-center justify-center text-slate-400"><i class="fas fa-home"></i></div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-700">VivaReal</p>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Pendente</p>
+                                        </div>
+                                    </div>
+                                    <button class="text-slate-300 cursor-not-allowed"><i class="fas fa-plus"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="p-6 bg-blue-900 text-white rounded-2xl shadow-xl">
+                            <h4 class="text-xs font-bold text-blue-300 uppercase tracking-widest mb-4">KPI de Venda</h4>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-[10px] text-blue-400">Tempo em Carteira</p>
+                                    <p class="text-2xl font-black">0 Dias</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-blue-400">Visitas Agendadas</p>
+                                    <p class="text-2xl font-black">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -793,6 +953,36 @@
         const imovelId = pathParts[pathParts.length - 1];
         let currentStatus = '';
         const POST_PURCHASE_STATUSES = ['Arrematado', 'Em reforma', 'Vendido'];
+
+        function switchTab(tabId) {
+            const POST_PURCHASE_TABS = ['tab-documentacao', 'tab-reforma', 'tab-venda'];
+            const isPostPurchase = POST_PURCHASE_TABS.includes(tabId);
+            const isUnlocked = POST_PURCHASE_STATUSES.includes(currentStatus);
+
+            if (isPostPurchase && !isUnlocked) {
+                alert("Acesso Bloqueado: Estas abas só ficam disponíveis após a Arrematação do imóvel.");
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            const target = document.getElementById(tabId);
+            if(target) target.classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('border-emerald-500', 'text-emerald-600');
+                btn.classList.add('border-transparent', 'text-slate-400');
+            });
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.add('border-emerald-500', 'text-emerald-600');
+                activeBtn.classList.remove('border-transparent', 'text-slate-400');
+            }
+            
+            // Re-render components if needed
+            if(tabId === 'tab-documentacao') renderChecklist(checklistData);
+        }
 
         // Máscara Monetária BRL
         function applyMoneyMask(e) {
@@ -891,23 +1081,7 @@
             initMasks();
         }
 
-        function switchTab(tabId) {
-            // Todas as abas liberadas para análise de decisão e gestão
-
-            // Hide all contents
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            // Show target
-            document.getElementById(tabId).classList.remove('hidden');
-
-            // Style buttons
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('border-emerald-500', 'text-emerald-600');
-                b.classList.add('border-transparent', 'text-slate-400');
-            });
-            const activeBtn = document.getElementById('btn-' + tabId);
-            activeBtn.classList.remove('border-transparent', 'text-slate-400');
-            activeBtn.classList.add('border-emerald-500', 'text-emerald-600');
-        }
+        // Removido switchTab duplicado
 
         function updateFinanceCalcs() {
             const lance = unmaskMoney(document.getElementById('fin-lance').value);
@@ -1073,6 +1247,30 @@
             }
         }
 
+        async function saveLeilaoResult() {
+            const status = document.getElementById('lei-status').value;
+            const valorFinal = unmaskMoney(document.getElementById('lei-vlr-final').value);
+            const obs = document.getElementById('lei-obs').value;
+
+            try {
+                const res = await fetch(`/api/imoveis/${imovelId}/resultado-leilao`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        status: status, 
+                        valor_arrematado: valorFinal, 
+                        observacoes: obs 
+                    })
+                }).then(r => r.json());
+
+                if (res.error) throw new Error(res.error);
+                alert("Evento de leilão registrado com sucesso!");
+                loadDetail();
+            } catch (err) {
+                alert("Erro ao processar resultado: " + err.message);
+            }
+        }
+
         async function saveAvaliacao() {
             try {
                 const data = {
@@ -1223,6 +1421,11 @@
 
                 // 3. Tab Avaliação
                 const av = res.avaliacao;
+                
+                // 3.1 Tab Leilão (NOVO)
+                document.getElementById('lei-status').value = res.status;
+                document.getElementById('lei-vlr-final').value = formatBRL(res.financeiro.valor_arrematacao || 0);
+
                 document.getElementById('eval-valor-condo').value = formatBRL(av.valor_condominio);
                 document.getElementById('eval-idade').value = av.idade_predio;
                 document.getElementById('eval-desc-predio').value = av.descritivo_predio;
@@ -1308,13 +1511,28 @@
                     }
                 });
 
-                // Status Badge logic (keep existing)
+                // Status Badge logic
                 const badge = document.getElementById('detail-status-badge');
                 badge.innerText = res.status;
+                
+                // Flow Security UI
+                const POST_PURCHASE_TABS = ['documentacao', 'reforma', 'venda'];
                 if(isUnlocked) {
                     badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+                    POST_PURCHASE_TABS.forEach(tab => {
+                        const lock = document.getElementById(`lock-tab-${tab}`);
+                        if(lock) lock.classList.add('hidden');
+                        const btn = document.getElementById(`btn-tab-${tab}`);
+                        if(btn) btn.classList.remove('opacity-50');
+                    });
                 } else {
                     badge.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 text-blue-700";
+                    POST_PURCHASE_TABS.forEach(tab => {
+                        const lock = document.getElementById(`lock-tab-${tab}`);
+                        if(lock) lock.classList.remove('hidden');
+                        const btn = document.getElementById(`btn-tab-${tab}`);
+                        if(btn) btn.classList.add('opacity-50');
+                    });
                 }
 
                 // Leiloes list

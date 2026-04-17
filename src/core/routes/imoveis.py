@@ -438,6 +438,33 @@ def update_financeiro(id):
         session.close()
     return jsonify(res)
 
+@imoveis_bp.route('/<int:id>/resultado-leilao', methods=['POST'])
+def update_resultado_leilao(id):
+    session = Session()
+    try:
+        data = request.json
+        imovel = session.query(Imovel).get(id)
+        if not imovel:
+            return jsonify({"error": "Imóvel não encontrado"}), 404
+        
+        imovel.status = data.get('status')
+        
+        # Se arrematado, garante que o valor vá para a ficha financeira
+        f = imovel.financeiro
+        if not f:
+            f = FichaFinanceira(imovel_id=id, company_id=imovel.company_id)
+            session.add(f)
+        
+        f.valor_arrematacao = float(data.get('valor_arrematado') or 0)
+        
+        session.commit()
+        return jsonify({"message": "Resultado do leilão atualizado com sucesso!"})
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
 @imoveis_bp.route('/calendar', methods=['GET'])
 def get_calendar():
     session = Session()
