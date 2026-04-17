@@ -34,7 +34,7 @@ class FinanceService:
             f.get('contingencia', 0)
         ]
         
-        investimento_total = lance + sum(custos_operacao)
+        investimento_total = lance + sum([x or 0 for x in custos_operacao])
         
         # 3. KPIs
         lucro_bruto = venda_liquida_02 - investimento_total
