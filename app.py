@@ -10,6 +10,14 @@ try:
     from dotenv import load_dotenv
     load_dotenv()
     from src.core.routes.imoveis import imoveis_bp
+    from src.core.schema_sync import sync_schema
+    try:
+        sync_schema()
+    except Exception as sync_err:
+        with open('init_error.log', 'a') as f:
+            import traceback
+            f.write(f"AVISO sync_schema: {sync_err}\n")
+            f.write(traceback.format_exc())
 except Exception as e:
     with open('init_error.log', 'a') as f:
         import traceback
