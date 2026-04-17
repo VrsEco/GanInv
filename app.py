@@ -1,14 +1,24 @@
-from flask import Flask, jsonify, request, render_template, session, redirect, url_for
 import os
-from functools import wraps
-from dotenv import load_dotenv
+import sys
 
-load_dotenv()
+# Adiciona o diretório atual ao path para evitar erros de importação no uWSGI
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.core.routes.imoveis import imoveis_bp
+try:
+    from flask import Flask, jsonify, request, render_template, session, redirect, url_for
+    from functools import wraps
+    from dotenv import load_dotenv
+    load_dotenv()
+    from src.core.routes.imoveis import imoveis_bp
+except Exception as e:
+    with open('init_error.log', 'a') as f:
+        import traceback
+        f.write(f"ERRO DE INICIALIZAÇÃO: {str(e)}\n")
+        f.write(traceback.format_exc())
+    raise e
 
 app = Flask(__name__)
-app.debug = True
+# app.debug = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'gandu_secret_key_123')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
