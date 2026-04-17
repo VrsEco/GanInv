@@ -8,6 +8,7 @@ load_dotenv()
 from src.core.routes.imoveis import imoveis_bp
 
 app = Flask(__name__)
+app.debug = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'gandu_secret_key_123')
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
