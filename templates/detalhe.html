@@ -77,6 +77,9 @@
                 <p class="text-slate-500" id="detail-endereco">--</p>
             </div>
             <div class="flex space-x-2">
+                <button onclick="openPresentation()" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition flex items-center">
+                    <i class="fas fa-desktop mr-2"></i> Apresentação
+                </button>
                 <button onclick="window.print()" class="bg-white border text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
                     <i class="fas fa-print mr-2"></i> PDF Executivo
                 </button>
@@ -1557,6 +1560,177 @@
         
         switchTab('tab-resumo');
         loadDetail();
+    </script>
+    <!-- Modal Apresentação (Slides) -->
+    <div id="modal-presentation" class="fixed inset-0 bg-slate-900 z-[99999] hidden flex flex-col items-center justify-center p-4 md:p-8">
+        <!-- Close Button -->
+        <button onclick="closePresentation()" class="absolute top-6 right-6 text-white/50 hover:text-white text-2xl z-20">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Slide Container -->
+        <div class="w-full max-w-6xl aspect-video bg-white rounded-3xl shadow-2xl overflow-hidden relative flex flex-col">
+            
+            <!-- Slide 1: Capa -->
+            <div id="slide-1" class="slide flex-1 flex flex-col md:flex-row h-full">
+                <div class="w-full md:w-1/2 h-64 md:h-full bg-slate-200">
+                    <img id="pres-foto" src="/static/img/placeholder-imovel.jpg" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1 p-8 md:p-16 flex flex-col justify-center">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span id="pres-status" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold uppercase">--</span>
+                        <h4 id="pres-codigo" class="text-2xl font-bold text-slate-800">--</h4>
+                    </div>
+                    <h1 id="pres-endereco" class="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6">--</h1>
+                    <div class="flex items-center text-slate-500 text-xl">
+                        <i class="fas fa-map-marker-alt mr-3"></i>
+                        <span id="pres-cidade-uf">--</span>
+                    </div>
+                    <div class="mt-12 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-white text-xl">GI</div>
+                        <div>
+                            <p class="font-bold text-slate-800">Gandu Investimentos</p>
+                            <p class="text-xs text-slate-500 uppercase tracking-widest">Oportunidade em Análise</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Análise de Valor -->
+            <div id="slide-2" class="slide flex-1 hidden p-8 md:p-16 flex flex-col justify-center">
+                <h2 class="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-12">Análise de Mercado</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100">
+                        <p class="text-sm font-bold text-slate-400 uppercase mb-2">Valor de Avaliação</p>
+                        <p id="pres-vlr-av" class="text-4xl font-black text-slate-800">R$ 0</p>
+                        <p class="text-xs text-slate-400 mt-2 italic">Valor oficial em edital</p>
+                    </div>
+                    <div class="bg-emerald-50 p-8 rounded-3xl border border-emerald-100">
+                        <p class="text-sm font-bold text-emerald-600 uppercase mb-2">Venda Rápida (30% desc)</p>
+                        <p id="pres-vlr-rap" class="text-4xl font-black text-emerald-700">R$ 0</p>
+                        <p class="text-xs text-emerald-600/60 mt-2 italic">Preço de saída imediata</p>
+                    </div>
+                    <div class="bg-blue-50 p-8 rounded-3xl border border-blue-100">
+                        <p class="text-sm font-bold text-blue-600 uppercase mb-2">Venda Normal</p>
+                        <p id="pres-vlr-norm" class="text-4xl font-black text-blue-700">R$ 0</p>
+                        <p class="text-xs text-blue-600/60 mt-2 italic">Expectativa de mercado</p>
+                    </div>
+                </div>
+                <div class="mt-12 p-6 bg-slate-900 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Lance Máximo Sugerido</p>
+                        <p id="pres-lance-max" class="text-3xl font-black text-white">R$ 0</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold text-slate-400 uppercase">Margem de Segurança</p>
+                        <p class="text-xl font-bold text-white">35%+</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Rentabilidade -->
+            <div id="slide-3" class="slide flex-1 hidden p-8 md:p-16 flex flex-col justify-center">
+                <h2 class="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-12">Projeção Financeira</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <span class="text-xl text-slate-500">Investimento Total</span>
+                            <span id="pres-invest" class="text-3xl font-bold text-slate-800">R$ 0</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <span class="text-xl text-slate-500">Lucro Estimado</span>
+                            <span id="pres-lucro" class="text-3xl font-bold text-blue-600">R$ 0</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <span class="text-xl text-slate-500">Impostos e Comissões</span>
+                            <span id="pres-impostos" class="text-3xl font-bold text-red-400">R$ 0</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center justify-center bg-emerald-600 rounded-3xl p-12 text-white">
+                        <p class="text-sm font-bold uppercase tracking-widest mb-2 opacity-80">Retorno sobre Investimento (ROI)</p>
+                        <p id="pres-roi" class="text-8xl font-black">0%</p>
+                        <p class="mt-4 text-emerald-200 italic font-medium">Performance projetada para ciclo de 12 meses</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="absolute bottom-6 left-0 right-0 px-8 flex justify-between items-center">
+                <p class="text-slate-400 text-xs font-bold">SLIDE <span id="current-slide">1</span> / 3</p>
+                <div class="flex gap-4">
+                    <button onclick="prevSlide()" class="w-12 h-12 rounded-full border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition flex items-center justify-center">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button onclick="nextSlide()" class="w-12 h-12 rounded-full bg-slate-900 text-white hover:bg-black transition flex items-center justify-center shadow-lg">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlideIdx = 1;
+        const totalSlides = 3;
+
+        function openPresentation() {
+            document.getElementById('pres-codigo').innerText = document.getElementById('detail-codigo').innerText;
+            document.getElementById('pres-status').innerText = document.getElementById('detail-status-badge').innerText;
+            document.getElementById('pres-endereco').innerText = document.getElementById('detail-endereco').innerText;
+            
+            const cidade = document.getElementById('cad-cidade')?.value || "";
+            const uf = document.getElementById('cad-uf')?.value || "";
+            document.getElementById('pres-cidade-uf').innerText = cidade ? `${cidade} - ${uf}` : "--";
+            
+            document.getElementById('pres-vlr-av').innerText = document.getElementById('resumo-venda-normal').innerText;
+            document.getElementById('pres-vlr-rap').innerText = document.getElementById('resumo-venda-rapida').innerText;
+            document.getElementById('pres-vlr-norm').innerText = document.getElementById('resumo-venda-normal').innerText;
+            document.getElementById('pres-lance-max').innerText = document.getElementById('resumo-lance-max').innerText;
+            
+            document.getElementById('pres-roi').innerText = document.getElementById('kpi-roi').innerText;
+            document.getElementById('pres-lucro').innerText = document.getElementById('kpi-lucro').innerText;
+            document.getElementById('pres-invest').innerText = document.getElementById('kpi-investimento').innerText;
+            document.getElementById('pres-impostos').innerText = document.getElementById('resumo-total-despesas').innerText;
+
+            currentSlideIdx = 1;
+            updateSlideVisibility();
+            document.getElementById('modal-presentation').classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closePresentation() {
+            document.getElementById('modal-presentation').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function nextSlide() {
+            if(currentSlideIdx < totalSlides) {
+                currentSlideIdx++;
+                updateSlideVisibility();
+            } else {
+                closePresentation();
+            }
+        }
+
+        function prevSlide() {
+            if(currentSlideIdx > 1) {
+                currentSlideIdx--;
+                updateSlideVisibility();
+            }
+        }
+
+        function updateSlideVisibility() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`slide-${currentSlideIdx}`).classList.remove('hidden');
+            document.getElementById('current-slide').innerText = currentSlideIdx;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if(document.getElementById('modal-presentation').classList.contains('hidden')) return;
+            if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if(e.key === 'ArrowLeft') prevSlide();
+            if(e.key === 'Escape') closePresentation();
+        });
     </script>
 </body>
 </html>
