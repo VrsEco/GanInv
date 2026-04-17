@@ -42,6 +42,16 @@ def login_required(f):
 
 app.register_blueprint(imoveis_bp)
 
+@app.route('/admin/sync-schema')
+def admin_sync_schema():
+    try:
+        from src.core.schema_sync import sync_schema
+        sync_schema()
+        return jsonify({"status": "ok", "message": "Schema sincronizado"})
+    except Exception as e:
+        import traceback
+        return jsonify({"status": "error", "error": str(e), "trace": traceback.format_exc()}), 500
+
 @app.route('/')
 @login_required
 def index():
