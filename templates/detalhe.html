@@ -1561,119 +1561,172 @@
         switchTab('tab-resumo');
         loadDetail();
     </script>
-    <!-- Modal Apresentação (Slides) -->
-    <div id="modal-presentation" class="fixed inset-0 bg-slate-900 z-[99999] hidden flex flex-col items-center justify-center p-4 md:p-8">
+    <!-- Modal Apresentação (Premium Dashboard) -->
+    <div id="modal-presentation" class="fixed inset-0 bg-slate-950 z-[99999] hidden flex flex-col p-4 md:p-8 overflow-y-auto">
         <!-- Close Button -->
-        <button onclick="closePresentation()" class="absolute top-6 right-6 text-white/50 hover:text-white text-2xl z-20">
+        <button onclick="closePresentation()" class="absolute top-6 right-6 text-white/50 hover:text-white text-2xl z-50 no-print">
             <i class="fas fa-times"></i>
         </button>
 
-        <!-- Slide Container -->
-        <div class="w-full max-w-6xl aspect-video bg-white rounded-3xl shadow-2xl overflow-hidden relative flex flex-col">
+        <!-- Presentation Content -->
+        <div class="w-full max-w-[1600px] mx-auto space-y-6">
             
-            <!-- Slide 1: Capa -->
-            <div id="slide-1" class="slide flex-1 flex flex-col md:flex-row h-full">
-                <div class="w-full md:w-1/2 h-64 md:h-full bg-slate-200">
-                    <img id="pres-foto" src="/static/img/placeholder-imovel.jpg" class="w-full h-full object-cover">
+            <!-- Top Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/10 pb-8">
+                <div>
+                    <div class="flex items-center gap-4 mb-2">
+                        <span id="pres-status" class="bg-emerald-500 text-slate-900 px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest">--</span>
+                        <h4 id="pres-codigo" class="text-white/60 font-bold tracking-widest">--</h4>
+                    </div>
+                    <h1 id="pres-endereco" class="text-4xl md:text-6xl font-black text-white leading-tight">--</h1>
+                    <p id="pres-cidade-uf" class="text-xl text-emerald-400 font-medium mt-2">--</p>
                 </div>
-                <div class="flex-1 p-8 md:p-16 flex flex-col justify-center">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span id="pres-status" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold uppercase">--</span>
-                        <h4 id="pres-codigo" class="text-2xl font-bold text-slate-800">--</h4>
-                    </div>
-                    <h1 id="pres-endereco" class="text-3xl md:text-5xl font-black text-slate-900 leading-tight mb-6">--</h1>
-                    <div class="flex items-center text-slate-500 text-xl">
-                        <i class="fas fa-map-marker-alt mr-3"></i>
-                        <span id="pres-cidade-uf">--</span>
-                    </div>
-                    <div class="mt-12 flex items-center gap-4">
-                        <div class="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-white text-xl">GI</div>
-                        <div>
-                            <p class="font-bold text-slate-800">Gandu Investimentos</p>
-                            <p class="text-xs text-slate-500 uppercase tracking-widest">Oportunidade em Análise</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 2: Análise de Valor -->
-            <div id="slide-2" class="slide flex-1 hidden p-8 md:p-16 flex flex-col justify-center">
-                <h2 class="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-12">Análise de Mercado</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100">
-                        <p class="text-sm font-bold text-slate-400 uppercase mb-2">Valor de Avaliação</p>
-                        <p id="pres-vlr-av" class="text-4xl font-black text-slate-800">R$ 0</p>
-                        <p class="text-xs text-slate-400 mt-2 italic">Valor oficial em edital</p>
-                    </div>
-                    <div class="bg-emerald-50 p-8 rounded-3xl border border-emerald-100">
-                        <p class="text-sm font-bold text-emerald-600 uppercase mb-2">Venda Rápida (30% desc)</p>
-                        <p id="pres-vlr-rap" class="text-4xl font-black text-emerald-700">R$ 0</p>
-                        <p class="text-xs text-emerald-600/60 mt-2 italic">Preço de saída imediata</p>
-                    </div>
-                    <div class="bg-blue-50 p-8 rounded-3xl border border-blue-100">
-                        <p class="text-sm font-bold text-blue-600 uppercase mb-2">Venda Normal</p>
-                        <p id="pres-vlr-norm" class="text-4xl font-black text-blue-700">R$ 0</p>
-                        <p class="text-xs text-blue-600/60 mt-2 italic">Expectativa de mercado</p>
-                    </div>
-                </div>
-                <div class="mt-12 p-6 bg-slate-900 rounded-2xl flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Lance Máximo Sugerido</p>
-                        <p id="pres-lance-max" class="text-3xl font-black text-white">R$ 0</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Margem de Segurança</p>
-                        <p class="text-xl font-bold text-white">35%+</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 3: Rentabilidade -->
-            <div id="slide-3" class="slide flex-1 hidden p-8 md:p-16 flex flex-col justify-center">
-                <h2 class="text-2xl font-bold text-slate-400 uppercase tracking-widest mb-12">Projeção Financeira</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                    <div class="space-y-6">
-                        <div class="flex justify-between items-center border-b pb-4">
-                            <span class="text-xl text-slate-500">Investimento Total</span>
-                            <span id="pres-invest" class="text-3xl font-bold text-slate-800">R$ 0</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b pb-4">
-                            <span class="text-xl text-slate-500">Lucro Estimado</span>
-                            <span id="pres-lucro" class="text-3xl font-bold text-blue-600">R$ 0</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b pb-4">
-                            <span class="text-xl text-slate-500">Impostos e Comissões</span>
-                            <span id="pres-impostos" class="text-3xl font-bold text-red-400">R$ 0</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-center justify-center bg-emerald-600 rounded-3xl p-12 text-white">
-                        <p class="text-sm font-bold uppercase tracking-widest mb-2 opacity-80">Retorno sobre Investimento (ROI)</p>
-                        <p id="pres-roi" class="text-8xl font-black">0%</p>
-                        <p class="mt-4 text-emerald-200 italic font-medium">Performance projetada para ciclo de 12 meses</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Navigation Controls -->
-            <div class="absolute bottom-6 left-0 right-0 px-8 flex justify-between items-center">
-                <p class="text-slate-400 text-xs font-bold">SLIDE <span id="current-slide">1</span> / 3</p>
                 <div class="flex gap-4">
-                    <button onclick="prevSlide()" class="w-12 h-12 rounded-full border border-slate-200 text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition flex items-center justify-center">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button onclick="nextSlide()" class="w-12 h-12 rounded-full bg-slate-900 text-white hover:bg-black transition flex items-center justify-center shadow-lg">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <div class="bg-white/5 backdrop-blur-md p-6 rounded-3xl border border-white/10 text-center min-w-[180px]">
+                        <p class="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">ROI Projetado</p>
+                        <p id="pres-roi" class="text-5xl font-black text-emerald-400">0%</p>
+                    </div>
+                    <div class="bg-emerald-500 p-6 rounded-3xl text-center min-w-[180px] shadow-[0_0_40px_rgba(16,185,129,0.3)]">
+                        <p class="text-[10px] font-bold text-slate-900/60 uppercase tracking-widest mb-1">Lucro Estimado</p>
+                        <p id="pres-lucro" class="text-3xl font-black text-slate-900">R$ 0</p>
+                    </div>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Col 1: Visual & Gallery (5 cols) -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white/5 rounded-[2rem] overflow-hidden border border-white/10 aspect-[4/3] relative">
+                        <img id="pres-foto-main" src="/static/img/placeholder-imovel.jpg" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-8 left-8">
+                            <p class="text-white font-bold text-lg">Vista Principal</p>
+                            <p class="text-white/60 text-sm">Registro fotográfico da diligência</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4" id="pres-mini-gallery">
+                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
+                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
+                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
+                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-white/40 font-bold">+2</div>
+                    </div>
+                </div>
+
+                <!-- Col 2: Info & Numbers (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    
+                    <!-- Quick Specs -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Tipo Imóvel</p>
+                            <p id="pres-tipo" class="text-white font-bold text-sm">--</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Área Privativa</p>
+                            <p id="pres-area" class="text-white font-bold text-sm">-- m²</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Ocupação</p>
+                            <p id="pres-ocupado" class="text-white font-bold text-sm">--</p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Leiloeiro</p>
+                            <p id="pres-leiloeiro" class="text-white font-bold text-sm">--</p>
+                        </div>
+                    </div>
+
+                    <!-- Market Values -->
+                    <div class="bg-white/5 rounded-[2rem] border border-white/10 p-8">
+                        <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-6 flex items-center">
+                            <i class="fas fa-chart-line mr-2 text-emerald-400"></i> Inteligência de Mercado
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div>
+                                <p class="text-[10px] font-bold text-white/30 uppercase mb-2">Avaliação Oficial</p>
+                                <p id="pres-vlr-av" class="text-3xl font-black text-white">R$ 0</p>
+                                <div class="h-1 bg-white/10 rounded-full mt-4 overflow-hidden">
+                                    <div class="h-full bg-white w-full"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-white/30 uppercase mb-2">Venda Normal (Referência)</p>
+                                <p id="pres-vlr-norm" class="text-3xl font-black text-blue-400">R$ 0</p>
+                                <div class="h-1 bg-white/10 rounded-full mt-4 overflow-hidden">
+                                    <div class="h-full bg-blue-400 w-4/5"></div>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <p class="text-[10px] font-bold text-emerald-400/60 uppercase mb-2">Lance Máximo Sugerido</p>
+                                <p id="pres-lance-max" class="text-3xl font-black text-emerald-400">R$ 0</p>
+                                <div class="h-1 bg-white/10 rounded-full mt-4 overflow-hidden">
+                                    <div class="h-full bg-emerald-400 w-1/2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial & Auctions -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-8">
+                            <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-6">Custos & Investimento</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <span class="text-white/40">Investimento Total</span>
+                                    <span id="pres-invest" class="text-white font-bold">R$ 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <span class="text-white/40">Débitos (IPTU/Condo)</span>
+                                    <span id="pres-debitos" class="text-red-400 font-bold">R$ 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <span class="text-white/40">Reforma Prevista</span>
+                                    <span id="pres-reforma" class="text-amber-400 font-bold">R$ 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-white/40">Impostos / Comissões</span>
+                                    <span id="pres-impostos" class="text-slate-400 font-bold">R$ 0</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-8">
+                            <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-6">Próximos Pregões</h3>
+                            <div class="space-y-3" id="pres-leiloes">
+                                <!-- JS Injection -->
+                                <div class="text-white/20 text-xs italic">Carregando histórico...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IA Insights & Description -->
+                    <div class="bg-emerald-500/10 rounded-[2rem] border border-emerald-500/20 p-8">
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-brain text-slate-900 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-emerald-400 font-bold uppercase tracking-widest text-[10px] mb-2">Análise de Viabilidade Gandu IA</h4>
+                                <p class="text-white/80 text-sm leading-relaxed italic">
+                                    Este imóvel apresenta um deságio superior a 40% em relação ao mercado local. A região possui alta liquidez para locação e revenda. Recomendamos foco no 2º leilão para maximização de margem, mantendo o lance teto em R$ <span id="pres-lance-max-ia">0</span>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer Signature -->
+            <div class="flex justify-between items-center pt-8 border-t border-white/5 text-white/20 text-[10px] font-bold uppercase tracking-[0.3em]">
+                <div>Gerado em: <span id="pres-data-geracao">--</span></div>
+                <div>Gandu Investimentos | Exclusive Report</div>
+                <div>ID: <span id="pres-id-report">--</span></div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentSlideIdx = 1;
-        const totalSlides = 3;
-
         function openPresentation() {
+            // Populate Presentation Dashboard
             document.getElementById('pres-codigo').innerText = document.getElementById('detail-codigo').innerText;
             document.getElementById('pres-status').innerText = document.getElementById('detail-status-badge').innerText;
             document.getElementById('pres-endereco').innerText = document.getElementById('detail-endereco').innerText;
@@ -1682,18 +1735,31 @@
             const uf = document.getElementById('cad-uf')?.value || "";
             document.getElementById('pres-cidade-uf').innerText = cidade ? `${cidade} - ${uf}` : "--";
             
+            document.getElementById('pres-tipo').innerText = document.getElementById('cad-tipo')?.value || "--";
+            document.getElementById('pres-area').innerText = document.getElementById('cad-area-priv')?.value || "--";
+            document.getElementById('pres-ocupado').innerText = document.getElementById('eval-ocupado')?.value === 'true' ? 'Sim' : 'Não';
+            document.getElementById('pres-leiloeiro').innerText = document.getElementById('resumo-leiloeiro-nome')?.innerText || "--";
+
             document.getElementById('pres-vlr-av').innerText = document.getElementById('resumo-venda-normal').innerText;
-            document.getElementById('pres-vlr-rap').innerText = document.getElementById('resumo-venda-rapida').innerText;
             document.getElementById('pres-vlr-norm').innerText = document.getElementById('resumo-venda-normal').innerText;
             document.getElementById('pres-lance-max').innerText = document.getElementById('resumo-lance-max').innerText;
+            document.getElementById('pres-lance-max-ia').innerText = document.getElementById('resumo-lance-max').innerText.replace('R$', '').trim();
             
             document.getElementById('pres-roi').innerText = document.getElementById('kpi-roi').innerText;
             document.getElementById('pres-lucro').innerText = document.getElementById('kpi-lucro').innerText;
             document.getElementById('pres-invest').innerText = document.getElementById('kpi-investimento').innerText;
+            document.getElementById('pres-debitos').innerText = document.getElementById('resumo-debitos').innerText;
+            document.getElementById('pres-reforma').innerText = document.getElementById('fin-reforma')?.value || "R$ 0";
             document.getElementById('pres-impostos').innerText = document.getElementById('resumo-total-despesas').innerText;
+            
+            document.getElementById('pres-data-geracao').innerText = new Date().toLocaleDateString('pt-BR');
+            document.getElementById('pres-id-report').innerText = Math.random().toString(36).substr(2, 9).toUpperCase();
 
-            currentSlideIdx = 1;
-            updateSlideVisibility();
+            // Populate Auction List
+            const auctionsSource = document.getElementById('resumo-lista-leiloes');
+            const presLeiloes = document.getElementById('pres-leiloes');
+            presLeiloes.innerHTML = auctionsSource.innerHTML;
+
             document.getElementById('modal-presentation').classList.remove('hidden');
             document.body.style.overflow = 'hidden'; 
         }
@@ -1703,33 +1769,13 @@
             document.body.style.overflow = 'auto';
         }
 
-        function nextSlide() {
-            if(currentSlideIdx < totalSlides) {
-                currentSlideIdx++;
-                updateSlideVisibility();
-            } else {
-                closePresentation();
-            }
-        }
-
-        function prevSlide() {
-            if(currentSlideIdx > 1) {
-                currentSlideIdx--;
-                updateSlideVisibility();
-            }
-        }
-
-        function updateSlideVisibility() {
-            document.querySelectorAll('.slide').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`slide-${currentSlideIdx}`).classList.remove('hidden');
-            document.getElementById('current-slide').innerText = currentSlideIdx;
-        }
-
         document.addEventListener('keydown', (e) => {
             if(document.getElementById('modal-presentation').classList.contains('hidden')) return;
-            if(e.key === 'ArrowRight' || e.key === ' ') nextSlide();
-            if(e.key === 'ArrowLeft') prevSlide();
             if(e.key === 'Escape') closePresentation();
+            if(e.key === 'p' && e.ctrlKey) {
+                e.preventDefault();
+                window.print();
+            }
         });
     </script>
 </body>
