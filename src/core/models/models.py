@@ -141,6 +141,7 @@ class FichaFinanceira(Base):
     iptu_futuro = Column(Float, default=0.0)
     condominio_atrasado = Column(Float, default=0.0)
     condominio_futuro = Column(Float, default=0.0)
+    honorarios_advogado = Column(Float, default=0.0)
     
     # Venda
     valor_venda_projetado = Column(Float, default=0.0)

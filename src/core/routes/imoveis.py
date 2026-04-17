@@ -6,6 +6,7 @@ from src.core.services.finance_service import FinanceService
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
