@@ -173,14 +173,14 @@ def import_from_link():
     try:
         new_im = Imovel(
             company_id=1,
-            endereco=extracted.get('endereco'),
-            cidade=extracted.get('cidade'),
-            estado=extracted.get('estado'),
+            endereco=extracted.get('endereco') or "Pendente de análise profunda",
+            cidade=extracted.get('cidade') or "??",
+            estado=extracted.get('estado') or "??",
             status='Em análise',
-            leiloeiro=extracted.get('leiloeiro'),
+            leiloeiro=extracted.get('leiloeiro') or "Desconhecido",
             link_leilao=url,
-            valor_avaliacao=extracted.get('valor_avaliacao', 0.0),
-            valor_estimado_venda=extracted.get('valor_avaliacao', 0.0) * 1.3 # Estreitativa inicial 30% acima
+            valor_avaliacao=float(extracted.get('valor_avaliacao') or 0.0),
+            valor_estimado_venda=float(extracted.get('valor_avaliacao') or 0.0) * 1.3
         )
         session.add(new_im)
         session.commit()
