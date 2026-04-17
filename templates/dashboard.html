@@ -99,7 +99,10 @@
                 <input type="text" placeholder="Buscar imóvel, código ou leiloeiro..." class="w-full bg-slate-100 border-none rounded-full py-2 px-10 focus:ring-2 focus:ring-emerald-500 text-sm">
                 <i class="fas fa-search absolute left-4 top-3 text-slate-400 text-sm"></i>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleModal('modal-manual')" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-200 transition border">
+                    <i class="fas fa-plus mr-2"></i> Cadastro Manual
+                </button>
                 <button onclick="toggleModal('modal-import')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">
                     <i class="fas fa-bolt mr-2"></i> Importar Speed
                 </button>
@@ -120,6 +123,39 @@
                         <span id="import-text">Processar Link</span>
                         <div id="import-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent ml-2"></div>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Manual -->
+        <div id="modal-manual" class="fixed inset-0 bg-slate-900/50 hidden z-[25000] flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg text-slate-800">Cadastro Manual</h3>
+                    <button onclick="toggleModal('modal-manual')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="p-6 grid grid-cols-2 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Endereço Completo</label>
+                        <input type="text" id="manual-endereco" placeholder="Ex: Rua Oscar Freire, 100 - Apto 51" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cidade</label>
+                        <input type="text" id="manual-cidade" placeholder="Ex: São Paulo" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estado</label>
+                        <input type="text" id="manual-estado" placeholder="Ex: SP" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor de Avaliação (R$)</label>
+                        <input type="number" id="manual-avaliacao" placeholder="Ex: 500000" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div class="col-span-2 pt-4">
+                        <button onclick="doManualRegister()" class="w-full bg-emerald-600 text-white p-3 rounded-lg font-bold hover:bg-emerald-700 transition flex justify-center items-center">
+                            Salvar Imóvel
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -224,6 +260,37 @@
                 btn.disabled = false;
                 text.innerText = "Processar Link";
                 spinner.classList.add('hidden');
+            }
+        }
+
+        async function doManualRegister() {
+            const endereco = document.getElementById('manual-endereco').value;
+            const cidade = document.getElementById('manual-cidade').value;
+            const estado = document.getElementById('manual-estado').value;
+            const valor_avaliacao = document.getElementById('manual-avaliacao').value;
+
+            if(!endereco || !cidade || !estado) return alert("Preencha os campos obrigatórios");
+
+            try {
+                const res = await fetch('/api/imoveis/manual', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({endereco, cidade, estado, valor_avaliacao})
+                }).then(r => r.json());
+
+                if(res.error) throw new Error(res.error);
+
+                toggleModal('modal-manual');
+                // Limpa campos
+                document.getElementById('manual-endereco').value = '';
+                document.getElementById('manual-cidade').value = '';
+                document.getElementById('manual-estado').value = '';
+                document.getElementById('manual-avaliacao').value = '';
+                
+                loadDashboard();
+                alert("Imóvel cadastrado com sucesso!");
+            } catch (err) {
+                alert("Erro: " + err.message);
             }
         }
 

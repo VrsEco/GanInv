@@ -206,6 +206,34 @@ def import_from_link():
     finally:
         session.close()
     return jsonify(res)
+    
+@imoveis_bp.route('/manual', methods=['POST'])
+def register_manual():
+    data = request.json
+    session = Session()
+    try:
+        new_im = Imovel(
+            company_id=1,
+            endereco=data.get('endereco'),
+            cidade=data.get('cidade'),
+            estado=data.get('estado'),
+            status='Em análise',
+            valor_avaliacao=float(data.get('valor_avaliacao') or 0.0),
+            valor_estimado_venda=float(data.get('valor_avaliacao') or 0.0) * 1.3
+        )
+        session.add(new_im)
+        session.commit()
+        
+        # Initialize Finance
+        session.add(FichaFinanceira(imovel_id=new_im.id, company_id=1))
+        session.commit()
+        
+        return jsonify({"message": "Sucesso", "id": new_im.id})
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
 
 @imoveis_bp.route('/stats', methods=['GET'])
 def get_stats():
