@@ -100,11 +100,11 @@
             <button onclick="switchTab('tab-analise')" id="btn-tab-analise" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
                 <i class="fas fa-search mr-2"></i> Avaliação
             </button>
-            <button onclick="switchTab('tab-leilao')" id="btn-tab-leilao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
-                <i class="fas fa-gavel mr-2"></i> O Leilão
-            </button>
             <button onclick="switchTab('tab-financeiro')" id="btn-tab-financeiro" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
                 <i class="fas fa-file-invoice-dollar mr-2"></i> Ficha Financeira
+            </button>
+            <button onclick="switchTab('tab-leilao')" id="btn-tab-leilao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap">
+                <i class="fas fa-gavel mr-2"></i> O Leilão
             </button>
             <button onclick="switchTab('tab-documentacao')" id="btn-tab-documentacao" class="tab-btn pb-4 px-2 text-sm font-semibold border-b-2 border-transparent text-slate-400 whitespace-nowrap flex items-center">
                 <i class="fas fa-file-contract mr-2"></i> Documentação <i class="fas fa-lock ml-2 text-[10px] hidden" id="lock-tab-documentacao"></i>
@@ -1042,8 +1042,16 @@
         async function triggerUpload(categoria) {
             const input = document.createElement('input');
             input.type = 'file';
+            input.style.display = 'none';
+            if (categoria === 'Foto') {
+                input.accept = 'image/*';
+            } else {
+                input.accept = '.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            }
+            document.body.appendChild(input);
             input.onchange = async () => {
                 const file = input.files[0];
+                document.body.removeChild(input);
                 if (!file) return;
 
                 const formData = new FormData();
