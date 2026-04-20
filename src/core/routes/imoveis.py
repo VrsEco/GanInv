@@ -5,14 +5,26 @@ from src.intelligence.auction_parser import AuctionParser
 from src.core.services.finance_service import FinanceService
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+from urllib.parse import quote_plus
 import os
 from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 
+def _build_db_url():
+    url = os.getenv('DATABASE_URL')
+    if url:
+        return url
+    host = os.getenv('DB_HOST', '69.164.205.75')
+    port = os.getenv('DB_PORT', '5432')
+    user = os.getenv('DB_USER', 'gi')
+    password = os.getenv('DB_PASS', '')
+    name = os.getenv('DB_NAME', 'GanduInvest')
+    return f"postgresql://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{name}"
+
 imoveis_bp = Blueprint('imoveis', __name__, url_prefix='/api/imoveis')
-engine = create_engine(os.getenv('DATABASE_URL'))
+engine = create_engine(_build_db_url())
 Session = sessionmaker(bind=engine)
 
 @imoveis_bp.route('/', methods=['GET'])

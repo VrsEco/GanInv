@@ -1,8 +1,12 @@
 import os
 import sys
+import traceback as _tb
 
 # Adiciona o diretório atual ao path para evitar erros de importação no uWSGI
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+_LOG_PATH = os.path.join(_APP_DIR, 'init_error.log')
 
 try:
     from flask import Flask, jsonify, request, render_template, session, redirect, url_for
@@ -14,21 +18,22 @@ try:
     try:
         sync_schema()
     except Exception as sync_err:
-        with open('init_error.log', 'a') as f:
-            import traceback
+        with open(_LOG_PATH, 'a') as f:
             f.write(f"AVISO sync_schema: {sync_err}\n")
-            f.write(traceback.format_exc())
+            f.write(_tb.format_exc())
 except Exception as e:
-    with open('init_error.log', 'a') as f:
-        import traceback
-        f.write(f"ERRO DE INICIALIZAÇÃO: {str(e)}\n")
-        f.write(traceback.format_exc())
+    try:
+        with open(_LOG_PATH, 'a') as f:
+            f.write(f"ERRO DE INICIALIZAÇÃO: {str(e)}\n")
+            f.write(_tb.format_exc())
+    except Exception:
+        pass
     raise e
 
 app = Flask(__name__)
 # app.debug = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'gandu_secret_key_123')
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join(_APP_DIR, 'static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Decorator de Proteção de Rotas
