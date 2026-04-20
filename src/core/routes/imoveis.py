@@ -172,7 +172,8 @@ def get_imovel(id):
             "contato_sindico": i.contato_sindico,
             "relato_sindico": i.relato_sindico or "",
             "observacoes_internas": i.observacoes_internas or "",
-            "valor_venda_normal": i.valor_venda_normal or 0
+            "valor_venda_normal": i.valor_venda_normal or 0,
+            "outros_debitos": i.outros_debitos or 0
         },
         "anexos": [{"id": a.id, "url": a.url, "categoria": a.categoria} for a in i.anexos]
     }
@@ -367,6 +368,7 @@ def update_avaliacao(id):
         imovel.observacoes_internas = data.get('observacoes_internas')
         imovel.valor_venda_normal = float(data.get('valor_venda_normal', 0) or 0)
         imovel.valor_estimado_venda = float(data.get('valor_estimado_venda', 0) or 0)
+        imovel.outros_debitos = float(data.get('outros_debitos', 0) or 0)
         
         # Finance updates (debts)
         f = imovel.financeiro

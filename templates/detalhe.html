@@ -543,13 +543,12 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800 text-sm">Fotos Diligência</h3>
-                            <button class="text-emerald-600 text-xs font-bold">+ Upload</button>
+                            <button onclick="triggerUpload('Foto')" class="text-emerald-600 text-xs font-bold hover:text-emerald-700 transition"><i class="fas fa-camera mr-1"></i> + Upload</button>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
+                        <div class="grid grid-cols-2 gap-2" id="fotos-gallery">
+                            <div onclick="triggerUpload('Foto')" class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
                                 <i class="fas fa-plus text-slate-300 group-hover:text-emerald-500"></i>
                             </div>
-                            <div class="aspect-square bg-slate-200 rounded-lg"></div>
                         </div>
                     </div>
 
@@ -717,7 +716,7 @@
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">Comissão Leilão (%)</label>
-                                            <input type="number" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm" value="5">
+                                            <input type="text" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                         </div>
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
@@ -731,7 +730,7 @@
                                     <div class="grid grid-cols-2 gap-2 border-b pb-2">
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">ITIV / ITBI (%)</label>
-                                            <input type="number" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm">
+                                            <input type="text" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                         </div>
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">Valor ITIV</label>
@@ -741,7 +740,7 @@
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">Taxa Registro (%)</label>
-                                            <input type="number" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm">
+                                            <input type="text" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                         </div>
                                         <div>
                                             <label class="text-[9px] text-slate-500 uppercase">Valor Registro</label>
@@ -802,12 +801,12 @@
                             <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-4">
                                 <div>
                                     <label class="text-[9px] text-slate-400">Corretores (%)</label>
-                                    <input type="number" id="fin-com-corr-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white" value="5">
+                                    <input type="text" id="fin-com-corr-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
                                     <div id="calc-vlr-corretor" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
                                 </div>
                                 <div>
                                     <label class="text-[9px] text-slate-400">Impostos Venda (%)</label>
-                                    <input type="number" id="fin-imp-venda-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white" value="0">
+                                    <input type="text" id="fin-imp-venda-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
                                     <div id="calc-vlr-impvenda" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
                                 </div>
                             </div>
@@ -1011,9 +1010,32 @@
             return parseFloat(clean) || 0;
         }
 
+        function applyPercentMask(e) {
+            let raw = e.target.value.replace(/[^\d]/g, '');
+            if (!raw) return e.target.value = '';
+            let num = (parseInt(raw) / 100).toFixed(2);
+            e.target.value = num.replace('.', ',');
+        }
+
+        function formatPercent(val) {
+            if (val === undefined || val === null || isNaN(val)) return '0,00';
+            return parseFloat(val).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function unmaskPercent(val) {
+            if (!val) return 0;
+            if (typeof val === 'number') return val;
+            return parseFloat(val.toString().replace(',', '.').replace(/[^\d.]/g, '')) || 0;
+        }
+
         function initMasks() {
             document.querySelectorAll('.mask-money').forEach(input => {
+                input.removeEventListener('input', applyMoneyMask);
                 input.addEventListener('input', applyMoneyMask);
+            });
+            document.querySelectorAll('.mask-percent').forEach(input => {
+                input.removeEventListener('input', applyPercentMask);
+                input.addEventListener('input', applyPercentMask);
             });
         }
 
@@ -1090,9 +1112,9 @@
 
         function updateFinanceCalcs() {
             const lance = unmaskMoney(document.getElementById('fin-lance').value);
-            const comLeilaoPer = parseFloat(document.getElementById('fin-com-leilao-per').value) || 0;
-            const itivPer = parseFloat(document.getElementById('fin-itiv-per').value) || 0;
-            const regPer = parseFloat(document.getElementById('fin-reg-per').value) || 0;
+            const comLeilaoPer = unmaskPercent(document.getElementById('fin-com-leilao-per').value);
+            const itivPer = unmaskPercent(document.getElementById('fin-itiv-per').value);
+            const regPer = unmaskPercent(document.getElementById('fin-reg-per').value);
             
             // Calc A and B
             const vlrComLeilao = lance * (comLeilaoPer / 100);
@@ -1116,8 +1138,8 @@
 
             // Projeção Comercial
             const vlrVenda = unmaskMoney(document.getElementById('fin-venda-proj').value);
-            const comCorrPer = parseFloat(document.getElementById('fin-com-corr-per').value) || 0;
-            const impVendaPer = parseFloat(document.getElementById('fin-imp-venda-per').value) || 0;
+            const comCorrPer = unmaskPercent(document.getElementById('fin-com-corr-per').value);
+            const impVendaPer = unmaskPercent(document.getElementById('fin-imp-venda-per').value);
 
             const vlrCorretor = vlrVenda * (comCorrPer / 100);
             const vlrImpVenda = vlrVenda * (impVendaPer / 100);
@@ -1184,9 +1206,9 @@
             try {
                 const data = {
                     valor_arrematacao: unmaskMoney(document.getElementById('fin-lance').value),
-                    comissao_leiloeiro_percent: document.getElementById('fin-com-leilao-per').value,
-                    itiv_percent: document.getElementById('fin-itiv-per').value,
-                    registro_cartorio_percent: document.getElementById('fin-reg-per').value,
+                    comissao_leiloeiro_percent: unmaskPercent(document.getElementById('fin-com-leilao-per').value),
+                    itiv_percent: unmaskPercent(document.getElementById('fin-itiv-per').value),
+                    registro_cartorio_percent: unmaskPercent(document.getElementById('fin-reg-per').value),
                     iptu_atrasado: unmaskMoney(document.getElementById('fin-iptu-attr').value),
                     iptu_futuro: unmaskMoney(document.getElementById('fin-iptu-fut').value),
                     condominio_atrasado: unmaskMoney(document.getElementById('fin-condo-attr').value),
@@ -1194,8 +1216,8 @@
                     reforma_prevista: unmaskMoney(document.getElementById('fin-reforma').value),
                     contingencia: unmaskMoney(document.getElementById('fin-conting').value),
                     valor_venda_projetado: unmaskMoney(document.getElementById('fin-venda-proj').value),
-                    comissao_corretor_percent: document.getElementById('fin-com-corr-per').value,
-                    impostos_venda_percent: document.getElementById('fin-imp-venda-per').value
+                    comissao_corretor_percent: unmaskPercent(document.getElementById('fin-com-corr-per').value),
+                    impostos_venda_percent: unmaskPercent(document.getElementById('fin-imp-venda-per').value)
                 };
 
                 const res = await fetch(`/api/imoveis/${imovelId}/financeiro`, {
@@ -1340,7 +1362,7 @@
                 // Header
                 document.getElementById('detail-codigo').innerText = res.codigo;
                 document.getElementById('detail-endereco').innerText = res.endereco;
-                document.getElementById('detail-status').innerText = res.status;
+                document.getElementById('detail-status-badge').innerText = res.status;
                 document.getElementById('detail-cidade-uf').innerText = `${res.cidade} - ${res.estado}`;
                 document.getElementById('detail-leiloeiro').innerText = res.leiloeiro;
                 document.getElementById('detail-bairro').innerText = res.bairro || 'Não informado';
@@ -1451,18 +1473,13 @@
                 document.getElementById('eval-venda-rapida').value = formatBRL(res.valor_estimado);
                 
                 calcTotalDebitos();
-                document.getElementById('eval-observacoes').value = av.observacoes_internas;
-                document.getElementById('eval-venda-normal').value = av.valor_venda_normal;
-                document.getElementById('eval-venda-rapida').value = res.valor_estimado;
-                document.getElementById('eval-debito-condo').value = res.financeiro.condominio_atrasado;
-                document.getElementById('eval-debito-iptu').value = res.financeiro.iptu_atrasado;
 
                 // 4. Tab Ficha Financeira
                 const fin = res.financeiro.full_data;
                 document.getElementById('fin-lance').value = formatBRL(fin.valor_arrematacao);
-                document.getElementById('fin-com-leilao-per').value = fin.comissao_leiloeiro_percent;
-                document.getElementById('fin-itiv-per').value = fin.itiv_percent;
-                document.getElementById('fin-reg-per').value = fin.registro_cartorio_percent;
+                document.getElementById('fin-com-leilao-per').value = formatPercent(fin.comissao_leiloeiro_percent);
+                document.getElementById('fin-itiv-per').value = formatPercent(fin.itiv_percent);
+                document.getElementById('fin-reg-per').value = formatPercent(fin.registro_cartorio_percent);
                 document.getElementById('fin-iptu-attr').value = formatBRL(res.financeiro.iptu_atrasado);
                 document.getElementById('fin-iptu-fut').value = formatBRL(fin.iptu_futuro);
                 document.getElementById('fin-condo-attr').value = formatBRL(res.financeiro.condominio_atrasado);
@@ -1470,8 +1487,8 @@
                 document.getElementById('fin-reforma').value = formatBRL(res.financeiro.reforma);
                 document.getElementById('fin-conting').value = formatBRL(fin.contingencia);
                 document.getElementById('fin-venda-proj').value = formatBRL(fin.valor_venda_projetado);
-                document.getElementById('fin-com-corr-per').value = fin.comissao_corretor_percent;
-                document.getElementById('fin-imp-venda-per').value = fin.impostos_venda_percent;
+                document.getElementById('fin-com-corr-per').value = formatPercent(fin.comissao_corretor_percent);
+                document.getElementById('fin-imp-venda-per').value = formatPercent(fin.impostos_venda_percent);
                 
                 updateFinanceCalcs();
                 
@@ -1486,7 +1503,7 @@
 
                 // Others
                 renderChecklist(res.documentacao.checklist);
-                document.getElementById('resumo-status-doc').innerText = res.documentacao.status;
+                document.getElementById('doc-status-text').innerText = res.documentacao.status;
 
                 // Documentos UI Reset
                 document.getElementById('doc-status-edital').innerText = 'Pendente';
@@ -1500,6 +1517,18 @@
                 document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-slate-300 text-xl mr-3';
                 document.getElementById('doc-card-matricula').onclick = () => triggerUpload('Matricula');
                 document.getElementById('doc-action-matricula').className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
+
+                // Fotos
+                const fotosGallery = document.getElementById('fotos-gallery');
+                const fotos = res.anexos.filter(a => a.categoria === 'Foto');
+                fotosGallery.innerHTML = fotos.map(a => `
+                    <div class="aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition" onclick="window.open('${a.url}','_blank')">
+                        <img src="${a.url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-slate-300\'><i class=\'fas fa-image text-2xl\'></i></div>'">
+                    </div>
+                `).join('') + `
+                    <div onclick="triggerUpload('Foto')" class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
+                        <i class="fas fa-plus text-slate-300 group-hover:text-emerald-500"></i>
+                    </div>`;
 
                 res.anexos.forEach(a => {
                     if (a.categoria === 'Edital') {
