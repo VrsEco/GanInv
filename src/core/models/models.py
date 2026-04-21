@@ -71,6 +71,12 @@ class Imovel(Base):
     motivo_descarte = Column(String(100))
     data_descarte = Column(DateTime)
     obs_descarte = Column(Text)
+    triagem_status = Column(String(20), default='Pendente')
+    triagem_motivo_codigo = Column(String(50))
+    triagem_motivo_label = Column(String(120))
+    triagem_observacao = Column(Text)
+    triagem_decidido_em = Column(DateTime)
+    triagem_decidido_por = Column(String(255))
     
     # Preços e Avaliação
     valor_avaliacao = Column(Float)

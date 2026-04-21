@@ -1,7 +1,13 @@
-from flask import Blueprint, jsonify, request, render_template, current_app, send_file
+from flask import Blueprint, jsonify, request, render_template, current_app, send_file, session as flask_session
 from src.core.models.models import Imovel, Leilao, Company, FichaFinanceira, Documentacao, Reforma, Anexo
 from src.intelligence.auction_parser import AuctionParser
 from src.core.services.finance_service import FinanceService
+from src.core.services.triagem_service import (
+    STATUS_IMOVEL_APROVADO,
+    TRIAGEM_STATUS_APROVADO,
+    TRIAGEM_STATUS_DESCARTADO,
+    TriagemService,
+)
 from src.core.services.storage_service import (
     UploadTooLargeError,
     UploadValidationError,
@@ -12,13 +18,13 @@ from src.core.services.storage_service import (
     resolve_absolute_path,
     save_upload,
 )
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, or_
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus
 from werkzeug.exceptions import RequestEntityTooLarge
 import os
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -110,6 +116,99 @@ def _delete_anexo_physical_file(anexo):
 
     return deleted
 
+
+def _safe_float(value):
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _normalize_triagem_label(value):
+    if value in (TRIAGEM_STATUS_APROVADO, 'Aprovado'):
+        return 'Aprovado'
+    if value in (TRIAGEM_STATUS_DESCARTADO, 'Descartado'):
+        return 'Descartado'
+    return 'Pendente'
+
+
+def _resolve_oportunidade_status(imovel):
+    triagem_status = _normalize_triagem_label(TriagemService.resolve_triagem_status(imovel))
+    status_operacional = getattr(imovel, 'status', '') or 'Em análise'
+    if triagem_status == 'Aprovado':
+        status_label = 'Oportunidade selecionada'
+    elif triagem_status == 'Descartado':
+        status_label = 'Oportunidade descartada'
+    else:
+        status_label = status_operacional
+    return triagem_status, status_label
+
+
+def _resolve_periodo_leiloes(periodo, start_raw=None, end_raw=None):
+    periodo = (periodo or 'semana').strip().lower()
+    agora = datetime.now()
+
+    if periodo == 'custom' and start_raw and end_raw:
+        start_dt = datetime.strptime(start_raw, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_raw, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+        if end_dt < start_dt:
+            raise ValueError('A data final não pode ser menor que a data inicial.')
+        return start_dt, end_dt, 'custom'
+
+    if periodo == 'mes':
+        return agora, agora + timedelta(days=30), 'mes'
+
+    return agora, agora + timedelta(days=7), 'semana'
+
+
+def _serialize_leilao_oportunidade(leilao, imovel):
+    financeiro = imovel.financeiro
+    snapshot = FinanceService.calculate_full_sheet({
+        "valor_arrematacao": _safe_float(getattr(financeiro, 'valor_arrematacao', 0)),
+        "comissao_leiloeiro_percent": _safe_float(getattr(financeiro, 'comissao_leiloeiro_percent', 5)),
+        "outros_custos_arrematacao": _safe_float(getattr(financeiro, 'outros_custos_arrematacao', 0)),
+        "itiv_percent": _safe_float(getattr(financeiro, 'itiv_percent', 0)),
+        "itiv_vlr": _safe_float(getattr(financeiro, 'itiv_vlr', 0)),
+        "registro_cartorio_percent": _safe_float(getattr(financeiro, 'registro_cartorio_percent', 0)),
+        "registro_cartorio": _safe_float(getattr(financeiro, 'registro_cartorio', 0)),
+        "iptu_atrasado": _safe_float(getattr(financeiro, 'iptu_atrasado', 0)),
+        "condominio_atrasado": _safe_float(getattr(financeiro, 'condominio_atrasado', 0)),
+        "condominio_futuro": _safe_float(getattr(financeiro, 'condominio_futuro', 0)),
+        "desocupacao": _safe_float(getattr(financeiro, 'desocupacao', 0)),
+        "reforma_prevista": _safe_float(getattr(financeiro, 'reforma_prevista', 0)),
+        "honorarios_advogado": _safe_float(getattr(financeiro, 'honorarios_advogado', 0)),
+        "valor_venda_projetado": _safe_float(getattr(financeiro, 'valor_venda_projetado', 0)),
+        "comissao_corretor_percent": _safe_float(getattr(financeiro, 'comissao_corretor_percent', 5)),
+        "impostos_venda_percent": _safe_float(getattr(financeiro, 'impostos_venda_percent', 0)),
+        "despesas_operacionais": _safe_float(getattr(financeiro, 'despesas_operacionais', 0)),
+        "contingencia": _safe_float(getattr(financeiro, 'contingencia', 0)),
+    }) if financeiro else {}
+
+    teto_sugerido = snapshot.get('lance_maximo_rapida') or snapshot.get('lance_maximo') or 0
+    triagem_status, status_label = _resolve_oportunidade_status(imovel)
+
+    return {
+        "id": imovel.id,
+        "leilao_id": leilao.id,
+        "data_hora": leilao.data_hora.isoformat() if leilao.data_hora else "",
+        "tipo": leilao.tipo_leilao,
+        "valor_minimo": _safe_float(leilao.valor_minimo),
+        "endereco": imovel.endereco,
+        "cidade": imovel.cidade,
+        "estado": imovel.estado,
+        "codigo": imovel.codigo_interno or f"GND-{imovel.id:03d}",
+        "banco": getattr(imovel, 'banco', '') or "",
+        "leiloeiro": getattr(leilao, 'leiloeiro', None) or getattr(imovel, 'leiloeiro', '') or "",
+        "valor_avaliacao": _safe_float(getattr(imovel, 'valor_avaliacao', 0)),
+        "venda_normal": _safe_float(getattr(imovel, 'valor_venda_normal', 0)),
+        "venda_rapida": _safe_float(getattr(imovel, 'valor_estimado_venda', 0)),
+        "status": getattr(imovel, 'status', '') or 'Em análise',
+        "triagem_status": triagem_status,
+        "status_label": status_label,
+        "venda_estimada": _safe_float(getattr(imovel, 'valor_estimado_venda', 0)),
+        "teto_sugerido": max(0.0, _safe_float(teto_sugerido)),
+    }
+
 @imoveis_bp.route('/', methods=['GET'])
 def get_imoveis():
     session = Session()
@@ -151,10 +250,59 @@ def get_imoveis():
             "descartado": i.descartado,
             "motivo_descarte": i.motivo_descarte,
             "data_descarte": i.data_descarte.isoformat() if i.data_descarte else None,
-            "obs_descarte": i.obs_descarte
+            "obs_descarte": i.obs_descarte,
+            "triagem_status": TriagemService.resolve_triagem_status(i),
+            "triagem_motivo_codigo": i.triagem_motivo_codigo,
+            "triagem_motivo_label": i.triagem_motivo_label,
+            "triagem_observacao": i.triagem_observacao,
+            "triagem_decidido_em": i.triagem_decidido_em.isoformat() if i.triagem_decidido_em else None,
         })
     session.close()
     return jsonify(output)
+
+
+@imoveis_bp.route('/triagem', methods=['GET'])
+def get_triagem():
+    session = Session()
+    try:
+        company_id = int(request.args.get('company_id', 1))
+        triagem_status = request.args.get('triagem_status', '')
+        motivo_codigo = request.args.get('motivo_codigo', '')
+        cidade = request.args.get('cidade', '')
+        banco = request.args.get('banco', '')
+        search = request.args.get('search', '')
+        items = TriagemService.list_imoveis(
+            session,
+            company_id=company_id,
+            triagem_status=triagem_status,
+            motivo_codigo=motivo_codigo,
+            cidade=cidade,
+            banco=banco,
+            search=search,
+        )
+        return jsonify(items)
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/triagem/filtros', methods=['GET'])
+def get_triagem_filtros():
+    session = Session()
+    try:
+        company_id = int(request.args.get('company_id', 1))
+        return jsonify(TriagemService.build_filters(session, company_id=company_id))
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/triagem/stats', methods=['GET'])
+def get_triagem_stats():
+    session = Session()
+    try:
+        company_id = int(request.args.get('company_id', 1))
+        return jsonify(TriagemService.build_stats(session, company_id=company_id))
+    finally:
+        session.close()
 
 @imoveis_bp.route('/bairros', methods=['GET'])
 def get_bairros():
@@ -319,6 +467,7 @@ def import_from_link():
             cidade=extracted.get('cidade') or "??",
             estado=extracted.get('estado') or "??",
             status='Em análise',
+            triagem_status='Pendente',
             leiloeiro=extracted.get('leiloeiro') or "Desconhecido",
             link_leilao=url,
             valor_avaliacao=float(extracted.get('valor_avaliacao') or 0.0),
@@ -361,6 +510,7 @@ def register_manual():
             cidade=data.get('cidade'),
             estado=data.get('estado'),
             status='Em análise',
+            triagem_status='Pendente',
             valor_avaliacao=float(data.get('valor_avaliacao') or 0.0),
             valor_estimado_venda=float(data.get('valor_avaliacao') or 0.0) * 1.3
         )
@@ -517,41 +667,35 @@ def update_avaliacao(id):
 def get_leiloes_semana():
     session = Session()
     try:
-        from datetime import datetime, timedelta
-        hoje = datetime.utcnow()
-        fim_semana = hoje + timedelta(days=7)
-        
-        leiloes = session.query(Leilao).filter(
-            Leilao.data_hora >= hoje,
-            Leilao.data_hora <= fim_semana
-        ).order_by(Leilao.data_hora.asc()).all()
-        
-        output = []
-        for l in leiloes:
-            i = l.imovel
-            f = i.financeiro
-            
-            # Simple teto calculation for the view
-            teto = 0
-            if i.valor_estimado_venda:
-                costs = (f.iptu_atrasado or 0) + (f.condominio_atrasado or 0) + (f.reforma_prevista or 0)
-                teto = (i.valor_estimado_venda * 0.7) - costs
+        company_id = int(request.args.get('company_id', 1))
+        periodo = request.args.get('periodo', 'semana')
+        start_raw = request.args.get('start')
+        end_raw = request.args.get('end')
+        inicio, fim, periodo_resolvido = _resolve_periodo_leiloes(periodo, start_raw, end_raw)
 
-            output.append({
-                "id": i.id,
-                "leilao_id": l.id,
-                "data_hora": l.data_hora.isoformat(),
-                "tipo": l.tipo_leilao,
-                "valor_minimo": l.valor_minimo,
-                "endereco": i.endereco,
-                "cidade": i.cidade,
-                "codigo": i.codigo_interno or f"GND-{i.id:03d}",
-                "venda_estimada": i.valor_estimado_venda or 0,
-                "teto_sugerido": max(0, teto)
-            })
-        res = output
+        leiloes = session.query(Leilao).join(Imovel).filter(
+            Imovel.company_id == company_id,
+            Leilao.data_hora != None,
+            Leilao.data_hora >= inicio,
+            Leilao.data_hora <= fim,
+            or_(
+                Imovel.triagem_status == TRIAGEM_STATUS_APROVADO,
+                Imovel.status == STATUS_IMOVEL_APROVADO,
+            )
+        ).order_by(Leilao.data_hora.asc()).all()
+
+        output = [_serialize_leilao_oportunidade(leilao, leilao.imovel) for leilao in leiloes]
+        res = {
+            "items": output,
+            "periodo": periodo_resolvido,
+            "start": inicio.date().isoformat(),
+            "end": fim.date().isoformat(),
+            "total": len(output),
+        }
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
-        res = {"error": str(e)}
+        return jsonify({"error": str(e)}), 500
     finally:
         session.close()
     return jsonify(res)
@@ -658,18 +802,36 @@ def update_resultado_leilao(id):
 @imoveis_bp.route('/calendar', methods=['GET'])
 def get_calendar():
     session = Session()
-    leiloes = session.query(Leilao).all()
-    events = []
-    for l in leiloes:
-        im = l.imovel
-        events.append({
-            "id": im.id,
-            "title": f"{im.codigo_interno or im.id} - {l.tipo_leilao}",
-            "start": l.data_hora.strftime("%Y-%m-%d") if l.data_hora else "",
-            "color": "#10b981" if l.resultado == 'Ganhamos' else "#f59e0b" if l.resultado == 'Pendente' else "#ef4444"
-        })
-    session.close()
-    return jsonify(events)
+    try:
+        company_id = int(request.args.get('company_id', 1))
+        leiloes = session.query(Leilao).join(Imovel).filter(
+            Imovel.company_id == company_id,
+            Leilao.data_hora != None,
+        ).order_by(Leilao.data_hora.asc()).all()
+        events = []
+        for l in leiloes:
+            im = l.imovel
+            triagem_status, status_label = _resolve_oportunidade_status(im)
+            color = "#10b981" if triagem_status == 'Aprovado' else "#f59e0b" if triagem_status == 'Pendente' else "#ef4444"
+            events.append({
+                "id": im.id,
+                "title": f"{im.codigo_interno or f'GND-{im.id:03d}'} · {l.tipo_leilao}",
+                "start": l.data_hora.isoformat() if l.data_hora else "",
+                "color": color,
+                "extendedProps": {
+                    "codigo": im.codigo_interno or f"GND-{im.id:03d}",
+                    "tipo_leilao": l.tipo_leilao,
+                    "triagem_status": triagem_status,
+                    "status_label": status_label,
+                    "status_operacional": getattr(im, 'status', '') or 'Em análise',
+                    "cidade": getattr(im, 'cidade', '') or '',
+                    "estado": getattr(im, 'estado', '') or '',
+                    "valor_minimo": _safe_float(getattr(l, 'valor_minimo', 0)),
+                }
+            })
+        return jsonify(events)
+    finally:
+        session.close()
 
 @imoveis_bp.route('/<int:id>/upload', methods=['POST'])
 def upload_arquivo(id):
@@ -956,17 +1118,55 @@ def descartar_imovel(id):
     session = Session()
     try:
         data = request.json
-        i = session.query(Imovel).get(id)
-        if not i: return jsonify({"error": "Não encontrado"}), 404
-        
-        i.descartado = True
-        i.motivo_descarte = data.get('motivo')
-        i.obs_descarte = data.get('observacao')
-        i.data_descarte = datetime.utcnow()
-        i.status = 'Descartado'
-        
-        session.commit()
-        return jsonify({"message": "Imóvel descartado do funil"})
+        result = TriagemService.aplicar_decisao(
+            session,
+            company_id=int(request.args.get('company_id', 1)),
+            imovel_id=id,
+            acao='descartar',
+            motivo_codigo=data.get('motivo'),
+            observacao=data.get('observacao'),
+            decidido_por=(flask_session.get('user_name') or '').strip() or None,
+        )
+        return jsonify({
+            "message": "Imóvel descartado do funil",
+            "triagem_status": result.triagem_status,
+            "status": result.status,
+        })
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/<int:id>/triagem/decisao', methods=['POST'])
+def decidir_triagem_imovel(id):
+    session = Session()
+    try:
+        data = request.json or {}
+        result = TriagemService.aplicar_decisao(
+            session,
+            company_id=int(request.args.get('company_id', 1)),
+            imovel_id=id,
+            acao=data.get('acao'),
+            motivo_codigo=data.get('motivo_codigo'),
+            observacao=data.get('observacao'),
+            decidido_por=(flask_session.get('user_name') or '').strip() or None,
+        )
+        return jsonify({
+            "message": "Decisão de triagem registrada com sucesso.",
+            "imovel_id": result.imovel_id,
+            "triagem_status": result.triagem_status,
+            "status": result.status,
+            "motivo_codigo": result.motivo_codigo,
+            "motivo_label": result.motivo_label,
+            "observacao": result.observacao,
+            "decidido_em": result.decidido_em.isoformat() if result.decidido_em else None,
+            "decidido_por": result.decidido_por,
+        })
+    except ValueError as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

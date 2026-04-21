@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GanduInvest | Triagem de Oportunidades</title>
+    <title>GanduInvest | Triagem e Descarte</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .sidebar { background-color: #0f172a; }
+        .tab-active { background: #0f172a; color: white; border-color: #0f172a; }
     </style>
 </head>
 <body class="flex min-h-screen">
 
-    <!-- Sidebar -->
     <aside class="w-64 sidebar text-white flex-col hidden md:flex">
         <div class="p-6">
             <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
@@ -39,7 +39,7 @@
                         <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
                     </a>
                     <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
-                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                        <i class="fas fa-gavel mr-3 w-4"></i> Leilões de Oportunidades
                     </a>
                 </div>
             </div>
@@ -52,136 +52,420 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto">
-        <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
-            <h2 class="text-xl font-bold text-slate-800">Triagem e Qualificação</h2>
-            <div class="flex items-center space-x-4">
-                <select id="filter-mode" onchange="loadTriagem()" class="bg-slate-100 border-none rounded-lg py-2 px-4 text-sm focus:ring-2 focus:ring-emerald-500">
-                    <option value="active">Apenas Ativos (Não Descartados)</option>
-                    <option value="discarded">Apenas Descartados (Lixo)</option>
-                </select>
+        <header class="bg-white border-b p-5 sticky top-0 z-10">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">Triagem e Decisão de Funil</h2>
+                    <p class="text-sm text-slate-500">
+                        Defina quais imóveis seguem para disputa, quais permanecem em análise e quais saem do funil com motivo estruturado.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <a href="/" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition">
+                        <i class="fas fa-arrow-left mr-2"></i> Voltar ao pipeline
+                    </a>
+                </div>
             </div>
         </header>
 
-        <div class="p-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 space-y-6">
+            <!-- KPIs -->
+            <section class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-5 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Total em Triagem</p>
+                    <p id="triagem-stat-total" class="text-3xl font-black text-slate-900">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-amber-200 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-amber-500 mb-2">Pendentes</p>
+                    <p id="triagem-stat-pendentes" class="text-3xl font-black text-amber-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-emerald-500 mb-2">Aprovados</p>
+                    <p id="triagem-stat-aprovados" class="text-3xl font-black text-emerald-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-rose-500 mb-2">Descartados</p>
+                    <p id="triagem-stat-descartados" class="text-3xl font-black text-rose-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-blue-200 shadow-sm">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-blue-500 mb-2">Taxa de Aprovação</p>
+                    <p id="triagem-stat-taxa" class="text-3xl font-black text-blue-600">0%</p>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                <div class="flex flex-col xl:flex-row xl:items-end gap-4">
+                    <div class="flex-1">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Busca</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-slate-300 text-sm"></i>
+                            <input id="triagem-search" type="text" placeholder="Código, endereço, cidade, banco ou leiloeiro..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+                    <div class="w-full xl:w-52">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Cidade</label>
+                        <select id="triagem-filter-cidade" class="w-full py-3 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <div class="w-full xl:w-56">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Banco</label>
+                        <select id="triagem-filter-banco" class="w-full py-3 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="w-full xl:w-64">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Motivo de descarte</label>
+                        <select id="triagem-filter-motivo" class="w-full py-3 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadTriagem()" class="px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition">
+                            Aplicar
+                        </button>
+                        <button onclick="resetFilters()" class="px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200 transition">
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex flex-wrap gap-2">
+                    <button data-tab-status="Pendente" onclick="setTabStatus('Pendente')" class="triagem-tab tab-active px-4 py-2 rounded-full border text-sm font-bold">
+                        Pendentes <span id="tab-count-pendente" class="ml-1 text-xs opacity-80">0</span>
+                    </button>
+                    <button data-tab-status="Aprovado" onclick="setTabStatus('Aprovado')" class="triagem-tab px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50">
+                        Aprovados <span id="tab-count-aprovado" class="ml-1 text-xs opacity-80">0</span>
+                    </button>
+                    <button data-tab-status="Descartado" onclick="setTabStatus('Descartado')" class="triagem-tab px-4 py-2 rounded-full border border-slate-200 bg-white text-slate-600 text-sm font-bold hover:bg-slate-50">
+                        Descartados <span id="tab-count-descartado" class="ml-1 text-xs opacity-80">0</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Fila operacional de triagem</h3>
+                        <p class="text-sm text-slate-500">Ações rápidas para aprovar, descartar ou reabrir imóveis no funil.</p>
+                    </div>
+                    <div id="triagem-top-motivos" class="flex flex-wrap gap-2"></div>
+                </div>
                 <div class="overflow-x-auto">
-                        <thead class="bg-slate-50 text-slate-500 text-[9px] uppercase tracking-wider font-black">
+                    <table class="w-full min-w-[1240px]">
+                        <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-black">
                             <tr>
-                                <th class="p-4">Cód.</th>
-                                <th class="p-4 text-rose-600">Motivo Descarte</th>
-                                <th class="p-4">Data Descarte</th>
-                                <th class="p-4">Imóvel / Endereço</th>
-                                <th class="p-4">Localidade</th>
-                                <th class="p-4">Avaliação</th>
-                                <th class="p-4 text-center">Ações de Gestão</th>
+                                <th class="p-4 text-left">Código</th>
+                                <th class="p-4 text-left">Imóvel</th>
+                                <th class="p-4 text-left">Status</th>
+                                <th class="p-4 text-left">Leilão</th>
+                                <th class="p-4 text-left">Banco / Leiloeiro</th>
+                                <th class="p-4 text-right">Avaliação</th>
+                                <th class="p-4 text-right">Venda Normal</th>
+                                <th class="p-4 text-right">Venda Rápida</th>
+                                <th class="p-4 text-left">Motivo</th>
+                                <th class="p-4 text-left">Decisão</th>
+                                <th class="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="triagem-table" class="text-sm divide-y">
-                            <!-- JS Injection -->
+                        <tbody id="triagem-table" class="divide-y divide-slate-100 text-sm">
+                            <tr>
+                                <td colspan="11" class="p-10 text-center text-slate-400">
+                                    <i class="fas fa-spinner animate-spin mr-2"></i> Carregando fila de triagem...
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
-            </div>
+            </section>
         </div>
     </main>
 
-    <!-- Modal Descarte -->
-    <div id="modal-descarte" class="fixed inset-0 bg-slate-900/50 hidden z-[25000] flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-            <div class="p-6 border-b flex justify-between items-center bg-red-50">
-                <h3 class="font-bold text-lg text-red-800"><i class="fas fa-trash-alt mr-2"></i> Descartar Oportunidade</h3>
-                <button onclick="toggleModal('modal-descarte')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+    <div id="modal-descarte" class="fixed inset-0 bg-slate-950/60 hidden z-[25000] flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-rose-500">Descartar do funil</p>
+                    <h3 class="text-lg font-black text-slate-900" id="modal-descarte-title">Definir descarte</h3>
+                </div>
+                <button onclick="closeDiscardModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Motivo do Descarte</label>
-                    <select id="disc-motivo" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none">
-                        <option value="Localização fora do radar">a) Localização fora do radar</option>
-                        <option value="Localização ruim">b) Localização ruim</option>
-                        <option value="Valor fora da faixa alvo">c) Valor fora da faixa alvo</option>
-                        <option value="Prédio sem conservação">d) Prédio sem conservação</option>
-                        <option value="Documentação Irregular">e) Documentação Irregular</option>
-                        <option value="Sem dados para decisão">f) Sem dados para decisão</option>
-                        <option value="Ocupante problemático">g) Ocupante problemático</option>
-                        <option value="Outros">h) Outros (especificar abaixo)</option>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Motivo pré-cadastrado</label>
+                    <select id="disc-motivo" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-rose-500">
+                        <option value="">Selecione</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Observações / Detalhes</label>
-                    <textarea id="disc-obs" rows="4" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 outline-none" placeholder="Explique o motivo do descarte..."></textarea>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Observações</label>
+                    <textarea id="disc-obs" rows="4" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-rose-500" placeholder="Descreva o contexto da decisão."></textarea>
                 </div>
-                <div class="flex space-x-3 pt-2">
-                    <button onclick="toggleModal('modal-descarte')" class="flex-1 bg-slate-100 text-slate-600 p-3 rounded-lg font-bold hover:bg-slate-200 transition">Cancelar</button>
-                    <button onclick="confirmDescarte()" class="flex-1 bg-red-600 text-white p-3 rounded-lg font-bold hover:bg-red-700 transition">Confirmar Descarte</button>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeDiscardModal()" class="flex-1 px-4 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition">Cancelar</button>
+                    <button onclick="confirmDiscard()" class="flex-1 px-4 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 transition">Confirmar descarte</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let selectedImovelId = null;
+        let currentTabStatus = 'Pendente';
+        let currentDiscardId = null;
+        let triagemMotivos = [];
 
-        function toggleModal(id) {
-            document.getElementById(id).classList.toggle('hidden');
+        function formatCurrency(value) {
+            return 'R$ ' + Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
-        function openDescarteModal(id) {
-            selectedImovelId = id;
-            toggleModal('modal-descarte');
+        function formatDate(value) {
+            if (!value) return '--';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return value;
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
-        async function confirmDescarte() {
-            const motivo = document.getElementById('disc-motivo').value;
-            const obs = document.getElementById('disc-obs').value;
+        function getStatusBadgeClass(status) {
+            if (status === 'Aprovado') return 'bg-emerald-100 text-emerald-700';
+            if (status === 'Descartado') return 'bg-rose-100 text-rose-700';
+            return 'bg-amber-100 text-amber-700';
+        }
 
+        function setTabStatus(status) {
+            currentTabStatus = status;
+            document.querySelectorAll('.triagem-tab').forEach((btn) => {
+                if (btn.dataset.tabStatus === status) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('border-slate-200', 'bg-white', 'text-slate-600');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('border-slate-200', 'bg-white', 'text-slate-600');
+                }
+            });
+            loadTriagem();
+        }
+
+        function buildQuery() {
+            const params = new URLSearchParams();
+            params.set('triagem_status', currentTabStatus);
+
+            const search = document.getElementById('triagem-search').value.trim();
+            const cidade = document.getElementById('triagem-filter-cidade').value;
+            const banco = document.getElementById('triagem-filter-banco').value;
+            const motivo = document.getElementById('triagem-filter-motivo').value;
+
+            if (search) params.set('search', search);
+            if (cidade) params.set('cidade', cidade);
+            if (banco) params.set('banco', banco);
+            if (motivo) params.set('motivo_codigo', motivo);
+
+            return params.toString();
+        }
+
+        function openDiscardModal(id, codigo) {
+            currentDiscardId = id;
+            document.getElementById('modal-descarte-title').innerText = `Descartar ${codigo || 'imóvel'} do funil`;
+            document.getElementById('disc-motivo').value = '';
+            document.getElementById('disc-obs').value = '';
+            document.getElementById('modal-descarte').classList.remove('hidden');
+        }
+
+        function closeDiscardModal() {
+            currentDiscardId = null;
+            document.getElementById('modal-descarte').classList.add('hidden');
+        }
+
+        async function applyDecision(id, acao, extras = {}) {
+            const response = await fetch(`/api/imoveis/${id}/triagem/decisao`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    acao,
+                    motivo_codigo: extras.motivo_codigo || null,
+                    observacao: extras.observacao || ''
+                })
+            }).then(r => r.json());
+
+            if (response.error) throw new Error(response.error);
+            await Promise.all([loadTriagemStats(), loadTriagem()]);
+            return response;
+        }
+
+        async function approveImovel(id) {
+            if (!confirm('Confirmar aprovação deste imóvel para disputa?')) return;
             try {
-                const res = await fetch(`/api/imoveis/${selectedImovelId}/descartar`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ motivo, observacao: obs })
-                }).then(r => r.json());
-
-                if (res.error) throw new Error(res.error);
-                
-                toggleModal('modal-descarte');
-                loadTriagem();
+                await applyDecision(id, 'aprovar');
             } catch (err) {
                 alert(err.message);
             }
         }
 
-        async function loadTriagem() {
-            const mode = document.getElementById('filter-mode').value;
-            const isDiscarded = mode === 'discarded';
-            
+        async function reopenImovel(id) {
+            if (!confirm('Reabrir este imóvel e retornar para Pendentes de Triagem?')) return;
             try {
-                const res = await fetch(`/api/imoveis/?descartados=${isDiscarded}`).then(r => r.json());
-                const tbody = document.getElementById('triagem-table');
-                
-                tbody.innerHTML = res.map(i => {
-                    const isDisc = i.descartado;
+                await applyDecision(id, 'reabrir');
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function moveToPending(id) {
+            if (!confirm('Voltar este imóvel para Pendentes de Triagem?')) return;
+            try {
+                await applyDecision(id, 'pendente');
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        async function confirmDiscard() {
+            const motivoCodigo = document.getElementById('disc-motivo').value;
+            const observacao = document.getElementById('disc-obs').value.trim();
+
+            if (!motivoCodigo) {
+                alert('Selecione um motivo de descarte.');
+                return;
+            }
+
+            try {
+                await applyDecision(currentDiscardId, 'descartar', {
+                    motivo_codigo: motivoCodigo,
+                    observacao
+                });
+                closeDiscardModal();
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function renderTopMotivos(motivos = []) {
+            const container = document.getElementById('triagem-top-motivos');
+            if (!motivos.length) {
+                container.innerHTML = '<span class="text-xs text-slate-400">Sem motivos relevantes ainda.</span>';
+                return;
+            }
+
+            container.innerHTML = motivos.map(item => `
+                <span class="px-3 py-2 rounded-full bg-rose-50 border border-rose-100 text-rose-700 text-xs font-bold">
+                    ${item.label} <span class="text-rose-400 ml-1">${item.quantidade}</span>
+                </span>
+            `).join('');
+        }
+
+        async function loadTriagemStats() {
+            const stats = await fetch('/api/imoveis/triagem/stats').then(r => r.json());
+            document.getElementById('triagem-stat-total').innerText = stats.total || 0;
+            document.getElementById('triagem-stat-pendentes').innerText = stats.pendentes || 0;
+            document.getElementById('triagem-stat-aprovados').innerText = stats.aprovados || 0;
+            document.getElementById('triagem-stat-descartados').innerText = stats.descartados || 0;
+            document.getElementById('triagem-stat-taxa').innerText = `${Number(stats.taxa_aprovacao || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+            document.getElementById('tab-count-pendente').innerText = stats.pendentes || 0;
+            document.getElementById('tab-count-aprovado').innerText = stats.aprovados || 0;
+            document.getElementById('tab-count-descartado').innerText = stats.descartados || 0;
+            renderTopMotivos(stats.principais_motivos || []);
+        }
+
+        async function loadTriagemFilters() {
+            const filtros = await fetch('/api/imoveis/triagem/filtros').then(r => r.json());
+            triagemMotivos = filtros.motivos || [];
+
+            const cidadeSelect = document.getElementById('triagem-filter-cidade');
+            const bancoSelect = document.getElementById('triagem-filter-banco');
+            const motivoSelect = document.getElementById('triagem-filter-motivo');
+            const discardMotivoSelect = document.getElementById('disc-motivo');
+
+            cidadeSelect.innerHTML = '<option value="">Todas</option>' + (filtros.cidades || []).map(item => `<option value="${item}">${item}</option>`).join('');
+            bancoSelect.innerHTML = '<option value="">Todos</option>' + (filtros.bancos || []).map(item => `<option value="${item}">${item}</option>`).join('');
+
+            const motivosHtml = '<option value="">Todos</option>' + triagemMotivos.map(item => `<option value="${item.codigo}">${item.label}</option>`).join('');
+            motivoSelect.innerHTML = motivosHtml;
+            discardMotivoSelect.innerHTML = '<option value="">Selecione</option>' + triagemMotivos.map(item => `<option value="${item.codigo}">${item.label}</option>`).join('');
+        }
+
+        async function loadTriagem() {
+            const tbody = document.getElementById('triagem-table');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="11" class="p-10 text-center text-slate-400">
+                        <i class="fas fa-spinner animate-spin mr-2"></i> Atualizando fila...
+                    </td>
+                </tr>`;
+
+            try {
+                const rows = await fetch(`/api/imoveis/triagem?${buildQuery()}`).then(r => r.json());
+                if (!Array.isArray(rows) || !rows.length) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="11" class="p-10 text-center text-slate-400">
+                                Nenhum imóvel encontrado para os filtros atuais.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = rows.map(item => {
+                    const triagemBadge = `<span class="px-2 py-1 rounded-full text-[10px] font-black uppercase ${getStatusBadgeClass(item.triagem_status)}">${item.triagem_status}</span>`;
+                    const statusText = item.status || '--';
+                    const motivo = item.triagem_motivo_label || '<span class="text-slate-300">--</span>';
+                    const decisao = item.triagem_decidido_em
+                        ? `<div class="text-xs font-semibold text-slate-700">${formatDate(item.triagem_decidido_em)}</div><div class="text-[10px] text-slate-400">${item.triagem_decidido_por || 'Sem usuário'}</div>`
+                        : '<span class="text-slate-300 text-xs">Sem decisão</span>';
+
+                    const actions = item.triagem_status === 'Pendente'
+                        ? `
+                            <button onclick="approveImovel(${item.id})" class="px-3 py-2 rounded-lg bg-emerald-600 text-white text-[10px] font-black uppercase hover:bg-emerald-700 transition">Aprovar</button>
+                            <button onclick="openDiscardModal(${item.id}, '${item.codigo}')" class="px-3 py-2 rounded-lg bg-rose-600 text-white text-[10px] font-black uppercase hover:bg-rose-700 transition">Descartar</button>
+                        `
+                        : item.triagem_status === 'Aprovado'
+                            ? `
+                                <button onclick="moveToPending(${item.id})" class="px-3 py-2 rounded-lg bg-amber-500 text-white text-[10px] font-black uppercase hover:bg-amber-600 transition">Voltar</button>
+                                <button onclick="openDiscardModal(${item.id}, '${item.codigo}')" class="px-3 py-2 rounded-lg bg-rose-600 text-white text-[10px] font-black uppercase hover:bg-rose-700 transition">Descartar</button>
+                            `
+                            : `
+                                <button onclick="reopenImovel(${item.id})" class="px-3 py-2 rounded-lg bg-slate-800 text-white text-[10px] font-black uppercase hover:bg-slate-900 transition">Reabrir</button>
+                            `;
+
                     return `
-                        <tr class="hover:bg-slate-50 transition ${isDisc ? 'bg-rose-50/20' : ''}">
-                            <td class="p-4 font-mono font-bold text-slate-500 text-[10px]">${i.codigo}</td>
+                        <tr class="hover:bg-slate-50 transition align-top">
                             <td class="p-4">
-                                <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${isDisc ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}">
-                                    ${isDisc ? (i.motivo_descarte || 'DESCARTADO') : 'DISPONÍVEL / ATIVO'}
-                                </span>
-                            </td>
-                            <td class="p-4 text-xs font-semibold text-slate-500">
-                                ${i.data_descarte ? new Date(i.data_descarte).toLocaleDateString() : '--'}
+                                <div class="font-mono font-black text-emerald-600 text-xs">${item.codigo}</div>
                             </td>
                             <td class="p-4">
-                                <div class="font-bold text-slate-800 text-xs">${i.endereco}</div>
-                                <div class="text-[9px] text-slate-400 italic">${i.obs_descarte ? i.obs_descarte.substring(0, 50) + '...' : 'Ficha Limpa'}</div>
+                                <div class="font-bold text-slate-900 text-sm">${item.endereco || '--'}</div>
+                                <div class="text-xs text-slate-500 mt-1">${item.cidade || '--'} - ${item.estado || '--'}</div>
                             </td>
-                            <td class="p-4 text-[10px] text-slate-600 font-medium">${i.cidade} - ${i.estado}</td>
-                            <td class="p-4 font-black text-slate-700 text-xs">R$ ${i.valor_avaliacao.toLocaleString('pt-BR')}</td>
                             <td class="p-4">
-                                <div class="flex items-center justify-center space-x-1">
-                                    <button class="bg-emerald-600 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-emerald-700 transition shadow-sm">SALVAR</button>
-                                    <a href="/imovel/${i.id}" class="bg-slate-800 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-slate-900 transition text-center uppercase shadow-sm">EDITAR</a>
-                                    <button onclick="openDescarteModal(${i.id})" class="bg-rose-600 text-white px-3 py-1.5 rounded text-[8px] font-black hover:bg-rose-700 transition uppercase shadow-sm">EXCLUIR</button>
+                                ${triagemBadge}
+                                <div class="text-[11px] text-slate-500 mt-2 font-semibold">${statusText}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-xs font-semibold text-slate-700">${formatDate(item.data_primeiro_leilao)}</div>
+                            </td>
+                            <td class="p-4">
+                                <div class="text-xs font-semibold text-slate-700">${item.banco || '--'}</div>
+                                <div class="text-[10px] text-slate-400 mt-1">${item.leiloeiro || '--'}</div>
+                            </td>
+                            <td class="p-4 text-right font-black text-slate-800 text-xs">${formatCurrency(item.valor_avaliacao)}</td>
+                            <td class="p-4 text-right font-bold text-blue-600 text-xs">${formatCurrency(item.valor_venda_normal)}</td>
+                            <td class="p-4 text-right font-bold text-emerald-600 text-xs">${formatCurrency(item.valor_venda_rapida)}</td>
+                            <td class="p-4">
+                                <div class="text-xs font-semibold text-slate-700">${motivo}</div>
+                                <div class="text-[10px] text-slate-400 mt-1">${item.triagem_observacao ? item.triagem_observacao.substring(0, 90) : '--'}</div>
+                            </td>
+                            <td class="p-4">${decisao}</td>
+                            <td class="p-4">
+                                <div class="flex flex-col gap-2 items-stretch min-w-[132px]">
+                                    <a href="/imovel/${item.id}" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-[10px] font-black uppercase text-center hover:bg-slate-50 transition">Ver ficha</a>
+                                    <a href="/imovel/${item.id}?openPresentation=1&returnTo=triagem" class="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-[10px] font-black uppercase text-center hover:bg-blue-100 transition">Ver apresentação</a>
+                                    ${actions}
                                 </div>
                             </td>
                         </tr>
@@ -189,10 +473,37 @@
                 }).join('');
             } catch (err) {
                 console.error(err);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="p-10 text-center text-rose-500 font-semibold">
+                            Falha ao carregar a triagem: ${err.message}
+                        </td>
+                    </tr>`;
             }
         }
 
-        loadTriagem();
+        function resetFilters() {
+            document.getElementById('triagem-search').value = '';
+            document.getElementById('triagem-filter-cidade').value = '';
+            document.getElementById('triagem-filter-banco').value = '';
+            document.getElementById('triagem-filter-motivo').value = '';
+            setTabStatus('Pendente');
+        }
+
+        document.getElementById('triagem-search').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                loadTriagem();
+            }
+        });
+
+        async function bootstrap() {
+            await loadTriagemFilters();
+            await loadTriagemStats();
+            await loadTriagem();
+        }
+
+        bootstrap();
     </script>
 </body>
 </html>

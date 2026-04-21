@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GanduInvest | Monitor de Leilões</title>
+    <title>GanduInvest | Leilões de Oportunidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -39,7 +39,7 @@
                         <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
                     </a>
                     <a href="/leiloes-semana" class="flex items-center p-2 bg-slate-800 rounded-lg text-emerald-400 border-l-4 border-emerald-400 text-sm">
-                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                        <i class="fas fa-gavel mr-3 w-4"></i> Leilões de Oportunidades
                     </a>
                 </div>
             </div>
@@ -52,19 +52,49 @@
     </aside>
 
     <main class="flex-1 overflow-y-auto p-8">
-        <header class="mb-8">
-            <h2 class="text-3xl font-bold text-slate-800">Monitor de Leilões: Próximos 7 Dias</h2>
-            <p class="text-slate-500">Acompanhamento centralizado de pregões e metas de lance.</p>
+        <header class="mb-8 space-y-5">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-800">Leilões de Oportunidades</h2>
+                <p class="text-slate-500">Aqui entram somente os leilões das oportunidades selecionadas para disputa.</p>
+            </div>
+            <section class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
+                <div class="grid grid-cols-1 lg:grid-cols-[1.1fr,0.75fr,0.75fr,auto] gap-4 items-end">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Período</label>
+                        <select id="periodo-tipo" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="semana">Próximos 7 dias</option>
+                            <option value="mes">Próximos 30 dias</option>
+                            <option value="custom">Período específico</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Data inicial</label>
+                        <input id="periodo-start" type="date" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Data final</label>
+                        <input id="periodo-end" type="date" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="btn-filtrar-leiloes" class="px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition">Aplicar</button>
+                        <button id="btn-limpar-leiloes" class="px-4 py-3 rounded-xl bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200 transition">Limpar</button>
+                    </div>
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <span id="periodo-label" class="px-3 py-2 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-black uppercase tracking-widest">Próximos 7 dias</span>
+                    <span id="periodo-range" class="text-sm text-slate-500"></span>
+                </div>
+            </section>
         </header>
 
         <div id="loading" class="text-center py-20">
             <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent mx-auto"></div>
-            <p class="text-slate-400 mt-4 font-bold uppercase tracking-widest text-xs">Sincronizando editais...</p>
+            <p class="text-slate-400 mt-4 font-bold uppercase tracking-widest text-xs">Carregando oportunidades selecionadas...</p>
         </div>
 
         <div id="empty-state" class="hidden text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
              <i class="fas fa-calendar-times text-5xl text-slate-200 mb-4"></i>
-             <p class="text-slate-500">Nenhum leilão agendado para esta semana.</p>
+             <p class="text-slate-500">Nenhum leilão encontrado para os filtros aplicados.</p>
         </div>
 
         <div id="grid-leiloes" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -73,30 +103,91 @@
     </main>
 
     <script>
+        const periodoTipoEl = document.getElementById('periodo-tipo');
+        const periodoStartEl = document.getElementById('periodo-start');
+        const periodoEndEl = document.getElementById('periodo-end');
+        const periodoLabelEl = document.getElementById('periodo-label');
+        const periodoRangeEl = document.getElementById('periodo-range');
+
+        function formatCurrency(value) {
+            return Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function formatDate(dateValue) {
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) return '--';
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        function getStatusChipClass(status) {
+            if (status === 'Aprovado') return 'bg-emerald-100 text-emerald-700';
+            if (status === 'Descartado') return 'bg-rose-100 text-rose-700';
+            return 'bg-amber-100 text-amber-700';
+        }
+
+        function applyPeriodoState() {
+            const isCustom = periodoTipoEl.value === 'custom';
+            periodoStartEl.disabled = !isCustom;
+            periodoEndEl.disabled = !isCustom;
+            periodoStartEl.classList.toggle('opacity-60', !isCustom);
+            periodoEndEl.classList.toggle('opacity-60', !isCustom);
+        }
+
+        function buildQuery() {
+            const params = new URLSearchParams();
+            params.set('periodo', periodoTipoEl.value);
+            if (periodoTipoEl.value === 'custom') {
+                if (periodoStartEl.value) params.set('start', periodoStartEl.value);
+                if (periodoEndEl.value) params.set('end', periodoEndEl.value);
+            }
+            return params.toString();
+        }
+
+        function updatePeriodoHeader(payload) {
+            const labels = { semana: 'Próximos 7 dias', mes: 'Próximos 30 dias', custom: 'Período específico' };
+            periodoLabelEl.innerText = labels[payload.periodo] || 'Período';
+            periodoRangeEl.innerText = `${formatDate(payload.start)} até ${formatDate(payload.end)} · ${payload.total || 0} leilão(ões)`;
+        }
+
         async function loadLeiloes() {
             try {
-                const res = await fetch('/api/imoveis/leiloes-semana').then(r => r.json());
                 const loading = document.getElementById('loading');
                 const empty = document.getElementById('empty-state');
                 const grid = document.getElementById('grid-leiloes');
+                loading.classList.remove('hidden');
+                empty.classList.add('hidden');
+                grid.innerHTML = '';
+
+                const res = await fetch(`/api/imoveis/leiloes-semana?${buildQuery()}`).then(async (r) => {
+                    const json = await r.json();
+                    if (!r.ok) throw new Error(json.error || 'Falha ao carregar leilões.');
+                    return json;
+                });
 
                 loading.classList.add('hidden');
+                empty.classList.add('hidden');
+                updatePeriodoHeader(res);
                 
-                if (res.length === 0) {
+                if (!res.items || res.items.length === 0) {
                     empty.classList.remove('hidden');
+                    grid.innerHTML = '';
                     return;
                 }
 
-                grid.innerHTML = res.map(l => {
+                grid.innerHTML = res.items.map(l => {
                     const data = new Date(l.data_hora);
                     const formattedData = data.toLocaleDateString('pt-BR');
                     const formattedHora = data.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    const statusClass = getStatusChipClass(l.triagem_status);
                     
                     return `
                         <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-xl transition-shadow group">
                             <!-- Header do Card -->
-                            <div class="p-5 bg-slate-50 border-b flex justify-between items-center">
-                                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase">${l.tipo} LEILÃO</span>
+                            <div class="p-5 bg-slate-50 border-b flex justify-between items-start gap-4">
+                                <div class="space-y-2">
+                                    <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase">${l.tipo}</span>
+                                    <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase inline-flex ${statusClass}">${l.triagem_status}</div>
+                                </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-bold text-slate-400 uppercase">Gandu ID</p>
                                     <p class="text-xs font-mono font-bold text-slate-700">${l.codigo}</p>
@@ -106,8 +197,9 @@
                             <!-- Body -->
                             <div class="p-6 space-y-4">
                                 <div>
-                                    <p class="text-xs text-slate-400 mb-1"><i class="fas fa-map-marker-alt mr-1"></i> ${l.cidade}</p>
-                                    <h3 class="font-bold text-slate-800 line-clamp-2 h-10">${l.endereco}</h3>
+                                    <p class="text-xs text-slate-400 mb-1"><i class="fas fa-map-marker-alt mr-1"></i> ${l.cidade || '--'} - ${l.estado || '--'}</p>
+                                    <h3 class="font-bold text-slate-800 line-clamp-2 min-h-[2.5rem]">${l.endereco || '--'}</h3>
+                                    <p class="text-xs text-slate-500 mt-2">${l.status_label || l.status || 'Em análise'}</p>
                                 </div>
 
                                 <div class="flex items-center justify-between p-3 bg-slate-900 text-white rounded-2xl">
@@ -120,24 +212,39 @@
 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="p-3 border rounded-2xl bg-slate-50">
-                                        <p class="text-[9px] text-slate-400 uppercase font-bold">Mínimo</p>
-                                        <p class="text-xs font-bold text-slate-700">R$ ${l.valor_minimo.toLocaleString('pt-BR')}</p>
+                                        <p class="text-[9px] text-slate-400 uppercase font-bold">Lance mínimo</p>
+                                        <p class="text-xs font-bold text-slate-700">R$ ${formatCurrency(l.valor_minimo)}</p>
                                     </div>
                                     <div class="p-3 border-2 border-emerald-500/20 rounded-2xl bg-emerald-50">
                                         <p class="text-[9px] text-emerald-600 uppercase font-bold">Teto Sugerido</p>
-                                        <p class="text-xs font-bold text-emerald-700">R$ ${l.teto_sugerido.toLocaleString('pt-BR')}</p>
+                                        <p class="text-xs font-bold text-emerald-700">R$ ${formatCurrency(l.teto_sugerido)}</p>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="p-3 border rounded-2xl bg-slate-50">
+                                        <p class="text-[9px] text-slate-400 uppercase font-bold">Avaliação</p>
+                                        <p class="text-xs font-bold text-slate-700">R$ ${formatCurrency(l.valor_avaliacao)}</p>
+                                    </div>
+                                    <div class="p-3 border rounded-2xl bg-blue-50">
+                                        <p class="text-[9px] text-blue-500 uppercase font-bold">Venda normal</p>
+                                        <p class="text-xs font-bold text-blue-700">R$ ${formatCurrency(l.venda_normal)}</p>
+                                    </div>
+                                    <div class="p-3 border rounded-2xl bg-emerald-50">
+                                        <p class="text-[9px] text-emerald-500 uppercase font-bold">Venda rápida</p>
+                                        <p class="text-xs font-bold text-emerald-700">R$ ${formatCurrency(l.venda_rapida)}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Footer -->
-                            <div class="p-4 bg-slate-50 border-t flex space-x-2">
-                                <a href="/imovel/${l.id}" class="flex-1 text-center py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-700 transition">
-                                    Ver Estratégia
+                            <div class="p-4 bg-slate-50 border-t grid grid-cols-2 gap-2">
+                                <a href="/imovel/${l.id}" class="text-center py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-700 transition">
+                                    Ver estratégia
                                 </a>
-                                <button class="px-4 py-2 border border-slate-200 rounded-xl text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition">
-                                    <i class="fas fa-bell"></i>
-                                </button>
+                                <a href="/imovel/${l.id}?openPresentation=1" class="text-center py-2 bg-white border border-blue-200 text-blue-700 rounded-xl text-xs font-bold hover:bg-blue-50 transition">
+                                    Ver apresentação
+                                </a>
                             </div>
                         </div>
                     `;
@@ -145,10 +252,30 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Erro ao carregar monitor.");
+                document.getElementById('loading').classList.add('hidden');
+                alert("Erro ao carregar leilões: " + err.message);
             }
         }
 
+        periodoTipoEl.addEventListener('change', () => {
+            applyPeriodoState();
+            if (periodoTipoEl.value !== 'custom') {
+                periodoStartEl.value = '';
+                periodoEndEl.value = '';
+                loadLeiloes();
+            }
+        });
+
+        document.getElementById('btn-filtrar-leiloes').addEventListener('click', loadLeiloes);
+        document.getElementById('btn-limpar-leiloes').addEventListener('click', () => {
+            periodoTipoEl.value = 'semana';
+            periodoStartEl.value = '';
+            periodoEndEl.value = '';
+            applyPeriodoState();
+            loadLeiloes();
+        });
+
+        applyPeriodoState();
         loadLeiloes();
     </script>
 </body>

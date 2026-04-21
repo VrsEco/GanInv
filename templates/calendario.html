@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GanduInvest | Calendário de Leilões</title>
+    <title>GanduInvest | Calendário de Oportunidades</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -40,7 +40,7 @@
                         <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
                     </a>
                     <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
-                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                        <i class="fas fa-gavel mr-3 w-4"></i> Leilões de Oportunidades
                     </a>
                 </div>
             </div>
@@ -53,17 +53,68 @@
     </aside>
 
     <main class="flex-1 p-8 overflow-y-auto">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-2xl font-bold text-slate-800 mb-6">Agenda de Leilões</h2>
-            <div id='calendar'></div>
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2">Leilões no calendário</p>
+                    <p id="calendar-stat-total" class="text-3xl font-black text-slate-900">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-emerald-200">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-emerald-500 mb-2">Selecionadas</p>
+                    <p id="calendar-stat-aprovado" class="text-3xl font-black text-emerald-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-amber-200">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-amber-500 mb-2">Em análise</p>
+                    <p id="calendar-stat-pendente" class="text-3xl font-black text-amber-600">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-rose-200">
+                    <p class="text-[11px] font-black uppercase tracking-widest text-rose-500 mb-2">Descartadas</p>
+                    <p id="calendar-stat-descartado" class="text-3xl font-black text-rose-600">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Calendário de Oportunidades</h2>
+                        <p class="text-sm text-slate-500">Cada evento mostra o estágio atual da oportunidade dentro do funil.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                        <span class="px-3 py-2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Selecionada</span>
+                        <span class="px-3 py-2 rounded-full bg-amber-50 text-amber-700 border border-amber-100">Em análise</span>
+                        <span class="px-3 py-2 rounded-full bg-rose-50 text-rose-700 border border-rose-100">Descartada</span>
+                    </div>
+                </div>
+                <div id='calendar'></div>
+            </div>
         </div>
     </main>
 
     <script>
+        function getStatusPillClass(status) {
+            if (status === 'Aprovado') return 'bg-emerald-100 text-emerald-700';
+            if (status === 'Descartado') return 'bg-rose-100 text-rose-700';
+            return 'bg-amber-100 text-amber-700';
+        }
+
+        function updateCalendarStats(events) {
+            const stats = { total: events.length, aprovado: 0, pendente: 0, descartado: 0 };
+            events.forEach((event) => {
+                const status = event.extendedProps?.triagem_status || 'Pendente';
+                if (status === 'Aprovado') stats.aprovado += 1;
+                else if (status === 'Descartado') stats.descartado += 1;
+                else stats.pendente += 1;
+            });
+            document.getElementById('calendar-stat-total').innerText = stats.total;
+            document.getElementById('calendar-stat-aprovado').innerText = stats.aprovado;
+            document.getElementById('calendar-stat-pendente').innerText = stats.pendente;
+            document.getElementById('calendar-stat-descartado').innerText = stats.descartado;
+        }
+
         document.addEventListener('DOMContentLoaded', async function() {
             var calendarEl = document.getElementById('calendar');
-            
             const events = await fetch('/api/imoveis/calendar').then(r => r.json());
+            updateCalendarStats(events);
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
@@ -73,7 +124,21 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek'
                 },
+                eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
                 events: events,
+                eventContent: function(info) {
+                    const props = info.event.extendedProps || {};
+                    const status = props.triagem_status || 'Pendente';
+                    return {
+                        html: `
+                            <div class="px-1 py-1 space-y-1">
+                                <div class="font-black text-[11px] leading-tight">${props.codigo || info.event.title}</div>
+                                <div class="text-[10px] leading-tight opacity-90">${props.tipo_leilao || ''}</div>
+                                <div class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${getStatusPillClass(status)}">${status}</div>
+                            </div>
+                        `
+                    };
+                },
                 eventClick: function(info) {
                     window.location.href = '/imovel/' + info.event.id;
                 }

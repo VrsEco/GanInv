@@ -46,7 +46,7 @@
                         <i class="fas fa-calendar-alt mr-3 w-4"></i> Calendário
                     </a>
                     <a href="/leiloes-semana" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
-                        <i class="fas fa-gavel mr-3 w-4"></i> Lances da Semana
+                        <i class="fas fa-gavel mr-3 w-4"></i> Leilões de Oportunidades
                     </a>
                 </div>
             </div>
@@ -1162,6 +1162,10 @@
         let currentLeiloes = [];
         const MAX_UPLOAD_SIZE_MB = {{ config.get('MAX_UPLOAD_SIZE_MB', 15) }};
         const POST_PURCHASE_STATUSES = ['Arrematado', 'Em reforma', 'Vendido'];
+        const detailQueryParams = new URLSearchParams(window.location.search);
+        const presentationAutoOpenParam = detailQueryParams.get('openPresentation') === '1';
+        const presentationReturnTarget = detailQueryParams.get('returnTo') || '';
+        let presentationAutoOpened = false;
 
         function switchTab(tabId) {
             const POST_PURCHASE_TABS = ['tab-documentacao', 'tab-reforma', 'tab-venda'];
@@ -2381,6 +2385,12 @@
                 // Listeners
                 initMasks();
 
+                if (presentationAutoOpenParam && !presentationAutoOpened) {
+                    presentationAutoOpened = true;
+                    switchTab('tab-resumo');
+                    setTimeout(() => openPresentation(), 120);
+                }
+
             } catch (err) {
                 console.error(err);
             }
@@ -2439,6 +2449,17 @@
                         <div class="bg-white/5 p-3 rounded-xl border border-white/10">
                             <p class="text-[10px] font-bold text-white/40 uppercase mb-1">Ocupação</p>
                             <p id="pres-ocupado" class="text-white font-black text-lg">--</p>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl border border-white/10 p-4 space-y-4 min-h-[16rem]">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-300/80 mb-2">Descritivo do Prédio</p>
+                            <p id="pres-desc-predio" class="text-white/85 text-sm leading-6 whitespace-pre-line">--</p>
+                        </div>
+                        <div class="h-px bg-white/10"></div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-blue-300/80 mb-2">Descritivo do Imóvel</p>
+                            <p id="pres-desc-imovel" class="text-white/85 text-sm leading-6 whitespace-pre-line">--</p>
                         </div>
                     </div>
                 </div>
@@ -2572,6 +2593,10 @@
             const area = document.getElementById('cad-area-priv')?.value;
             document.getElementById('pres-area').innerText = area ? area + ' m²' : "--";
             document.getElementById('pres-ocupado').innerText = document.getElementById('eval-ocupado')?.value === 'true' ? 'Ocupado' : 'Desocupado';
+            const descPredio = document.getElementById('eval-desc-predio')?.value?.trim();
+            const descImovel = document.getElementById('eval-desc-imovel')?.value?.trim();
+            setTextSafe('pres-desc-predio', descPredio || 'Sem descritivo do prédio informado.');
+            setTextSafe('pres-desc-imovel', descImovel || 'Sem descritivo do imóvel informado.');
 
             updateFinanceCalcs();
             setTextSafe('pres-lance-normal', document.getElementById('calc-lance-normal')?.innerText || fmtBRL(0));
@@ -2607,6 +2632,10 @@
         }
 
         function closePresentation() {
+            if (presentationAutoOpenParam && presentationReturnTarget === 'triagem') {
+                window.location.href = '/triagem';
+                return;
+            }
             document.getElementById('modal-presentation').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
