@@ -169,6 +169,7 @@
                         <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest font-black">
                             <tr>
                                 <th class="p-4 text-left">Código</th>
+                                <th class="p-4 text-center">Ações</th>
                                 <th class="p-4 text-left">Imóvel</th>
                                 <th class="p-4 text-left">Status</th>
                                 <th class="p-4 text-left">Leilão</th>
@@ -178,7 +179,6 @@
                                 <th class="p-4 text-right">Venda Rápida</th>
                                 <th class="p-4 text-left">Motivo</th>
                                 <th class="p-4 text-left">Decisão</th>
-                                <th class="p-4 text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="triagem-table" class="divide-y divide-slate-100 text-sm">
@@ -452,6 +452,13 @@
                                 <div class="font-mono font-black text-emerald-600 text-xs">${item.codigo}</div>
                             </td>
                             <td class="p-4">
+                                <div class="flex flex-col gap-2 items-stretch min-w-[132px]">
+                                    <a href="/imovel/${item.id}" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-[10px] font-black uppercase text-center hover:bg-slate-50 transition">Ver ficha</a>
+                                    <a href="/imovel/${item.id}?openPresentation=1&returnTo=triagem" class="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-[10px] font-black uppercase text-center hover:bg-blue-100 transition">Ver apresentação</a>
+                                    ${actions}
+                                </div>
+                            </td>
+                            <td class="p-4">
                                 <div class="font-bold text-slate-900 text-sm">${item.endereco || '--'}</div>
                                 <div class="text-xs text-slate-500 mt-1">${item.cidade || '--'} - ${item.estado || '--'}</div>
                             </td>
@@ -474,13 +481,6 @@
                                 <div class="text-[10px] text-slate-400 mt-1">${item.triagem_observacao ? item.triagem_observacao.substring(0, 90) : '--'}</div>
                             </td>
                             <td class="p-4">${decisao}</td>
-                            <td class="p-4">
-                                <div class="flex flex-col gap-2 items-stretch min-w-[132px]">
-                                    <a href="/imovel/${item.id}" class="px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-700 text-[10px] font-black uppercase text-center hover:bg-slate-50 transition">Ver ficha</a>
-                                    <a href="/imovel/${item.id}?openPresentation=1&returnTo=triagem" class="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-[10px] font-black uppercase text-center hover:bg-blue-100 transition">Ver apresentação</a>
-                                    ${actions}
-                                </div>
-                            </td>
                         </tr>
                     `;
                 }).join('');
