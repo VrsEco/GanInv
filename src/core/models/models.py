@@ -129,6 +129,7 @@ class FichaFinanceira(Base):
     # Custos
     valor_arrematacao = Column(Float, default=0.0) # Valor do lance
     comissao_leiloeiro_percent = Column(Float, default=5.0)
+    outros_custos_arrematacao = Column(Float, default=0.0)
     
     itiv_percent = Column(Float, default=0.0) # ITBI/ITIV em %
     itiv_vlr = Column(Float, default=0.0)

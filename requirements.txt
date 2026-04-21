@@ -10,3 +10,5 @@ pytest
 beautifulsoup4
 requests
 gunicorn
+Pillow
+reportlab

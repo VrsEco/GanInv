@@ -15,6 +15,7 @@ class FinanceService:
         # 2. Custos de Aquisição e Operação
         lance = f.get('valor_arrematacao', 0)
         comissao_leiloeiro = lance * (f.get('comissao_leiloeiro_percent', 5) / 100)
+        outros_custos_arrematacao = f.get('outros_custos_arrematacao', 0)
         
         # ITIV e Registro podem ser valor fixo ou percentual (prioriza valor fixo se existir)
         itiv = f.get('itiv_vlr', 0) or (lance * (f.get('itiv_percent', 0) / 100))
@@ -22,6 +23,7 @@ class FinanceService:
         
         custos_operacao = [
             comissao_leiloeiro,
+            outros_custos_arrematacao,
             itiv,
             registro,
             f.get('iptu_atrasado', 0),
@@ -54,6 +56,7 @@ class FinanceService:
             "custos_detalhe": {
                 "lance": lance,
                 "comissao_leiloeiro": comissao_leiloeiro,
+                "outros_custos_arrematacao": outros_custos_arrematacao,
                 "itiv": itiv,
                 "registro": registro
             }

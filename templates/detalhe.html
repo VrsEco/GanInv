@@ -72,7 +72,7 @@
                 <button onclick="openPresentation()" class="bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition flex items-center">
                     <i class="fas fa-desktop mr-2"></i> Apresentação
                 </button>
-                <button onclick="window.print()" class="bg-white border text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
+                <button onclick="downloadExecutivePdf()" class="bg-white border text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
                     <i class="fas fa-print mr-2"></i> PDF Executivo
                 </button>
                 <button onclick="excluirImovel()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 shadow-lg transition">
@@ -112,120 +112,132 @@
         <!-- Tab Contents -->
         <!-- Tab Resumo -->
         <div id="tab-resumo" class="tab-content">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-emerald-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">ROI Previsto</p>
-                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-roi">0%</h2>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Lucro Bruto</p>
-                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-lucro">R$ 0</h2>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-amber-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Investimento Total</p>
-                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-investimento">R$ 0</h2>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-purple-500">
-                    <p class="text-xs font-bold text-slate-400 uppercase">Margem Venda</p>
-                    <h2 class="text-3xl font-bold text-slate-800" id="kpi-margem">0%</h2>
-                </div>
-            </div>
-            
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                <!-- Lado Esquerdo: Avaliação / Financeiro (Col 3) -->
-                <div class="lg:col-span-3 space-y-4">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Dados do Imóvel</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Tipo</span>
-                                <span class="font-bold text-slate-800" id="resumo-tipo">--</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Área Privativa</span>
-                                <span class="font-bold text-slate-800" id="resumo-area-privativa">--</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1">
-                                <span class="text-slate-500">Ocupação</span>
-                                <span class="font-bold text-slate-800" id="resumo-ocupacao">--</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Avaliação & Financeiro</h3>
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Venda Normal</span>
-                                <span class="font-bold text-slate-700" id="resumo-venda-normal">R$ 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b text-emerald-600">
-                                <span class="text-slate-500">Venda Rápida</span>
-                                <span class="font-bold" id="resumo-venda-rapida">R$ 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b text-red-500">
-                                <span class="text-slate-500">Débitos Condo/IPTU</span>
-                                <span class="font-bold" id="resumo-debitos">R$ 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Total de Custos</span>
-                                <span class="font-bold text-slate-700" id="resumo-total-custos">R$ 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Total Despesas</span>
-                                <span class="font-bold text-slate-700" id="resumo-total-despesas">R$ 0</span>
-                            </div>
-                            <div class="pt-2">
-                                <p class="text-[9px] font-bold text-emerald-600 uppercase mb-1">Lance Máximo Recomendado</p>
-                                <p class="text-xl font-black text-slate-900" id="resumo-lance-max">R$ 0</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Centro: Fotos (Col 6) -->
-                <div class="lg:col-span-6">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 h-full">
-                        <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden relative group">
+                <!-- Coluna Visual -->
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="aspect-[16/9] bg-slate-100 rounded-xl overflow-hidden relative group">
                             <img id="detail-main-photo" src="/static/img/placeholder-imovel.jpg" alt="Imóvel" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
                                 <button onclick="event.stopPropagation(); changeSummaryPhoto(-1)" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition"><i class="fas fa-chevron-left"></i></button>
                                 <button onclick="event.stopPropagation(); changeSummaryPhoto(1)" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition"><i class="fas fa-chevron-right"></i></button>
                             </div>
-                            <div id="detail-photo-counter" class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">0 / 0</div>
+                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/65 via-slate-950/10 to-transparent px-5 py-4">
+                                <p class="text-white font-bold text-sm">Vista Principal</p>
+                                <p class="text-white/60 text-xs">Registro fotográfico</p>
+                            </div>
+                            <div id="detail-photo-counter" class="absolute top-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">0 / 0</div>
                         </div>
                         <div id="detail-summary-thumbs" class="grid grid-cols-4 gap-2 mt-4">
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
-                            <div class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 text-xs font-bold">+2</div>
+                            <div class="aspect-square bg-slate-100 rounded-lg"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Tipo</p>
+                            <p class="text-slate-900 font-black text-xl" id="resumo-tipo">--</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Área Privativa</p>
+                            <p class="text-slate-900 font-black text-xl" id="resumo-area-privativa">--</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ocupação</p>
+                            <p class="text-slate-900 font-black text-xl" id="resumo-ocupacao">--</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Lado Direito: Histórico de Leilão / Resultado (Col 3) -->
-                <div class="lg:col-span-3 space-y-4">
+                <!-- Coluna de Dados -->
+                <div class="lg:col-span-7 space-y-4">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Histórico do Pregão</h3>
-                        <div class="space-y-3" id="resumo-lista-leiloes">
-                            <!-- Leilões injetados via JS -->
-                            <div class="text-center py-4 text-slate-300"><i class="fas fa-spinner animate-spin"></i></div>
-                        </div>
-
-                        <!-- Resultado Final -->
-                        <div class="mt-6 pt-6 border-t border-slate-100">
-                             <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Lance Vencedor</p>
-                             <div class="flex items-center justify-between">
-                                 <h4 class="text-xl font-bold text-slate-800" id="resumo-lance-vencedor">R$ 0</h4>
-                                 <span class="px-2 py-1 rounded text-[9px] font-bold" id="resumo-resultado-status">PENDENTE</span>
-                             </div>
-                             <p class="text-[10px] text-slate-500 mt-1" id="resumo-resultado-data">--</p>
+                        <h3 class="text-slate-900 font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
+                            <i class="fas fa-gavel mr-2 text-emerald-500"></i> Histórico de Pregões
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="resumo-lista-leiloes">
+                            <div class="text-center py-4 text-slate-300 md:col-span-2"><i class="fas fa-spinner animate-spin"></i></div>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
-                        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-2"><i class="fas fa-robot mr-2"></i> IA Insight</h4>
-                        <p class="text-[11px] text-slate-300 italic italic">A análise de mercado sugere que o 2º leilão é a melhor janela de oportunidade, dada a baixa concorrência recente na região.</p>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h3 class="text-slate-900 font-bold uppercase tracking-widest text-sm flex items-center">
+                                <i class="fas fa-chart-pie mr-2 text-emerald-500"></i> Análise do Negócio
+                            </h3>
+                            <span class="text-[11px] font-black uppercase tracking-widest text-slate-400">Venda Normal x Venda Rápida</span>
+                        </div>
+                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] bg-emerald-50 text-[13px]">
+                                <div class="px-3 py-2.5 text-emerald-700 font-black uppercase tracking-widest text-[10px]">Sugestão de Lance Máximo</div>
+                                <div id="resumo-lance-normal" class="px-3 py-2.5 text-right font-black text-blue-600">R$ 0</div>
+                                <div id="resumo-lance-rapida" class="px-3 py-2.5 text-right font-black text-emerald-600">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 bg-slate-50 text-[13px]">
+                                <div class="px-3 py-2 text-slate-500 font-semibold">Valor do lance considerado</div>
+                                <div id="resumo-lance-considerado-normal" class="px-3 py-2 text-right font-bold text-slate-800">R$ 0</div>
+                                <div id="resumo-lance-considerado-rapida" class="px-3 py-2 text-right font-bold text-slate-800">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] bg-slate-900 text-[11px] font-black uppercase tracking-widest text-white/80">
+                                <div class="px-3 py-2.5">Indicador</div>
+                                <div class="px-3 py-2.5 text-right text-blue-300">Venda Normal</div>
+                                <div class="px-3 py-2.5 text-right text-emerald-300">Venda Rápida</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px]">
+                                <div class="px-3 py-2.5 text-slate-600">Preço de Venda</div>
+                                <div id="resumo-analise-preco-normal" class="px-3 py-2.5 text-right font-black text-blue-600">R$ 0</div>
+                                <div id="resumo-analise-preco-rapida" class="px-3 py-2.5 text-right font-black text-emerald-600">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-rose-50/70">
+                                <div class="px-3 py-2.5 text-rose-600 font-semibold">Comissões de Venda</div>
+                                <div id="resumo-analise-com-normal" class="px-3 py-2.5 text-right font-semibold text-blue-600">R$ 0</div>
+                                <div id="resumo-analise-com-rapida" class="px-3 py-2.5 text-right font-semibold text-emerald-600">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-rose-50/70">
+                                <div class="px-3 py-2.5 text-rose-600 font-semibold">Impostos Sobre Vendas</div>
+                                <div id="resumo-analise-imp-normal" class="px-3 py-2.5 text-right font-semibold text-blue-600">R$ 0</div>
+                                <div id="resumo-analise-imp-rapida" class="px-3 py-2.5 text-right font-semibold text-emerald-600">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-emerald-50">
+                                <div class="px-3 py-2.5 text-emerald-700 font-bold">Vendas Líquidas</div>
+                                <div id="resumo-analise-liq-normal" class="px-3 py-2.5 text-right font-black text-blue-600">R$ 0</div>
+                                <div id="resumo-analise-liq-rapida" class="px-3 py-2.5 text-right font-black text-emerald-600">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px]">
+                                <div class="px-3 py-2.5 text-slate-600">A. Arrematação</div>
+                                <div id="resumo-analise-a-normal" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                                <div id="resumo-analise-a-rapida" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px]">
+                                <div class="px-3 py-2.5 text-slate-600">B. Impostos e Taxas</div>
+                                <div id="resumo-analise-b-normal" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                                <div id="resumo-analise-b-rapida" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-amber-50/80">
+                                <div class="px-3 py-2.5 text-amber-700 font-semibold">C. Custos Operacionais</div>
+                                <div id="resumo-analise-c-normal" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                                <div id="resumo-analise-c-rapida" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-blue-50/70">
+                                <div class="px-3 py-2.5 text-blue-700 font-semibold">D. Custo de Capital</div>
+                                <div id="resumo-analise-d-normal" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                                <div id="resumo-analise-d-rapida" class="px-3 py-2.5 text-right font-semibold text-slate-800">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[14px] bg-slate-900">
+                                <div class="px-3 py-2.5 text-white font-black">Total (A+B+C+D)</div>
+                                <div id="resumo-analise-total-normal" class="px-3 py-2.5 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="resumo-analise-total-rapida" class="px-3 py-2.5 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-slate-200 text-[15px] bg-emerald-50">
+                                <div class="px-3 py-2.5 text-emerald-700 font-black">Resultado</div>
+                                <div id="resumo-analise-res-normal" class="px-3 py-2.5 text-right font-black text-blue-600">R$ 0</div>
+                                <div id="resumo-analise-res-rapida" class="px-3 py-2.5 text-right font-black text-emerald-600">R$ 0</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -688,8 +700,129 @@
         <div id="tab-financeiro" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
+                <!-- Matriz Financeira por Cenário -->
+                <div class="lg:col-span-12 bg-slate-900 text-white p-5 rounded-2xl shadow-xl border border-slate-800">
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-3 mb-4">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400">Análise do Negócio</p>
+                            <h3 class="text-lg font-black">Matriz financeira por cenário</h3>
+                            <p class="text-xs text-slate-400">Visão consolidada com projeção comercial, investimento e resultado.</p>
+                        </div>
+                        <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Normal x Rápida</div>
+                        <input type="hidden" id="fin-venda-proj">
+                    </div>
+
+                    <div class="overflow-hidden rounded-xl border border-white/10">
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] bg-slate-950 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                <div class="px-3 py-2">Linha</div>
+                                <div class="px-3 py-2 text-right text-blue-300">Venda Normal</div>
+                                <div class="px-3 py-2 text-right text-emerald-300">Venda Rápida</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Preço de Venda</div>
+                                <div id="fin-cenario-preco-normal" class="px-3 py-2 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="fin-cenario-preco-rapida" class="px-3 py-2 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Comissões de Venda</div>
+                                <div id="fin-cenario-com-normal" class="px-3 py-2 text-right text-red-300">R$ 0</div>
+                                <div id="fin-cenario-com-rapida" class="px-3 py-2 text-right text-red-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Impostos Sobre Vendas</div>
+                                <div id="fin-cenario-imp-normal" class="px-3 py-2 text-right text-red-300">R$ 0</div>
+                                <div id="fin-cenario-imp-rapida" class="px-3 py-2 text-right text-red-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm bg-emerald-500/5">
+                                <div class="px-3 py-2 text-emerald-200 font-bold">Vendas Líquidas</div>
+                                <div id="fin-cenario-liq-normal" class="px-3 py-2 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="fin-cenario-liq-rapida" class="px-3 py-2 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">A. Arrematação</div>
+                                <div id="fin-cenario-a-normal" class="px-3 py-2 text-right text-white">R$ 0</div>
+                                <div id="fin-cenario-a-rapida" class="px-3 py-2 text-right text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">B. Impostos e Taxas (s/ Aquisição)</div>
+                                <div id="fin-cenario-b-normal" class="px-3 py-2 text-right text-white">R$ 0</div>
+                                <div id="fin-cenario-b-rapida" class="px-3 py-2 text-right text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">C. Custos Operacionais</div>
+                                <div id="fin-cenario-c-normal" class="px-3 py-2 text-right font-black text-amber-300">R$ 0</div>
+                                <div id="fin-cenario-c-rapida" class="px-3 py-2 text-right font-black text-amber-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">D. Custo de Capital</div>
+                                <div id="fin-cenario-d-normal" class="px-3 py-2 text-right text-blue-300">R$ 0</div>
+                                <div id="fin-cenario-d-rapida" class="px-3 py-2 text-right text-blue-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm bg-slate-950/70">
+                                <div class="px-3 py-2 text-white font-black">Investimento Total de Aquisição (A+B+C+D)</div>
+                                <div id="fin-cenario-total-normal" class="px-3 py-2 text-right font-black text-white">R$ 0</div>
+                                <div id="fin-cenario-total-rapida" class="px-3 py-2 text-right font-black text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Resultado Líquido</div>
+                                <div id="fin-cenario-resultado-normal" class="px-3 py-2 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="fin-cenario-resultado-rapida" class="px-3 py-2 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Lucro Mínimo Exigido sobre o Investimento</div>
+                                <div id="fin-cenario-lucro-min-normal" class="px-3 py-2 text-right font-black text-slate-200">R$ 0</div>
+                                <div id="fin-cenario-lucro-min-rapida" class="px-3 py-2 text-right font-black text-slate-200">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-sm">
+                                <div class="px-3 py-2 text-slate-300">Spred</div>
+                                <div id="fin-cenario-spred-normal" class="px-3 py-2 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="fin-cenario-spred-rapida" class="px-3 py-2 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                    </div>
+                    <div class="hidden" aria-hidden="true">
+                        <span id="fin-cenario-invest-normal">R$ 0</span>
+                        <span id="fin-cenario-invest-rapida">R$ 0</span>
+                        <span id="fin-cenario-lucro-normal">R$ 0</span>
+                        <span id="fin-cenario-lucro-rapida">R$ 0</span>
+                        <span id="fin-cenario-roi-normal">0,0%</span>
+                        <span id="fin-cenario-roi-rapida">0,0%</span>
+                    </div>
+                </div>
+
                 <!-- Coluna de Input (Left) -->
-                <div class="lg:col-span-8 space-y-4">
+                <div class="lg:col-span-12 space-y-4">
+                    <!-- Lance Máximo + Parâmetros de Venda -->
+                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-4">
+                        <div class="xl:col-span-8 p-4 bg-slate-900 rounded-xl text-white">
+                            <p class="text-[10px] font-bold text-emerald-400 uppercase mb-3"><i class="fas fa-gavel mr-2"></i>Sugestão de Lance Máximo</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-800 p-3 rounded-lg">
+                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Rápida</p>
+                                    <p id="calc-lance-rapida" class="text-lg font-black text-emerald-400">R$ 0</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg">
+                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Normal</p>
+                                    <p id="calc-lance-normal" class="text-lg font-black text-white">R$ 0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="xl:col-span-4">
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 h-full">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Parâmetros de Venda</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-3">
+                                    <div class="bg-slate-950/70 border border-white/10 rounded-lg px-3 py-2">
+                                        <label class="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Corretores (%)</label>
+                                        <input type="text" id="fin-com-corr-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full mt-1 bg-transparent p-0 border-0 rounded text-sm font-black text-white outline-none mask-percent" placeholder="0,00">
+                                    </div>
+                                    <div class="bg-slate-950/70 border border-white/10 rounded-lg px-3 py-2">
+                                        <label class="text-[9px] text-slate-400 uppercase font-bold tracking-widest">Impostos Venda (%)</label>
+                                        <input type="text" id="fin-imp-venda-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full mt-1 bg-transparent p-0 border-0 rounded text-sm font-black text-white outline-none mask-percent" placeholder="0,00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-bold text-slate-800 uppercase text-xs tracking-widest">
@@ -704,7 +837,7 @@
                         <div class="mb-5">
                             <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">A. Arrematação</p>
                             <div class="p-4 bg-slate-50 rounded-xl space-y-3">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div class="md:col-span-1">
                                         <label class="text-[9px] text-slate-500 uppercase font-bold">Valor do Lance (R$)</label>
                                         <input type="text" id="fin-lance" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm font-bold border-emerald-200 mask-money">
@@ -717,6 +850,10 @@
                                         <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
                                         <div id="calc-com-leilao" class="p-2 text-sm font-bold text-slate-600 bg-white border rounded-lg">R$ 0</div>
                                     </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Outros Custos (R$)</label>
+                                        <input type="text" id="fin-outros-arrem" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money" placeholder="0,00">
+                                    </div>
                                 </div>
                                 <div class="flex justify-between items-center pt-2 border-t border-slate-200">
                                     <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal A</span>
@@ -727,7 +864,7 @@
 
                         <!-- B. Impostos e Taxas -->
                         <div class="mb-5">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">B. Impostos e Taxas (s/ Lance)</p>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">B. Impostos e Taxas (s/ Aquisição)</p>
                             <div class="p-4 bg-slate-50 rounded-xl space-y-3">
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div>
@@ -909,83 +1046,13 @@
                             </div>
                         </div>
 
-                        <!-- Lance Máximo -->
-                        <div class="p-4 bg-slate-900 rounded-xl text-white">
-                            <p class="text-[10px] font-bold text-emerald-400 uppercase mb-3"><i class="fas fa-gavel mr-2"></i>Sugestão de Lance Máximo</p>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-slate-800 p-3 rounded-lg">
-                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Rápida</p>
-                                    <p id="calc-lance-rapida" class="text-lg font-black text-emerald-400">R$ 0</p>
-                                </div>
-                                <div class="bg-slate-800 p-3 rounded-lg">
-                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Normal</p>
-                                    <p id="calc-lance-normal" class="text-lg font-black text-white">R$ 0</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Coluna de Sumário (Right) -->
-                <div class="lg:col-span-4 space-y-6">
-                    <!-- Bloco Venda Projetada -->
-                    <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl border-t-4 border-emerald-500">
-                        <h3 class="font-bold mb-4 uppercase text-xs tracking-widest text-emerald-400">Projeção Comercial</h3>
-                        <div class="space-y-4">
-                             <div>
-                                <label class="text-[10px] text-slate-400 uppercase">Valor de Venda Alvo (R$)</label>
-                                <input type="text" id="fin-venda-proj" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-2 rounded-lg text-xl font-bold text-white outline-none mask-money">
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-4">
-                                <div>
-                                    <label class="text-[9px] text-slate-400">Corretores (%)</label>
-                                    <input type="text" id="fin-com-corr-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
-                                    <div id="calc-vlr-corretor" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
-                                </div>
-                                <div>
-                                    <label class="text-[9px] text-slate-400">Impostos Venda (%)</label>
-                                    <input type="text" id="fin-imp-venda-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
-                                    <div id="calc-vlr-impvenda" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
-                                </div>
-                            </div>
-                            <div class="bg-emerald-950/40 p-4 rounded-xl border border-emerald-800/50 space-y-2">
-                                <div class="flex justify-between items-center text-xs text-emerald-100">
-                                    <span>Venda Bruta</span>
-                                    <span id="res-venda-bruta">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs text-red-400">Despesas s/ Venda</span>
-                                    <span id="res-total-desp-venda" class="text-xs text-red-400">- R$ 0</span>
-                                </div>
-                                <div class="flex justify-between items-center pt-2 border-t border-emerald-800">
-                                    <span class="text-xs font-bold text-emerald-400">VENDA LÍQUIDA</span>
-                                    <span id="calc-venda-liq" class="text-lg font-black text-white">R$ 0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloco ROI & Resultado -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Invest. Total</p>
-                                    <p class="text-xl font-bold text-slate-800" id="calc-inv-total-roi">--</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Lucro Estimado</p>
-                                    <p class="text-xl font-bold text-emerald-600" id="calc-lucro-estimado">--</p>
-                                </div>
-                            </div>
-                            <div class="pt-4 border-t border-slate-100">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-sm font-bold text-slate-500">ROI PROJETADO</span>
-                                    <span class="text-2xl font-black text-slate-900" id="calc-roi-per">--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="hidden" aria-hidden="true">
+                    <span id="calc-inv-total-roi">--</span>
+                    <span id="calc-lucro-estimado">--</span>
+                    <span id="calc-roi-per">--</span>
                 </div>
             </div>
         </div>
@@ -1236,6 +1303,8 @@
             if (!items.length) {
                 return variant === 'presentation'
                     ? '<p class="text-white/35 text-base italic">Sem pregões registrados</p>'
+                    : variant === 'summary'
+                        ? '<p class="text-sm text-slate-400 italic md:col-span-2">Sem pregões registrados</p>'
                     : '<p class="text-[10px] text-slate-400">Nenhum leilão.</p>';
             }
 
@@ -1245,13 +1314,25 @@
                 const valor = Number(l.valor || 0).toLocaleString('pt-BR');
                 if (variant === 'presentation') {
                     return `
-                        <div class="bg-slate-900/70 border border-white/10 rounded-2xl p-4">
-                            <div class="flex items-start justify-between gap-5">
+                        <div class="bg-slate-900/70 border border-white/10 rounded-xl p-3">
+                            <div class="flex items-start justify-between gap-4">
                                 <div>
-                                    <p class="text-white font-black text-xl">${label}</p>
-                                    <p class="text-white/50 text-base mt-1">${date}</p>
+                                    <p class="text-white font-black text-lg">${label}</p>
+                                    <p class="text-white/50 text-sm mt-0.5">${date}</p>
                                 </div>
-                                <p class="text-emerald-400 font-black text-2xl whitespace-nowrap">R$ ${valor}</p>
+                                <p class="text-emerald-400 font-black text-xl whitespace-nowrap">R$ ${valor}</p>
+                            </div>
+                        </div>`;
+                }
+                if (variant === 'summary') {
+                    return `
+                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <p class="text-slate-900 font-black text-base">${label}</p>
+                                    <p class="text-slate-500 text-sm mt-0.5">${date}</p>
+                                </div>
+                                <p class="text-emerald-600 font-black text-lg whitespace-nowrap">R$ ${valor}</p>
                             </div>
                         </div>`;
                 }
@@ -1633,13 +1714,164 @@
             return 'R$ ' + (v || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
+        function setTextSafe(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = value;
+        }
+
+        function setMoneySafe(id, value) {
+            setTextSafe(id, fmtBRL(value));
+        }
+
+        function buildSaleScenario(precoVenda, comissaoVendaPer, impostoVendaPer, investimentoTotal) {
+            const preco = Number(precoVenda) || 0;
+            const comissaoVenda = preco * ((Number(comissaoVendaPer) || 0) / 100);
+            const impostoVenda = preco * ((Number(impostoVendaPer) || 0) / 100);
+            const vendaLiquida = preco - comissaoVenda - impostoVenda;
+            const resultado = vendaLiquida - (Number(investimentoTotal) || 0);
+            const roi = investimentoTotal > 0 ? (resultado / investimentoTotal) * 100 : 0;
+            return { preco, comissaoVenda, impostoVenda, vendaLiquida, resultado, roi };
+        }
+
+        function calculateMaxBidForZeroSpread(vendaLiquida, lucroMinVlr, acquisitionPercentFactor, fixedAcquisitionCosts, capitalRateFactor) {
+            const vendaLiquidaNum = Number(vendaLiquida) || 0;
+            const lucroMinNum = Number(lucroMinVlr) || 0;
+            const acquisitionFactor = 1 + (Number(acquisitionPercentFactor) || 0);
+            const capitalMultiplier = 1 + (Number(capitalRateFactor) || 0);
+            const fixedCosts = Number(fixedAcquisitionCosts) || 0;
+
+            if (acquisitionFactor <= 0 || capitalMultiplier <= 0) {
+                return 0;
+            }
+
+            const maxBid = (((vendaLiquidaNum - lucroMinNum) / capitalMultiplier) - fixedCosts) / acquisitionFactor;
+            return Math.max(0, maxBid || 0);
+        }
+
+        function getScenarioPrice(primary, fallback) {
+            const value = Number(primary) || 0;
+            if (value > 0) return value;
+            return Number(fallback) || 0;
+        }
+
+        function updatePresentationBusinessAnalysis(snapshot) {
+            if (!snapshot) return;
+            const common = snapshot.common || {};
+            const normal = snapshot.normal || {};
+            const rapida = snapshot.rapida || snapshot.maxima || {};
+
+            setMoneySafe('pres-analise-preco-normal', normal.preco);
+            setMoneySafe('pres-analise-preco-max', rapida.preco);
+            setMoneySafe('pres-analise-com-normal', normal.comissaoVenda);
+            setMoneySafe('pres-analise-com-max', rapida.comissaoVenda);
+            setMoneySafe('pres-analise-imp-normal', normal.impostoVenda);
+            setMoneySafe('pres-analise-imp-max', rapida.impostoVenda);
+            setMoneySafe('pres-analise-liq-normal', normal.vendaLiquida);
+            setMoneySafe('pres-analise-liq-max', rapida.vendaLiquida);
+            setMoneySafe('pres-analise-a-normal', common.subA);
+            setMoneySafe('pres-analise-a-max', common.subA);
+            setMoneySafe('pres-analise-b-normal', common.subB);
+            setMoneySafe('pres-analise-b-max', common.subB);
+            setMoneySafe('pres-analise-c-normal', common.subC);
+            setMoneySafe('pres-analise-c-max', common.subC);
+            setMoneySafe('pres-analise-d-normal', common.custoCapital);
+            setMoneySafe('pres-analise-d-max', common.custoCapital);
+            setMoneySafe('pres-analise-total-normal', common.invTotal);
+            setMoneySafe('pres-analise-total-max', common.invTotal);
+            setMoneySafe('pres-analise-res-normal', normal.resultado);
+            setMoneySafe('pres-analise-res-max', rapida.resultado);
+        }
+
+        function updateSummaryBusinessAnalysis(snapshot) {
+            if (!snapshot) return;
+            const common = snapshot.common || {};
+            const normal = snapshot.normal || {};
+            const rapida = snapshot.rapida || {};
+            const lanceConsiderado = fmtBRL(unmaskMoney(document.getElementById('fin-lance')?.value));
+
+            setTextSafe('resumo-lance-normal', document.getElementById('calc-lance-normal')?.innerText || fmtBRL(0));
+            setTextSafe('resumo-lance-rapida', document.getElementById('calc-lance-rapida')?.innerText || fmtBRL(0));
+            setTextSafe('resumo-lance-considerado-normal', lanceConsiderado);
+            setTextSafe('resumo-lance-considerado-rapida', lanceConsiderado);
+
+            setMoneySafe('resumo-analise-preco-normal', normal.preco);
+            setMoneySafe('resumo-analise-preco-rapida', rapida.preco);
+            setMoneySafe('resumo-analise-com-normal', normal.comissaoVenda);
+            setMoneySafe('resumo-analise-com-rapida', rapida.comissaoVenda);
+            setMoneySafe('resumo-analise-imp-normal', normal.impostoVenda);
+            setMoneySafe('resumo-analise-imp-rapida', rapida.impostoVenda);
+            setMoneySafe('resumo-analise-liq-normal', normal.vendaLiquida);
+            setMoneySafe('resumo-analise-liq-rapida', rapida.vendaLiquida);
+            setMoneySafe('resumo-analise-a-normal', common.subA);
+            setMoneySafe('resumo-analise-a-rapida', common.subA);
+            setMoneySafe('resumo-analise-b-normal', common.subB);
+            setMoneySafe('resumo-analise-b-rapida', common.subB);
+            setMoneySafe('resumo-analise-c-normal', common.subC);
+            setMoneySafe('resumo-analise-c-rapida', common.subC);
+            setMoneySafe('resumo-analise-d-normal', common.custoCapital);
+            setMoneySafe('resumo-analise-d-rapida', common.custoCapital);
+            setMoneySafe('resumo-analise-total-normal', common.invTotal);
+            setMoneySafe('resumo-analise-total-rapida', common.invTotal);
+            setMoneySafe('resumo-analise-res-normal', normal.resultado);
+            setMoneySafe('resumo-analise-res-rapida', rapida.resultado);
+        }
+
+        function fmtPercentValue(value) {
+            return (Number(value) || 0).toLocaleString('pt-BR', {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
+            }) + '%';
+        }
+
+        function updateFinanceScenarioMatrix(snapshot) {
+            if (!snapshot) return;
+            const common = snapshot.common || {};
+            const normal = snapshot.normal || {};
+            const rapida = snapshot.rapida || {};
+
+            setMoneySafe('fin-cenario-preco-normal', normal.preco);
+            setMoneySafe('fin-cenario-preco-rapida', rapida.preco);
+            setMoneySafe('fin-cenario-com-normal', normal.comissaoVenda);
+            setMoneySafe('fin-cenario-com-rapida', rapida.comissaoVenda);
+            setMoneySafe('fin-cenario-imp-normal', normal.impostoVenda);
+            setMoneySafe('fin-cenario-imp-rapida', rapida.impostoVenda);
+            setMoneySafe('fin-cenario-liq-normal', normal.vendaLiquida);
+            setMoneySafe('fin-cenario-liq-rapida', rapida.vendaLiquida);
+
+            setMoneySafe('fin-cenario-a-normal', common.subA);
+            setMoneySafe('fin-cenario-a-rapida', common.subA);
+            setMoneySafe('fin-cenario-b-normal', common.subB);
+            setMoneySafe('fin-cenario-b-rapida', common.subB);
+            setMoneySafe('fin-cenario-c-normal', common.subC);
+            setMoneySafe('fin-cenario-c-rapida', common.subC);
+            setMoneySafe('fin-cenario-d-normal', common.custoCapital);
+            setMoneySafe('fin-cenario-d-rapida', common.custoCapital);
+            setMoneySafe('fin-cenario-total-normal', common.invTotal);
+            setMoneySafe('fin-cenario-total-rapida', common.invTotal);
+            setMoneySafe('fin-cenario-resultado-normal', normal.resultado);
+            setMoneySafe('fin-cenario-resultado-rapida', rapida.resultado);
+            const lucroMinLabel = fmtBRL(common.lucroMinVlr);
+            setTextSafe('fin-cenario-lucro-min-normal', lucroMinLabel);
+            setTextSafe('fin-cenario-lucro-min-rapida', lucroMinLabel);
+            setMoneySafe('fin-cenario-spred-normal', (normal.resultado || 0) - (common.lucroMinVlr || 0));
+            setMoneySafe('fin-cenario-spred-rapida', (rapida.resultado || 0) - (common.lucroMinVlr || 0));
+
+            setMoneySafe('fin-cenario-invest-normal', common.invTotal);
+            setMoneySafe('fin-cenario-invest-rapida', common.invTotal);
+            setMoneySafe('fin-cenario-lucro-normal', normal.resultado);
+            setMoneySafe('fin-cenario-lucro-rapida', rapida.resultado);
+            setTextSafe('fin-cenario-roi-normal', fmtPercentValue(normal.roi));
+            setTextSafe('fin-cenario-roi-rapida', fmtPercentValue(rapida.roi));
+        }
+
         function updateFinanceCalcs() {
             const lance = unmaskMoney(document.getElementById('fin-lance').value);
             const comLeilaoPer = unmaskPercent(document.getElementById('fin-com-leilao-per').value);
+            const outrosCustosArrem = unmaskMoney(document.getElementById('fin-outros-arrem').value);
 
             // A. Arrematação
             const vlrComLeilao = lance * (comLeilaoPer / 100);
-            const subA = lance + vlrComLeilao;
+            const subA = lance + vlrComLeilao + outrosCustosArrem;
             document.getElementById('calc-com-leilao').innerText = fmtBRL(vlrComLeilao);
             document.getElementById('calc-sub-a').innerText = fmtBRL(subA);
 
@@ -1680,17 +1912,23 @@
             document.getElementById('calc-inv-total-roi').innerText = fmtBRL(invTotal);
 
             // Projeção Comercial
-            const vlrVenda = unmaskMoney(document.getElementById('fin-venda-proj').value);
+            const vendaProjInput = document.getElementById('fin-venda-proj');
+            const vlrVendaInformado = vendaProjInput ? unmaskMoney(vendaProjInput.value) : 0;
+            const fallbackVenda = getScenarioPrice(window._vendaRapida, window._vendaNormal);
+            const vlrVenda = vlrVendaInformado > 0 ? vlrVendaInformado : fallbackVenda;
+            if (vendaProjInput && vlrVendaInformado <= 0 && vlrVenda > 0) {
+                vendaProjInput.value = formatBRL(vlrVenda);
+            }
             const comCorrPer = unmaskPercent(document.getElementById('fin-com-corr-per').value);
             const impVendaPer = unmaskPercent(document.getElementById('fin-imp-venda-per').value);
             const vlrCorretor = vlrVenda * (comCorrPer / 100);
             const vlrImpVenda = vlrVenda * (impVendaPer / 100);
             const vendaLiq = vlrVenda - vlrCorretor - vlrImpVenda;
-            document.getElementById('calc-vlr-corretor').innerText = fmtBRL(vlrCorretor);
-            document.getElementById('calc-vlr-impvenda').innerText = fmtBRL(vlrImpVenda);
-            document.getElementById('res-venda-bruta').innerText = fmtBRL(vlrVenda);
-            document.getElementById('res-total-desp-venda').innerText = '- ' + fmtBRL(vlrCorretor + vlrImpVenda);
-            document.getElementById('calc-venda-liq').innerText = fmtBRL(vendaLiq);
+            setMoneySafe('calc-vlr-corretor', vlrCorretor);
+            setMoneySafe('calc-vlr-impvenda', vlrImpVenda);
+            setMoneySafe('res-venda-bruta', vlrVenda);
+            setTextSafe('res-total-desp-venda', '- ' + fmtBRL(vlrCorretor + vlrImpVenda));
+            setMoneySafe('calc-venda-liq', vendaLiq);
 
             // ROI (baseado no valor de venda projetado)
             const lucro = vendaLiq - invTotal;
@@ -1698,22 +1936,56 @@
             document.getElementById('calc-lucro-estimado').innerText = fmtBRL(lucro);
             document.getElementById('calc-roi-per').innerText = roi.toFixed(1) + '%';
 
-            // Lance Máximo: LanceMax = (VendaLiq - LucroMin - subC) / (1 + comLeilao% + itiv% + reg%)
             const lucroMinVlr = unmaskMoney(document.getElementById('fin-lucro-min-vlr').value);
-            const costMultiplier = 1 + (comLeilaoPer + itivPer + regPer) / 100;
-            const deductVenda = (1 - (comCorrPer + impVendaPer) / 100);
+            const lucroMinPer = unmaskPercent(document.getElementById('fin-lucro-min-per').value);
+            const precoNormal = getScenarioPrice(window._vendaNormal, vlrVenda);
+            const precoRapida = getScenarioPrice(window._vendaRapida, vlrVenda);
+            const precoMaxima = Math.max(precoNormal || 0, precoRapida || 0, vlrVenda || 0);
+            window._financeSnapshot = {
+                common: {
+                    subA,
+                    subB,
+                    subC,
+                    custoCapital,
+                    invTotal,
+                    lucroMinVlr,
+                    lucroMinPer,
+                    vlrVenda,
+                    outrosCustosArrem
+                },
+                normal: buildSaleScenario(precoNormal, comCorrPer, impVendaPer, invTotal),
+                rapida: buildSaleScenario(precoRapida, comCorrPer, impVendaPer, invTotal),
+                maxima: buildSaleScenario(precoMaxima, comCorrPer, impVendaPer, invTotal),
+                alvo: buildSaleScenario(vlrVenda, comCorrPer, impVendaPer, invTotal)
+            };
+            updateFinanceScenarioMatrix(window._financeSnapshot);
 
-            const vRapida = window._vendaRapida || 0;
-            if (vRapida > 0) {
-                const lanceRapida = ((vRapida * deductVenda) - lucroMinVlr - subC) / costMultiplier;
-                document.getElementById('calc-lance-rapida').innerText = fmtBRL(Math.max(0, lanceRapida));
-            }
+            // Lance Máximo: objetivo é gerar Spred = 0,00 no cenário escolhido.
+            // Logo, Resultado Líquido = Lucro Mínimo Exigido.
+            const acquisitionPercentFactor = (comLeilaoPer + itivPer + regPer) / 100;
+            const capitalRateFactor = (capPercent / 100) * capMeses;
+            const fixedAcquisitionCosts = outrosCustosArrem + subC;
+            const scenarioRapida = buildSaleScenario(precoRapida, comCorrPer, impVendaPer, 0);
+            const scenarioNormal = buildSaleScenario(precoNormal, comCorrPer, impVendaPer, 0);
 
-            const vNormal = window._vendaNormal || 0;
-            if (vNormal > 0) {
-                const lanceNormal = ((vNormal * deductVenda) - lucroMinVlr - subC) / costMultiplier;
-                document.getElementById('calc-lance-normal').innerText = fmtBRL(Math.max(0, lanceNormal));
-            }
+            const lanceRapida = calculateMaxBidForZeroSpread(
+                scenarioRapida.vendaLiquida,
+                lucroMinVlr,
+                acquisitionPercentFactor,
+                fixedAcquisitionCosts,
+                capitalRateFactor
+            );
+            const lanceNormal = calculateMaxBidForZeroSpread(
+                scenarioNormal.vendaLiquida,
+                lucroMinVlr,
+                acquisitionPercentFactor,
+                fixedAcquisitionCosts,
+                capitalRateFactor
+            );
+
+            document.getElementById('calc-lance-rapida').innerText = fmtBRL(lanceRapida);
+            document.getElementById('calc-lance-normal').innerText = fmtBRL(lanceNormal);
+            updateSummaryBusinessAnalysis(window._financeSnapshot);
         }
 
         function onLucroPerChange() {
@@ -1779,6 +2051,7 @@
                 const data = {
                     valor_arrematacao: unmaskMoney(document.getElementById('fin-lance').value),
                     comissao_leiloeiro_percent: unmaskPercent(document.getElementById('fin-com-leilao-per').value),
+                    outros_custos_arrematacao: unmaskMoney(document.getElementById('fin-outros-arrem').value),
                     itiv_percent: unmaskPercent(document.getElementById('fin-itiv-per').value),
                     registro_cartorio_percent: unmaskPercent(document.getElementById('fin-reg-per').value),
                     iptu_atrasado: unmaskMoney(document.getElementById('fin-iptu-attr').value),
@@ -1940,7 +2213,7 @@
 
         async function loadDetail() {
             try {
-                const res = await fetch(`/api/imoveis/${imovelId}`).then(r => r.json());
+            const res = await fetch(`/api/imoveis/${imovelId}`).then(r => r.json());
                 
                 currentStatus = res.status;
                 const isUnlocked = POST_PURCHASE_STATUSES.includes(currentStatus);
@@ -1957,26 +2230,7 @@
                 document.getElementById('detail-bairro').innerText = res.bairro || 'Não informado';
                 document.getElementById('detail-link').href = res.link_leilao;
 
-                // 1. Tab Resumo (KPIs & Refactored Layout)
-                if (res.kpis) {
-                    document.getElementById('kpi-roi').innerText = res.kpis.roi + '%';
-                    document.getElementById('kpi-lucro').innerText = 'R$ ' + res.kpis.lucro_bruto.toLocaleString('pt-BR');
-                    document.getElementById('kpi-investimento').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
-                    document.getElementById('kpi-margem').innerText = res.kpis.margem_venda + '%';
-                    
-                    // Left Column
-                    document.getElementById('resumo-venda-normal').innerText = 'R$ ' + (res.avaliacao.valor_venda_normal || 0).toLocaleString('pt-BR');
-                    document.getElementById('resumo-venda-rapida').innerText = 'R$ ' + (res.valor_estimado || 0).toLocaleString('pt-BR');
-                    document.getElementById('resumo-debitos').innerText = 'R$ ' + (res.financeiro.iptu_atrasado + res.financeiro.condominio_atrasado).toLocaleString('pt-BR');
-                    document.getElementById('resumo-total-custos').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
-                    document.getElementById('resumo-total-despesas').innerText = 'R$ ' + (res.kpis.comissao_vlr + res.kpis.impostos_vlr).toLocaleString('pt-BR');
-                    
-                    // Simple Bid Cap using Rule
-                    const costs = (res.financeiro.iptu_atrasado || 0) + (res.financeiro.condominio_atrasado || 0) + (res.financeiro.reforma || 0);
-                    const bidMax = (res.valor_estimado * 0.7) - costs;
-                    document.getElementById('resumo-lance-max').innerText = 'R$ ' + Math.max(0, bidMax).toLocaleString('pt-BR');
-                }
-
+                // 1. Tab Resumo
                 document.getElementById('resumo-tipo').innerText = res.tipo_imovel || '--';
                 document.getElementById('resumo-area-privativa').innerText = res.area_privativa ? `${res.area_privativa.toLocaleString('pt-BR')} m²` : '--';
                 document.getElementById('resumo-ocupacao').innerText = res.avaliacao?.ocupado ? 'Ocupado' : 'Desocupado';
@@ -1984,20 +2238,7 @@
                 // Right Column: Auctions History
                 currentLeiloes = Array.isArray(res.leiloes) ? res.leiloes : [];
                 const auctionList = document.getElementById('resumo-lista-leiloes');
-                auctionList.innerHTML = renderAuctionHistory(currentLeiloes, 'light');
-
-                // Get Vencedor (simplified, usually the last arrematado or highest bid)
-                const vencedor = currentLeiloes.find(l => l.status === 'Ganhamos' || l.status === 'Arrematado');
-                if (vencedor) {
-                    document.getElementById('resumo-lance-vencedor').innerText = 'R$ ' + Number(vencedor.valor || 0).toLocaleString('pt-BR');
-                    document.getElementById('resumo-resultado-status').innerText = 'VENCEMOS';
-                    document.getElementById('resumo-resultado-status').className = "px-2 py-1 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700";
-                    document.getElementById('resumo-resultado-data').innerText = formatAuctionDate(vencedor.data_iso || vencedor.data);
-                } else {
-                    document.getElementById('resumo-lance-vencedor').innerText = '--';
-                    document.getElementById('resumo-resultado-status').innerText = 'PENDENTE';
-                    document.getElementById('resumo-resultado-status').className = "px-2 py-1 rounded text-[9px] font-bold bg-slate-100 text-slate-500";
-                }
+                auctionList.innerHTML = renderAuctionHistory(currentLeiloes, 'summary');
 
                 // 2. Tab Cadastro
                 document.getElementById('cad-endereco-full').value = res.endereco || '';
@@ -2063,6 +2304,7 @@
                 const fin = res.financeiro.full_data;
                 document.getElementById('fin-lance').value = formatBRL(fin.valor_arrematacao);
                 document.getElementById('fin-com-leilao-per').value = formatPercent(fin.comissao_leiloeiro_percent);
+                document.getElementById('fin-outros-arrem').value = formatBRL(fin.outros_custos_arrematacao);
                 document.getElementById('fin-itiv-per').value = formatPercent(fin.itiv_percent);
                 document.getElementById('fin-reg-per').value = formatPercent(fin.registro_cartorio_percent);
                 document.getElementById('fin-iptu-attr').value = formatBRL(res.financeiro.iptu_atrasado);
@@ -2148,166 +2390,145 @@
         loadDetail();
     </script>
     <!-- Modal Apresentação -->
-    <div id="modal-presentation" class="fixed inset-0 bg-slate-950 z-[99999] hidden flex-col p-4 md:p-8 overflow-y-auto">
-        <button onclick="closePresentation()" class="absolute top-6 right-6 text-white/50 hover:text-white text-2xl z-50 no-print">
+    <div id="modal-presentation" class="fixed inset-0 bg-slate-950 z-[99999] hidden flex-col p-3 md:p-5 overflow-y-auto">
+        <button onclick="closePresentation()" class="absolute top-4 right-5 text-white/50 hover:text-white text-xl z-50 no-print">
             <i class="fas fa-times"></i>
         </button>
 
-        <div class="w-full max-w-[1600px] mx-auto space-y-5">
+        <div class="w-full max-w-[1560px] mx-auto space-y-3">
 
             <!-- Header -->
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 border-b border-white/10 pb-6">
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span id="pres-status" class="bg-emerald-500 text-slate-900 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-widest flex-shrink-0">--</span>
-                        <span id="pres-codigo" class="text-white/40 font-bold tracking-widest text-lg">--</span>
-                    </div>
-                    <h1 id="pres-endereco" class="text-4xl md:text-6xl font-black text-white leading-tight truncate">--</h1>
-                    <p id="pres-cidade-uf" class="text-xl md:text-2xl text-emerald-400 font-semibold mt-2">--</p>
-                </div>
-                <div class="flex gap-3 flex-shrink-0">
-                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10 text-center min-w-[130px]">
-                        <p class="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">ROI Projetado</p>
-                        <p id="pres-roi" class="text-5xl font-black text-emerald-400">0%</p>
-                    </div>
-                    <div class="bg-emerald-500 p-5 rounded-2xl text-center min-w-[150px] shadow-[0_0_30px_rgba(16,185,129,0.25)]">
-                        <p class="text-xs font-bold text-slate-900/60 uppercase tracking-widest mb-1">Lucro Estimado</p>
-                        <p id="pres-lucro" class="text-3xl font-black text-slate-900">R$ 0</p>
-                    </div>
-                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10 text-center min-w-[150px]">
-                        <p class="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">Investimento Total</p>
-                        <p id="pres-invest" class="text-3xl font-black text-white">R$ 0</p>
-                    </div>
+            <div class="border-b border-white/10 pb-3">
+                <div class="flex flex-wrap items-center gap-2.5 md:gap-3">
+                    <h1 id="pres-endereco" class="text-[2.4rem] md:text-[3rem] font-black text-white leading-[0.95] break-words mr-1">--</h1>
+                    <span id="pres-status" class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/25 text-emerald-300 text-[11px] font-black uppercase tracking-widest">--</span>
+                    <span id="pres-codigo" class="inline-flex items-center px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/55 text-[11px] md:text-xs font-black uppercase tracking-[0.18em]">--</span>
+                    <span id="pres-cidade-uf" class="inline-flex items-center px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-200 text-sm md:text-base font-semibold">--</span>
                 </div>
             </div>
 
             <!-- Body -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                 <!-- Coluna Visual (5 cols) -->
-                <div class="lg:col-span-5 space-y-4">
-                    <div class="rounded-[2rem] overflow-hidden border border-white/10 aspect-[4/3] relative bg-white/5">
+                <div class="lg:col-span-5 space-y-3">
+                    <div class="rounded-[1.5rem] overflow-hidden border border-white/10 aspect-[16/9] relative bg-white/5">
                         <img id="pres-foto-main" src="/static/img/placeholder-imovel.jpg" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-5 left-6">
+                        <div class="absolute bottom-4 left-5">
                             <p class="text-white font-bold text-sm">Vista Principal</p>
                             <p class="text-white/50 text-xs">Registro fotográfico</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-4 gap-3" id="pres-mini-gallery">
-                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
-                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
-                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
-                        <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
+                    <div class="grid grid-cols-4 gap-2" id="pres-mini-gallery">
+                        <div class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10"></div>
+                        <div class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10"></div>
+                        <div class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10"></div>
+                        <div class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10"></div>
                     </div>
                     <!-- Quick specs -->
-                    <div class="grid grid-cols-3 gap-3">
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Tipo</p>
-                            <p id="pres-tipo" class="text-white font-black text-xl">--</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                            <p class="text-[10px] font-bold text-white/40 uppercase mb-1">Tipo</p>
+                            <p id="pres-tipo" class="text-white font-black text-lg">--</p>
                         </div>
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Área Privativa</p>
-                            <p id="pres-area" class="text-white font-black text-xl">--</p>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                            <p class="text-[10px] font-bold text-white/40 uppercase mb-1">Área Privativa</p>
+                            <p id="pres-area" class="text-white font-black text-lg">--</p>
                         </div>
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Ocupação</p>
-                            <p id="pres-ocupado" class="text-white font-black text-xl">--</p>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/10">
+                            <p class="text-[10px] font-bold text-white/40 uppercase mb-1">Ocupação</p>
+                            <p id="pres-ocupado" class="text-white font-black text-lg">--</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Coluna de Dados (7 cols) -->
-                <div class="lg:col-span-7 space-y-4">
+                <div class="lg:col-span-7 space-y-3">
 
                     <!-- Histórico de Pregões -->
-                    <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
-                        <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
+                    <div class="bg-white/5 rounded-2xl border border-white/10 p-4">
+                        <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-3 flex items-center">
                             <i class="fas fa-gavel mr-2 text-emerald-400"></i> Histórico de Pregões
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="pres-leiloes">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="pres-leiloes">
                             <p class="text-white/20 text-base italic">Carregando...</p>
                         </div>
                     </div>
 
-                    <!-- Inteligência de Mercado -->
-                    <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
-                        <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
-                            <i class="fas fa-chart-line mr-2 text-emerald-400"></i> Inteligência de Mercado
-                        </h3>
-                        <div class="grid grid-cols-3 gap-5">
-                            <div>
-                                <p class="text-xs font-bold text-white/30 uppercase mb-1">Avaliação Oficial</p>
-                                <p id="pres-vlr-av" class="text-3xl md:text-4xl font-black text-white">R$ 0</p>
-                                <div class="h-0.5 bg-white/20 rounded-full mt-3"></div>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-blue-400/60 uppercase mb-1">Venda Normal</p>
-                                <p id="pres-vlr-normal" class="text-3xl md:text-4xl font-black text-blue-400">R$ 0</p>
-                                <div class="h-0.5 bg-blue-400/30 rounded-full mt-3"></div>
-                            </div>
-                            <div>
-                                <p class="text-xs font-bold text-emerald-400/60 uppercase mb-1">Venda Rápida</p>
-                                <p id="pres-vlr-rapida" class="text-3xl md:text-4xl font-black text-emerald-400">R$ 0</p>
-                                <div class="h-0.5 bg-emerald-400/30 rounded-full mt-3"></div>
-                            </div>
+                    <!-- Análise do Negócio -->
+                    <div class="bg-white/5 rounded-2xl border border-white/10 p-4">
+                        <div class="flex items-center justify-between gap-3 mb-2.5">
+                            <h3 class="text-white font-bold uppercase tracking-widest text-sm md:text-base flex items-center">
+                                <i class="fas fa-chart-pie mr-2 text-emerald-400"></i> Análise do Negócio
+                            </h3>
+                            <span class="text-[11px] font-black uppercase tracking-widest text-white/35">Venda Normal x Venda Rápida</span>
                         </div>
-                    </div>
-
-                    <!-- Lance Máximo -->
-                    <div class="bg-slate-800 rounded-[2rem] border border-white/10 p-6">
-                        <h3 class="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
-                            <i class="fas fa-gavel mr-2"></i> Sugestão de Lance Máximo
-                        </h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-slate-900 p-5 rounded-2xl">
-                                <p class="text-xs font-bold text-slate-400 uppercase mb-2">Venda Normal</p>
-                                <p id="pres-lance-normal" class="text-3xl md:text-4xl font-black text-blue-400">R$ 0</p>
-                                <p class="text-xs text-slate-500 mt-1">Cenário mercado</p>
+                        <div class="overflow-hidden rounded-xl border border-white/10">
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] bg-emerald-500/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-emerald-200 font-black uppercase tracking-widest text-[11px] md:text-xs">Sugestão de Lance Máximo</div>
+                                <div id="pres-lance-normal" class="px-3 py-2.5 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="pres-lance-rapida" class="px-3 py-2.5 text-right font-black text-emerald-300">R$ 0</div>
                             </div>
-                            <div class="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/30">
-                                <p class="text-xs font-bold text-emerald-400 uppercase mb-2">Venda Rápida</p>
-                                <p id="pres-lance-rapida" class="text-3xl md:text-4xl font-black text-emerald-400">R$ 0</p>
-                                <p class="text-xs text-emerald-400/60 mt-1">Maior margem de segurança</p>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 bg-white/[0.03] text-[14px] md:text-[15px]">
+                                <div class="px-3 py-2 text-white/55 font-semibold">Valor do lance considerado</div>
+                                <div id="pres-lance-considerado-normal" class="px-3 py-2 text-right font-bold text-white">R$ 0</div>
+                                <div id="pres-lance-considerado-rapida" class="px-3 py-2 text-right font-bold text-white">R$ 0</div>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Composição do Investimento -->
-                    <div class="grid grid-cols-1 gap-4">
-                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
-                            <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4">Composição do Investimento</h3>
-                            <div class="space-y-3 text-base">
-                                <div class="flex justify-between border-b border-white/10 pb-2">
-                                    <span class="text-white/50">A. Arrematação</span>
-                                    <span id="pres-sub-a" class="text-white font-black">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between border-b border-white/10 pb-2">
-                                    <span class="text-white/50">B. Impostos e Taxas</span>
-                                    <span id="pres-sub-b" class="text-white font-black">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between border-b border-white/10 pb-2">
-                                    <span class="text-white/50">C. Custos Operacionais</span>
-                                    <span id="pres-sub-c" class="text-amber-400 font-black">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between border-b border-white/10 pb-2">
-                                    <span class="text-white/50">D. Custo de Capital</span>
-                                    <span id="pres-sub-d" class="text-blue-400 font-black">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between pt-1">
-                                    <span class="text-white/80 font-black uppercase text-sm">Total A+B+C+D</span>
-                                    <span id="pres-invest-total" class="text-emerald-400 font-black text-2xl">R$ 0</span>
-                                </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] bg-slate-900/80 text-[11px] md:text-xs font-black uppercase tracking-widest text-white/45">
+                                <div class="px-3 py-2.5">Indicador</div>
+                                <div class="px-3 py-2.5 text-right text-blue-300">Venda Normal</div>
+                                <div class="px-3 py-2.5 text-right text-emerald-300">Venda Rápida</div>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-white/10 text-base space-y-2">
-                                <div class="flex justify-between">
-                                    <span class="text-white/40">Venda Alvo</span>
-                                    <span id="pres-venda-proj" class="text-white font-bold">R$ 0</span>
-                                </div>
-                                <div class="flex justify-between">
-                                    <span class="text-emerald-400/80">Venda Líquida</span>
-                                    <span id="pres-venda-liq" class="text-emerald-400 font-bold">R$ 0</span>
-                                </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">Preço de Venda</div>
+                                <div id="pres-analise-preco-normal" class="px-3 py-2.5 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="pres-analise-preco-max" class="px-3 py-2.5 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">Comissões de Venda</div>
+                                <div id="pres-analise-com-normal" class="px-3 py-2.5 text-right font-semibold text-red-300">R$ 0</div>
+                                <div id="pres-analise-com-max" class="px-3 py-2.5 text-right font-semibold text-red-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">Impostos Sobre Vendas</div>
+                                <div id="pres-analise-imp-normal" class="px-3 py-2.5 text-right font-semibold text-red-300">R$ 0</div>
+                                <div id="pres-analise-imp-max" class="px-3 py-2.5 text-right font-semibold text-red-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base bg-emerald-500/5">
+                                <div class="px-3 py-2.5 text-emerald-200 font-bold">Vendas Líquidas</div>
+                                <div id="pres-analise-liq-normal" class="px-3 py-2.5 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="pres-analise-liq-max" class="px-3 py-2.5 text-right font-black text-emerald-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">A. Arrematação</div>
+                                <div id="pres-analise-a-normal" class="px-3 py-2.5 text-right font-semibold text-white">R$ 0</div>
+                                <div id="pres-analise-a-max" class="px-3 py-2.5 text-right font-semibold text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">B. Impostos e Taxas</div>
+                                <div id="pres-analise-b-normal" class="px-3 py-2.5 text-right font-semibold text-white">R$ 0</div>
+                                <div id="pres-analise-b-max" class="px-3 py-2.5 text-right font-semibold text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">C. Custos Operacionais</div>
+                                <div id="pres-analise-c-normal" class="px-3 py-2.5 text-right font-semibold text-amber-300">R$ 0</div>
+                                <div id="pres-analise-c-max" class="px-3 py-2.5 text-right font-semibold text-amber-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base">
+                                <div class="px-3 py-2.5 text-white/60">D. Custo de Capital</div>
+                                <div id="pres-analise-d-normal" class="px-3 py-2.5 text-right font-semibold text-blue-300">R$ 0</div>
+                                <div id="pres-analise-d-max" class="px-3 py-2.5 text-right font-semibold text-blue-300">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[15px] md:text-base bg-slate-900/70">
+                                <div class="px-3 py-2.5 text-white/80 font-black">Total (A+B+C+D)</div>
+                                <div id="pres-analise-total-normal" class="px-3 py-2.5 text-right font-black text-white">R$ 0</div>
+                                <div id="pres-analise-total-max" class="px-3 py-2.5 text-right font-black text-white">R$ 0</div>
+                            </div>
+                            <div class="grid grid-cols-[1.35fr,1fr,1fr] border-t border-white/10 text-[17px] md:text-lg bg-emerald-500/10">
+                                <div class="px-3 py-2.5 text-emerald-200 font-black">Resultado</div>
+                                <div id="pres-analise-res-normal" class="px-3 py-2.5 text-right font-black text-blue-300">R$ 0</div>
+                                <div id="pres-analise-res-max" class="px-3 py-2.5 text-right font-black text-emerald-300">R$ 0</div>
                             </div>
                         </div>
                     </div>
@@ -2352,30 +2573,15 @@
             document.getElementById('pres-area').innerText = area ? area + ' m²' : "--";
             document.getElementById('pres-ocupado').innerText = document.getElementById('eval-ocupado')?.value === 'true' ? 'Ocupado' : 'Desocupado';
 
-            // Inteligência de Mercado
-            document.getElementById('pres-vlr-av').innerText = fmtBRL(unmaskMoney(document.getElementById('cad-vlr-av')?.value));
-            document.getElementById('pres-vlr-normal').innerText = fmtBRL(window._vendaNormal || 0);
-            document.getElementById('pres-vlr-rapida').innerText = fmtBRL(window._vendaRapida || 0);
+            updateFinanceCalcs();
+            setTextSafe('pres-lance-normal', document.getElementById('calc-lance-normal')?.innerText || fmtBRL(0));
+            setTextSafe('pres-lance-rapida', document.getElementById('calc-lance-rapida')?.innerText || fmtBRL(0));
+            const lanceConsiderado = fmtBRL(unmaskMoney(document.getElementById('fin-lance')?.value));
+            setTextSafe('pres-lance-considerado-normal', lanceConsiderado);
+            setTextSafe('pres-lance-considerado-rapida', lanceConsiderado);
 
-            // Lance Máximo (da Ficha Financeira)
-            document.getElementById('pres-lance-normal').innerText = document.getElementById('calc-lance-normal').innerText;
-            document.getElementById('pres-lance-rapida').innerText = document.getElementById('calc-lance-rapida').innerText;
-
-            // KPIs da Ficha Financeira
-            document.getElementById('pres-roi').innerText = document.getElementById('calc-roi-per').innerText;
-            document.getElementById('pres-lucro').innerText = document.getElementById('calc-lucro-estimado').innerText;
-            document.getElementById('pres-invest').innerText = document.getElementById('calc-inv-total').innerText;
-
-            // Composição do Investimento (subtotais A/B/C/D)
-            document.getElementById('pres-sub-a').innerText = document.getElementById('calc-sub-a').innerText;
-            document.getElementById('pres-sub-b').innerText = document.getElementById('calc-sub-b').innerText;
-            document.getElementById('pres-sub-c').innerText = document.getElementById('calc-sub-c').innerText;
-            document.getElementById('pres-sub-d').innerText = document.getElementById('calc-custo-capital').innerText;
-            document.getElementById('pres-invest-total').innerText = document.getElementById('calc-inv-total').innerText;
-
-            // Venda projetada e líquida
-            document.getElementById('pres-venda-proj').innerText = fmtBRL(unmaskMoney(document.getElementById('fin-venda-proj')?.value));
-            document.getElementById('pres-venda-liq').innerText = document.getElementById('calc-venda-liq').innerText;
+            // Análise do Negócio
+            updatePresentationBusinessAnalysis(window._financeSnapshot);
 
             // Fotos
             const fotos = getPhotoAnexos();
@@ -2384,10 +2590,10 @@
             const visibleFotos = fotos.slice(0, 4);
             const blanks = Math.max(0, 4 - visibleFotos.length);
             presGallery.innerHTML = visibleFotos.map((foto) =>
-                `<button type="button" class="aspect-square bg-white/5 rounded-2xl border border-white/10 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="setPresentationPhoto('${foto.url}')">
+                `<button type="button" class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="setPresentationPhoto('${foto.url}')">
                     <img src="${foto.url}" class="w-full h-full object-cover" alt="${foto.nome_original || 'Foto do imóvel'}">
                 </button>`
-            ).join('') + Array(blanks).fill('<div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>').join('');
+            ).join('') + Array(blanks).fill('<div class="h-16 md:h-20 bg-white/5 rounded-xl border border-white/10"></div>').join('');
 
             // Pregões
             document.getElementById('pres-leiloes').innerHTML = renderAuctionHistory(currentLeiloes, 'presentation');
@@ -2403,6 +2609,11 @@
         function closePresentation() {
             document.getElementById('modal-presentation').classList.add('hidden');
             document.body.style.overflow = 'auto';
+        }
+
+        function downloadExecutivePdf() {
+            if (!imovelId) return;
+            window.open(`/imovel/${imovelId}/pdf-executivo`, '_blank');
         }
 
         document.addEventListener('keydown', (e) => {

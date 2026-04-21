@@ -1,6 +1,7 @@
 import os
 import sys
 import traceback as _tb
+from io import BytesIO
 
 # Adiciona o diretório atual ao path para evitar erros de importação no uWSGI
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -9,12 +10,12 @@ _APP_DIR = os.path.dirname(os.path.abspath(__file__))
 _LOG_PATH = os.path.join(_APP_DIR, 'init_error.log')
 
 try:
-    from flask import Flask, jsonify, request, render_template, session, redirect, url_for
+    from flask import Flask, jsonify, request, render_template, session, redirect, url_for, send_file
     from functools import wraps
     from dotenv import load_dotenv
     from werkzeug.exceptions import RequestEntityTooLarge
     load_dotenv()
-    from src.core.routes.imoveis import imoveis_bp
+    from src.core.routes.imoveis import imoveis_bp, Session
     from src.core.schema_sync import sync_schema
     try:
         sync_schema()
@@ -108,6 +109,51 @@ def triagem():
 def detalhe(id):
     return render_template('detalhe.html', id=id)
 
+
+@app.route('/imovel/<int:id>/pdf-executivo')
+@login_required
+def detalhe_pdf_executivo(id):
+    try:
+        # Import tardio para que dependências opcionais do PDF não derrubem a aplicação inteira.
+        from src.core.services.executive_pdf_service import ExecutivePdfService
+    except ModuleNotFoundError as err:
+        missing_name = (err.name or "").split(".")[0]
+        if missing_name in {"PIL", "reportlab"}:
+            dependency_name = "Pillow" if missing_name == "PIL" else "reportlab"
+            return jsonify({
+                "error": (
+                    f"Dependência ausente para geração do PDF Executivo: {dependency_name}. "
+                    "Atualize o ambiente com `pip install -r requirements.txt`."
+                )
+            }), 503
+        raise
+
+    company_id = int(session.get('company_id') or request.args.get('company_id', 1))
+    db_session = Session()
+    try:
+        filename, pdf_bytes, _, _ = ExecutivePdfService.generate_for_imovel(
+            db_session,
+            imovel_id=id,
+            company_id=company_id,
+            root_path=app.root_path,
+            upload_root=app.config['UPLOAD_ROOT'],
+            output_root=os.path.join(app.root_path, 'output', 'pdf'),
+        )
+    except ValueError as err:
+        return jsonify({"error": str(err)}), 404
+    except Exception as err:
+        return jsonify({"error": f"Falha ao gerar PDF Executivo: {err}"}), 500
+    finally:
+        db_session.close()
+
+    return send_file(
+        BytesIO(pdf_bytes),
+        mimetype='application/pdf',
+        as_attachment=False,
+        download_name=filename,
+        max_age=0,
+    )
+
 @app.route('/calendario')
 @login_required
 def calendario():
@@ -128,6 +174,7 @@ def login():
         if email == "admin@ganduinvest.com.br" and password == "gandu123":
             session['user_id'] = 1
             session['user_name'] = "Admin Gandu"
+            session['company_id'] = 1
             return redirect(url_for('index'))
         else:
             return render_template('login.html', error="Credenciais inválidas. Tente novamente.")

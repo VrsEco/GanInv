@@ -224,11 +224,12 @@ def get_imovel(id):
             "iptu_atrasado": f.iptu_atrasado if f else 0,
             "condominio_atrasado": f.condominio_atrasado if f else 0,
             "outros": ((f.iptu_atrasado or 0) + (f.condominio_atrasado or 0) + (f.honorarios_advogado or 0)) if f else 0,
-            "full_data": {
-                "valor_arrematacao": f.valor_arrematacao if f else 0,
-                "comissao_leiloeiro_percent": f.comissao_leiloeiro_percent if f else 5,
-                "itiv_percent": f.itiv_percent if f else 0,
-                "itiv_vlr": f.itiv_vlr if f else 0,
+                "full_data": {
+                    "valor_arrematacao": f.valor_arrematacao if f else 0,
+                    "comissao_leiloeiro_percent": f.comissao_leiloeiro_percent if f else 5,
+                    "outros_custos_arrematacao": (f.outros_custos_arrematacao or 0) if f else 0,
+                    "itiv_percent": f.itiv_percent if f else 0,
+                    "itiv_vlr": f.itiv_vlr if f else 0,
                 "registro_cartorio_percent": f.registro_cartorio_percent if f else 0,
                 "registro_cartorio": f.registro_cartorio if f else 0,
                 "iptu_futuro": (f.iptu_futuro or 0) if f else 0,
@@ -261,6 +262,7 @@ def get_imovel(id):
         "kpis": FinanceService.calculate_full_sheet({
             "valor_arrematacao": f.valor_arrematacao if f else 0,
             "comissao_leiloeiro_percent": f.comissao_leiloeiro_percent if f else 5,
+            "outros_custos_arrematacao": (f.outros_custos_arrematacao or 0) if f else 0,
             "itiv_percent": f.itiv_percent if f else 0,
             "itiv_vlr": f.itiv_vlr if f else 0,
             "registro_cartorio_percent": f.registro_cartorio_percent if f else 0,
@@ -571,6 +573,7 @@ def update_financeiro(id):
         # Update Finance Fields
         f.valor_arrematacao = float(data.get('valor_arrematacao', 0) or 0)
         f.comissao_leiloeiro_percent = float(data.get('comissao_leiloeiro_percent', 5) or 0)
+        f.outros_custos_arrematacao = float(data.get('outros_custos_arrematacao', 0) or 0)
         
         f.itiv_percent = float(data.get('itiv_percent', 0) or 0)
         f.itiv_vlr = f.valor_arrematacao * (f.itiv_percent / 100)

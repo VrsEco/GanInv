@@ -13,6 +13,7 @@ EXPECTED_COLUMNS = {
     "fichas_financeiras": [
         ("valor_arrematacao", "FLOAT DEFAULT 0"),
         ("comissao_leiloeiro_percent", "FLOAT DEFAULT 5"),
+        ("outros_custos_arrematacao", "FLOAT DEFAULT 0"),
         ("itiv_percent", "FLOAT DEFAULT 0"),
         ("itiv_vlr", "FLOAT DEFAULT 0"),
         ("registro_cartorio_percent", "FLOAT DEFAULT 0"),
