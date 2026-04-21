@@ -695,11 +695,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div class="md:col-span-1">
                                         <label class="text-[9px] text-slate-500 uppercase font-bold">Valor do Lance (R$)</label>
-                                        <input type="text" id="fin-lance" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm font-bold border-emerald-200 mask-money">
+                                        <input type="text" id="fin-lance" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm font-bold border-emerald-200 mask-money">
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Comissão Leilão (%)</label>
-                                        <input type="text" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                        <input type="text" id="fin-com-leilao-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
@@ -720,7 +720,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">ITIV / ITBI (%)</label>
-                                        <input type="text" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                        <input type="text" id="fin-itiv-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Valor ITIV</label>
@@ -728,7 +728,7 @@
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Taxa Registro (%)</label>
-                                        <input type="text" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                        <input type="text" id="fin-reg-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Valor Registro</label>
@@ -750,7 +750,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-4">
                                         <label class="text-[9px] text-slate-500 uppercase">IPTU Atrasado (R$)</label>
-                                        <input type="text" id="fin-iptu-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                        <input type="text" id="fin-iptu-attr" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
                                     </div>
                                     <div class="col-span-3">
                                         <label class="text-[9px] text-slate-500 uppercase">Até</label>
@@ -765,7 +765,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-4">
                                         <label class="text-[9px] text-slate-500 uppercase">Condo Atrasado (R$)</label>
-                                        <input type="text" id="fin-condo-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                        <input type="text" id="fin-condo-attr" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
                                     </div>
                                     <div class="col-span-3">
                                         <label class="text-[9px] text-slate-500 uppercase">Até</label>
@@ -780,7 +780,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-6">
                                         <label class="text-[9px] text-slate-500 uppercase">IPTU Futuro (R$)</label>
-                                        <input type="text" id="fin-iptu-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-iptu-fut" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-6">
                                         <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses</label>
@@ -791,7 +791,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-6">
                                         <label class="text-[9px] text-slate-500 uppercase">Condo Futuro (R$)</label>
-                                        <input type="text" id="fin-condo-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-condo-fut" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-6">
                                         <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses</label>
@@ -802,7 +802,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-5">
                                         <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Desocupação (R$)</label>
-                                        <input type="text" id="fin-desocupacao" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-desocupacao" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-7">
                                         <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
@@ -813,7 +813,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-5">
                                         <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Reforma (R$)</label>
-                                        <input type="text" id="fin-reforma" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-reforma" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-7">
                                         <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
@@ -824,7 +824,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-5">
                                         <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Limpeza (R$)</label>
-                                        <input type="text" id="fin-limpeza" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-limpeza" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-7">
                                         <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
@@ -835,7 +835,7 @@
                                 <div class="grid grid-cols-12 gap-2 items-end">
                                     <div class="col-span-5">
                                         <label class="text-[9px] text-slate-500 uppercase">Contingências / Outros (R$)</label>
-                                        <input type="text" id="fin-conting" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                        <input type="text" id="fin-conting" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
                                     <div class="col-span-7">
                                         <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
@@ -856,7 +856,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses Estimados</label>
-                                        <input type="number" id="fin-cap-meses" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm" min="0" placeholder="0">
+                                        <input type="number" id="fin-cap-meses" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm" min="0" placeholder="0">
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">Total Investimento (A+B+C)</label>
@@ -864,7 +864,7 @@
                                     </div>
                                     <div>
                                         <label class="text-[9px] text-slate-500 uppercase">% Custo Capital Mensal</label>
-                                        <input type="text" id="fin-cap-percent" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                        <input type="text" id="fin-cap-percent" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                     </div>
                                 </div>
                                 <div class="flex justify-between items-center pt-2 border-t border-blue-200">
@@ -888,11 +888,11 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="text-[9px] text-slate-400 uppercase">Percentual (%)</label>
-                                    <input type="text" id="fin-lucro-min-per" oninput="onLucroPerChange()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                    <input type="text" id="fin-lucro-min-per" oninput="setTimeout(onLucroPerChange,0)" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                 </div>
                                 <div>
                                     <label class="text-[9px] text-slate-400 uppercase">Valor (R$)</label>
-                                    <input type="text" id="fin-lucro-min-vlr" oninput="onLucroVlrChange()" class="w-full p-2 border rounded-lg text-sm mask-money" placeholder="0,00">
+                                    <input type="text" id="fin-lucro-min-vlr" oninput="setTimeout(onLucroVlrChange,0)" class="w-full p-2 border rounded-lg text-sm mask-money" placeholder="0,00">
                                 </div>
                             </div>
                         </div>
@@ -922,17 +922,17 @@
                         <div class="space-y-4">
                              <div>
                                 <label class="text-[10px] text-slate-400 uppercase">Valor de Venda Alvo (R$)</label>
-                                <input type="text" id="fin-venda-proj" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-2 rounded-lg text-xl font-bold text-white outline-none mask-money">
+                                <input type="text" id="fin-venda-proj" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-2 rounded-lg text-xl font-bold text-white outline-none mask-money">
                             </div>
                             <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-4">
                                 <div>
                                     <label class="text-[9px] text-slate-400">Corretores (%)</label>
-                                    <input type="text" id="fin-com-corr-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
+                                    <input type="text" id="fin-com-corr-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
                                     <div id="calc-vlr-corretor" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
                                 </div>
                                 <div>
                                     <label class="text-[9px] text-slate-400">Impostos Venda (%)</label>
-                                    <input type="text" id="fin-imp-venda-per" oninput="updateFinanceCalcs()" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
+                                    <input type="text" id="fin-imp-venda-per" oninput="setTimeout(updateFinanceCalcs,0)" class="w-full bg-slate-800 border-slate-700 p-1 rounded text-sm text-white mask-percent" placeholder="0,00">
                                     <div id="calc-vlr-impvenda" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
                                 </div>
                             </div>
@@ -1136,10 +1136,21 @@
         }
 
         function applyPercentMask(e) {
-            let raw = e.target.value.replace(/[^\d]/g, '');
-            if (!raw) return e.target.value = '';
-            let num = (parseInt(raw) / 100).toFixed(2);
-            e.target.value = num.replace('.', ',');
+            // Máscara simples: permite dígitos e vírgula, máx 2 casas decimais
+            let val = e.target.value.replace(/[^\d,]/g, '');
+            const parts = val.split(',');
+            if (parts.length > 2) {
+                val = parts[0] + ',' + parts.slice(1).join('');
+            }
+            if (parts.length === 2 && parts[1].length > 2) {
+                val = parts[0] + ',' + parts[1].substring(0, 2);
+            }
+            e.target.value = val;
+        }
+
+        function formatPercentOnBlur(e) {
+            const num = unmaskPercent(e.target.value);
+            if (!isNaN(num)) e.target.value = formatPercent(num);
         }
 
         function formatPercent(val) {
@@ -1161,6 +1172,8 @@
             document.querySelectorAll('.mask-percent').forEach(input => {
                 input.removeEventListener('input', applyPercentMask);
                 input.addEventListener('input', applyPercentMask);
+                input.removeEventListener('blur', formatPercentOnBlur);
+                input.addEventListener('blur', formatPercentOnBlur);
             });
         }
 
