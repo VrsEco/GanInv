@@ -137,13 +137,29 @@ class FichaFinanceira(Base):
     registro_cartorio = Column(Float, default=0.0)
     
     desocupacao = Column(Float, default=0.0)
+    desocupacao_obs = Column(Text)
     reforma_prevista = Column(Float, default=0.0)
+    reforma_obs = Column(Text)
+    limpeza = Column(Float, default=0.0)
+    limpeza_obs = Column(Text)
     iptu_atrasado = Column(Float, default=0.0)
+    iptu_atrasado_ate = Column(String(7))
+    iptu_atrasado_obs = Column(Text)
     iptu_futuro = Column(Float, default=0.0)
+    iptu_futuro_meses = Column(Integer, default=0)
     condominio_atrasado = Column(Float, default=0.0)
+    condo_atrasado_ate = Column(String(7))
+    condo_atrasado_obs = Column(Text)
     condominio_futuro = Column(Float, default=0.0)
+    condo_futuro_meses = Column(Integer, default=0)
     honorarios_advogado = Column(Float, default=0.0)
-    
+    contingencia = Column(Float, default=0.0)
+    contingencia_obs = Column(Text)
+    custo_capital_meses = Column(Integer, default=0)
+    custo_capital_percent = Column(Float, default=0.0)
+    lucro_minimo_percent = Column(Float, default=0.0)
+    lucro_minimo_vlr = Column(Float, default=0.0)
+
     # Venda
     valor_venda_projetado = Column(Float, default=0.0)
     comissao_corretor_percent = Column(Float, default=5.0)
@@ -151,8 +167,6 @@ class FichaFinanceira(Base):
     impostos_venda_percent = Column(Float, default=0.0)
     impostos_venda_vlr = Column(Float, default=0.0)
     despesas_operacionais = Column(Float, default=0.0)
-    
-    contingencia = Column(Float, default=0.0)
     
     imovel = relationship("Imovel", back_populates="financeiro")
 

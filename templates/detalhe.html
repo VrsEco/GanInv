@@ -675,9 +675,9 @@
         <!-- Tab Ficha Financeira -->
         <div id="tab-financeiro" class="tab-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
+
                 <!-- Coluna de Input (Left) -->
-                <div class="lg:col-span-8 space-y-6">
+                <div class="lg:col-span-8 space-y-4">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-bold text-slate-800 uppercase text-xs tracking-widest">
@@ -687,85 +687,227 @@
                                 <i class="fas fa-sync-alt mr-2"></i> Gravar e Calcular
                             </button>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- Bloco A: Arrematação -->
-                            <div class="space-y-4">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase">A. Arrematação</p>
-                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
-                                    <div>
-                                        <label class="text-[10px] text-slate-500 uppercase font-bold">Valor do Lance (R$)</label>
+
+                        <!-- A. Arrematação -->
+                        <div class="mb-5">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">A. Arrematação</p>
+                            <div class="p-4 bg-slate-50 rounded-xl space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div class="md:col-span-1">
+                                        <label class="text-[9px] text-slate-500 uppercase font-bold">Valor do Lance (R$)</label>
                                         <input type="text" id="fin-lance" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm font-bold border-emerald-200 mask-money">
                                     </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Comissão Leilão (%)</label>
-                                            <input type="text" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
-                                        </div>
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
-                                            <div id="calc-com-leilao" class="p-2 text-sm font-bold text-slate-600">R$ 0</div>
-                                        </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Comissão Leilão (%)</label>
+                                        <input type="text" id="fin-com-leilao-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Vlr Comissão</label>
+                                        <div id="calc-com-leilao" class="p-2 text-sm font-bold text-slate-600 bg-white border rounded-lg">R$ 0</div>
                                     </div>
                                 </div>
-                                
-                                <p class="text-[10px] font-bold text-slate-400 uppercase">B. Impostos e Taxas (s/ Lance)</p>
-                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
-                                    <div class="grid grid-cols-2 gap-2 border-b pb-2">
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">ITIV / ITBI (%)</label>
-                                            <input type="text" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
-                                        </div>
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Valor ITIV</label>
-                                            <div id="calc-vlr-itiv" class="p-2 text-sm font-bold text-slate-800">R$ 0</div>
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Taxa Registro (%)</label>
-                                            <input type="text" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
-                                        </div>
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Valor Registro</label>
-                                            <div id="calc-vlr-reg" class="p-2 text-sm font-bold text-slate-800">R$ 0</div>
-                                        </div>
-                                    </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal A</span>
+                                    <span id="calc-sub-a" class="text-sm font-black text-slate-800">R$ 0</span>
                                 </div>
                             </div>
-                            
-                            <!-- Bloco C: Despesas Extras -->
-                            <div class="space-y-4">
-                                <p class="text-[10px] font-bold text-slate-400 uppercase">C. Custos Operacionais</p>
-                                <div class="p-4 bg-slate-50 rounded-xl space-y-3">
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">IPTU Atrasado</label>
-                                            <input type="text" id="fin-iptu-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
-                                        </div>
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">IPTU Futuro</label>
-                                            <input type="text" id="fin-iptu-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
-                                        </div>
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Condo Atrasado</label>
-                                            <input type="text" id="fin-condo-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
-                                        </div>
-                                        <div>
-                                            <label class="text-[9px] text-slate-500 uppercase">Condo Futuro</label>
-                                            <input type="text" id="fin-condo-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
-                                        </div>
+                        </div>
+
+                        <!-- B. Impostos e Taxas -->
+                        <div class="mb-5">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">B. Impostos e Taxas (s/ Lance)</p>
+                            <div class="p-4 bg-slate-50 rounded-xl space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">ITIV / ITBI (%)</label>
+                                        <input type="text" id="fin-itiv-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
                                     </div>
                                     <div>
-                                        <label class="text-[9px] text-slate-500 uppercase">Reforma / Limpeza / Desocupação</label>
+                                        <label class="text-[9px] text-slate-500 uppercase">Valor ITIV</label>
+                                        <div id="calc-vlr-itiv" class="p-2 text-sm font-bold text-slate-800 bg-white border rounded-lg">R$ 0</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Taxa Registro (%)</label>
+                                        <input type="text" id="fin-reg-per" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Valor Registro</label>
+                                        <div id="calc-vlr-reg" class="p-2 text-sm font-bold text-slate-800 bg-white border rounded-lg">R$ 0</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal B</span>
+                                    <span id="calc-sub-b" class="text-sm font-black text-slate-800">R$ 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- C. Custos Operacionais -->
+                        <div class="mb-5">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">C. Custos Operacionais</p>
+                            <div class="p-4 bg-slate-50 rounded-xl space-y-2">
+                                <!-- IPTU Atrasado -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-4">
+                                        <label class="text-[9px] text-slate-500 uppercase">IPTU Atrasado (R$)</label>
+                                        <input type="text" id="fin-iptu-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                    </div>
+                                    <div class="col-span-3">
+                                        <label class="text-[9px] text-slate-500 uppercase">Até</label>
+                                        <input type="text" id="fin-iptu-attr-ate" class="w-full p-2 border rounded-lg text-sm" placeholder="MM/AAAA" maxlength="7">
+                                    </div>
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-iptu-attr-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <!-- Condo Atrasado -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-4">
+                                        <label class="text-[9px] text-slate-500 uppercase">Condo Atrasado (R$)</label>
+                                        <input type="text" id="fin-condo-attr" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm text-red-600 mask-money">
+                                    </div>
+                                    <div class="col-span-3">
+                                        <label class="text-[9px] text-slate-500 uppercase">Até</label>
+                                        <input type="text" id="fin-condo-attr-ate" class="w-full p-2 border rounded-lg text-sm" placeholder="MM/AAAA" maxlength="7">
+                                    </div>
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-condo-attr-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <!-- IPTU Futuro -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-6">
+                                        <label class="text-[9px] text-slate-500 uppercase">IPTU Futuro (R$)</label>
+                                        <input type="text" id="fin-iptu-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                    <div class="col-span-6">
+                                        <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses</label>
+                                        <input type="number" id="fin-iptu-fut-meses" class="w-full p-2 border rounded-lg text-sm" min="0" placeholder="0">
+                                    </div>
+                                </div>
+                                <!-- Condo Futuro -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-6">
+                                        <label class="text-[9px] text-slate-500 uppercase">Condo Futuro (R$)</label>
+                                        <input type="text" id="fin-condo-fut" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                    <div class="col-span-6">
+                                        <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses</label>
+                                        <input type="number" id="fin-condo-fut-meses" class="w-full p-2 border rounded-lg text-sm" min="0" placeholder="0">
+                                    </div>
+                                </div>
+                                <!-- Desocupação -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Desocupação (R$)</label>
+                                        <input type="text" id="fin-desocupacao" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                    <div class="col-span-7">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-desocupacao-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <!-- Reforma -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Reforma (R$)</label>
                                         <input type="text" id="fin-reforma" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
-                                    <div>
-                                        <label class="text-[9px] text-slate-500 uppercase">Contingência / Outros</label>
+                                    <div class="col-span-7">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-reforma-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <!-- Limpeza -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Vlr Est. Limpeza (R$)</label>
+                                        <input type="text" id="fin-limpeza" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
+                                    </div>
+                                    <div class="col-span-7">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-limpeza-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <!-- Contingências -->
+                                <div class="grid grid-cols-12 gap-2 items-end">
+                                    <div class="col-span-5">
+                                        <label class="text-[9px] text-slate-500 uppercase">Contingências / Outros (R$)</label>
                                         <input type="text" id="fin-conting" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-money">
                                     </div>
+                                    <div class="col-span-7">
+                                        <label class="text-[9px] text-slate-500 uppercase">Obs.</label>
+                                        <input type="text" id="fin-conting-obs" class="w-full p-2 border rounded-lg text-sm" placeholder="Observação">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Subtotal C</span>
+                                    <span id="calc-sub-c" class="text-sm font-black text-slate-800">R$ 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- D. Custo de Capital -->
+                        <div class="mb-5">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">D. Custo de Capital</p>
+                            <div class="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-3">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Qtde de Meses Estimados</label>
+                                        <input type="number" id="fin-cap-meses" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm" min="0" placeholder="0">
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">Total Investimento (A+B+C)</label>
+                                        <div id="calc-abc-total" class="p-2 text-sm font-bold text-slate-700 bg-white border rounded-lg">R$ 0</div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] text-slate-500 uppercase">% Custo Capital Mensal</label>
+                                        <input type="text" id="fin-cap-percent" oninput="updateFinanceCalcs()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center pt-2 border-t border-blue-200">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase">Custo do Capital Total (D)</span>
+                                    <span id="calc-custo-capital" class="text-sm font-black text-blue-700">R$ 0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Investimento Total -->
+                        <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 mb-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-emerald-800 uppercase">Investimento Total de Aquisição (A+B+C+D)</span>
+                                <span id="calc-inv-total" class="text-lg font-black text-emerald-800">R$ 0</span>
+                            </div>
+                        </div>
+
+                        <!-- Lucro Mínimo -->
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 mb-4">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-2">Lucro Mínimo Exigido sobre o Investimento</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-[9px] text-slate-400 uppercase">Percentual (%)</label>
+                                    <input type="text" id="fin-lucro-min-per" oninput="onLucroPerChange()" class="w-full p-2 border rounded-lg text-sm mask-percent" placeholder="0,00">
+                                </div>
+                                <div>
+                                    <label class="text-[9px] text-slate-400 uppercase">Valor (R$)</label>
+                                    <input type="text" id="fin-lucro-min-vlr" oninput="onLucroVlrChange()" class="w-full p-2 border rounded-lg text-sm mask-money" placeholder="0,00">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lance Máximo -->
+                        <div class="p-4 bg-slate-900 rounded-xl text-white">
+                            <p class="text-[10px] font-bold text-emerald-400 uppercase mb-3"><i class="fas fa-gavel mr-2"></i>Sugestão de Lance Máximo</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-800 p-3 rounded-lg">
+                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Rápida</p>
+                                    <p id="calc-lance-rapida" class="text-lg font-black text-emerald-400">R$ 0</p>
+                                </div>
+                                <div class="bg-slate-800 p-3 rounded-lg">
+                                    <p class="text-[9px] text-slate-400 uppercase mb-1">Venda Normal</p>
+                                    <p id="calc-lance-normal" class="text-lg font-black text-white">R$ 0</p>
                                 </div>
                             </div>
                         </div>
@@ -794,7 +936,6 @@
                                     <div id="calc-vlr-impvenda" class="text-[10px] text-slate-500 mt-1 font-bold">R$ 0</div>
                                 </div>
                             </div>
-                            
                             <div class="bg-emerald-950/40 p-4 rounded-xl border border-emerald-800/50 space-y-2">
                                 <div class="flex justify-between items-center text-xs text-emerald-100">
                                     <span>Venda Bruta</span>
@@ -818,7 +959,7 @@
                             <div class="flex justify-between items-end">
                                 <div>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase">Invest. Total</p>
-                                    <p class="text-xl font-bold text-slate-800" id="calc-inv-total">--</p>
+                                    <p class="text-xl font-bold text-slate-800" id="calc-inv-total-roi">--</p>
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-bold text-slate-400 uppercase">Lucro Estimado</p>
@@ -1106,53 +1247,106 @@
 
         // Removido switchTab duplicado
 
+        function fmtBRL(v) {
+            return 'R$ ' + (v || 0).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
         function updateFinanceCalcs() {
             const lance = unmaskMoney(document.getElementById('fin-lance').value);
             const comLeilaoPer = unmaskPercent(document.getElementById('fin-com-leilao-per').value);
+
+            // A. Arrematação
+            const vlrComLeilao = lance * (comLeilaoPer / 100);
+            const subA = lance + vlrComLeilao;
+            document.getElementById('calc-com-leilao').innerText = fmtBRL(vlrComLeilao);
+            document.getElementById('calc-sub-a').innerText = fmtBRL(subA);
+
+            // B. Impostos e Taxas
             const itivPer = unmaskPercent(document.getElementById('fin-itiv-per').value);
             const regPer = unmaskPercent(document.getElementById('fin-reg-per').value);
-            
-            // Calc A and B
-            const vlrComLeilao = lance * (comLeilaoPer / 100);
             const vlrItiv = lance * (itivPer / 100);
             const vlrReg = lance * (regPer / 100);
-            
-            document.getElementById('calc-com-leilao').innerText = 'R$ ' + vlrComLeilao.toLocaleString('pt-BR');
-            document.getElementById('calc-vlr-itiv').innerText = 'R$ ' + vlrItiv.toLocaleString('pt-BR');
-            document.getElementById('calc-vlr-reg').innerText = 'R$ ' + vlrReg.toLocaleString('pt-BR');
+            document.getElementById('calc-vlr-itiv').innerText = fmtBRL(vlrItiv);
+            document.getElementById('calc-vlr-reg').innerText = fmtBRL(vlrReg);
+            const subB = vlrItiv + vlrReg;
+            document.getElementById('calc-sub-b').innerText = fmtBRL(subB);
 
-            // Coluna C: Outros Custos
+            // C. Custos Operacionais
             const iptuAttr = unmaskMoney(document.getElementById('fin-iptu-attr').value);
-            const iptuFut = unmaskMoney(document.getElementById('fin-iptu-fut').value);
             const condoAttr = unmaskMoney(document.getElementById('fin-condo-attr').value);
+            const iptuFut = unmaskMoney(document.getElementById('fin-iptu-fut').value);
             const condoFut = unmaskMoney(document.getElementById('fin-condo-fut').value);
+            const desocupacao = unmaskMoney(document.getElementById('fin-desocupacao').value);
             const reforma = unmaskMoney(document.getElementById('fin-reforma').value);
+            const limpeza = unmaskMoney(document.getElementById('fin-limpeza').value);
             const conting = unmaskMoney(document.getElementById('fin-conting').value);
+            const subC = iptuAttr + condoAttr + iptuFut + condoFut + desocupacao + reforma + limpeza + conting;
+            document.getElementById('calc-sub-c').innerText = fmtBRL(subC);
 
-            const totalInvest = lance + vlrComLeilao + vlrItiv + vlrReg + iptuAttr + iptuFut + condoAttr + condoFut + reforma + conting;
-            document.getElementById('calc-inv-total').innerText = 'R$ ' + totalInvest.toLocaleString('pt-BR');
+            // D. Custo de Capital
+            const abcTotal = subA + subB + subC;
+            document.getElementById('calc-abc-total').innerText = fmtBRL(abcTotal);
+            const capMeses = parseInt(document.getElementById('fin-cap-meses').value) || 0;
+            const capPercent = unmaskPercent(document.getElementById('fin-cap-percent').value);
+            const custoCapital = abcTotal * (capPercent / 100) * capMeses;
+            document.getElementById('calc-custo-capital').innerText = fmtBRL(custoCapital);
+
+            // Investimento Total A+B+C+D
+            const invTotal = abcTotal + custoCapital;
+            window._lastInvTotal = invTotal;
+            document.getElementById('calc-inv-total').innerText = fmtBRL(invTotal);
+            document.getElementById('calc-inv-total-roi').innerText = fmtBRL(invTotal);
 
             // Projeção Comercial
             const vlrVenda = unmaskMoney(document.getElementById('fin-venda-proj').value);
             const comCorrPer = unmaskPercent(document.getElementById('fin-com-corr-per').value);
             const impVendaPer = unmaskPercent(document.getElementById('fin-imp-venda-per').value);
-
             const vlrCorretor = vlrVenda * (comCorrPer / 100);
             const vlrImpVenda = vlrVenda * (impVendaPer / 100);
             const vendaLiq = vlrVenda - vlrCorretor - vlrImpVenda;
+            document.getElementById('calc-vlr-corretor').innerText = fmtBRL(vlrCorretor);
+            document.getElementById('calc-vlr-impvenda').innerText = fmtBRL(vlrImpVenda);
+            document.getElementById('res-venda-bruta').innerText = fmtBRL(vlrVenda);
+            document.getElementById('res-total-desp-venda').innerText = '- ' + fmtBRL(vlrCorretor + vlrImpVenda);
+            document.getElementById('calc-venda-liq').innerText = fmtBRL(vendaLiq);
 
-            document.getElementById('calc-vlr-corretor').innerText = 'R$ ' + vlrCorretor.toLocaleString('pt-BR');
-            document.getElementById('calc-vlr-impvenda').innerText = 'R$ ' + vlrImpVenda.toLocaleString('pt-BR');
-            document.getElementById('res-venda-bruta').innerText = 'R$ ' + vlrVenda.toLocaleString('pt-BR');
-            document.getElementById('res-total-desp-venda').innerText = '- R$ ' + (vlrCorretor + vlrImpVenda).toLocaleString('pt-BR');
-            document.getElementById('calc-venda-liq').innerText = 'R$ ' + vendaLiq.toLocaleString('pt-BR');
-
-            // ROI
-            const lucro = vendaLiq - totalInvest;
-            const roi = totalInvest > 0 ? (lucro / totalInvest) * 100 : 0;
-
-            document.getElementById('calc-lucro-estimado').innerText = 'R$ ' + lucro.toLocaleString('pt-BR');
+            // ROI (baseado no valor de venda projetado)
+            const lucro = vendaLiq - invTotal;
+            const roi = invTotal > 0 ? (lucro / invTotal) * 100 : 0;
+            document.getElementById('calc-lucro-estimado').innerText = fmtBRL(lucro);
             document.getElementById('calc-roi-per').innerText = roi.toFixed(1) + '%';
+
+            // Lance Máximo: LanceMax = (VendaLiq - LucroMin - subC) / (1 + comLeilao% + itiv% + reg%)
+            const lucroMinVlr = unmaskMoney(document.getElementById('fin-lucro-min-vlr').value);
+            const costMultiplier = 1 + (comLeilaoPer + itivPer + regPer) / 100;
+            const deductVenda = (1 - (comCorrPer + impVendaPer) / 100);
+
+            const vRapida = window._vendaRapida || 0;
+            if (vRapida > 0) {
+                const lanceRapida = ((vRapida * deductVenda) - lucroMinVlr - subC) / costMultiplier;
+                document.getElementById('calc-lance-rapida').innerText = fmtBRL(Math.max(0, lanceRapida));
+            }
+
+            const vNormal = window._vendaNormal || 0;
+            if (vNormal > 0) {
+                const lanceNormal = ((vNormal * deductVenda) - lucroMinVlr - subC) / costMultiplier;
+                document.getElementById('calc-lance-normal').innerText = fmtBRL(Math.max(0, lanceNormal));
+            }
+        }
+
+        function onLucroPerChange() {
+            const per = unmaskPercent(document.getElementById('fin-lucro-min-per').value);
+            const vlr = (window._lastInvTotal || 0) * (per / 100);
+            document.getElementById('fin-lucro-min-vlr').value = formatBRL(vlr);
+            updateFinanceCalcs();
+        }
+
+        function onLucroVlrChange() {
+            const vlr = unmaskMoney(document.getElementById('fin-lucro-min-vlr').value);
+            const invTotal = window._lastInvTotal || 0;
+            const per = invTotal > 0 ? (vlr / invTotal) * 100 : 0;
+            document.getElementById('fin-lucro-min-per').value = formatPercent(per);
+            updateFinanceCalcs();
         }
 
         let checklistData = {};
@@ -1206,11 +1400,27 @@
                     itiv_percent: unmaskPercent(document.getElementById('fin-itiv-per').value),
                     registro_cartorio_percent: unmaskPercent(document.getElementById('fin-reg-per').value),
                     iptu_atrasado: unmaskMoney(document.getElementById('fin-iptu-attr').value),
+                    iptu_atrasado_ate: document.getElementById('fin-iptu-attr-ate').value,
+                    iptu_atrasado_obs: document.getElementById('fin-iptu-attr-obs').value,
                     iptu_futuro: unmaskMoney(document.getElementById('fin-iptu-fut').value),
+                    iptu_futuro_meses: parseInt(document.getElementById('fin-iptu-fut-meses').value) || 0,
                     condominio_atrasado: unmaskMoney(document.getElementById('fin-condo-attr').value),
+                    condo_atrasado_ate: document.getElementById('fin-condo-attr-ate').value,
+                    condo_atrasado_obs: document.getElementById('fin-condo-attr-obs').value,
                     condominio_futuro: unmaskMoney(document.getElementById('fin-condo-fut').value),
+                    condo_futuro_meses: parseInt(document.getElementById('fin-condo-fut-meses').value) || 0,
+                    desocupacao: unmaskMoney(document.getElementById('fin-desocupacao').value),
+                    desocupacao_obs: document.getElementById('fin-desocupacao-obs').value,
                     reforma_prevista: unmaskMoney(document.getElementById('fin-reforma').value),
+                    reforma_obs: document.getElementById('fin-reforma-obs').value,
+                    limpeza: unmaskMoney(document.getElementById('fin-limpeza').value),
+                    limpeza_obs: document.getElementById('fin-limpeza-obs').value,
                     contingencia: unmaskMoney(document.getElementById('fin-conting').value),
+                    contingencia_obs: document.getElementById('fin-conting-obs').value,
+                    custo_capital_meses: parseInt(document.getElementById('fin-cap-meses').value) || 0,
+                    custo_capital_percent: unmaskPercent(document.getElementById('fin-cap-percent').value),
+                    lucro_minimo_percent: unmaskPercent(document.getElementById('fin-lucro-min-per').value),
+                    lucro_minimo_vlr: unmaskMoney(document.getElementById('fin-lucro-min-vlr').value),
                     valor_venda_projetado: unmaskMoney(document.getElementById('fin-venda-proj').value),
                     comissao_corretor_percent: unmaskPercent(document.getElementById('fin-com-corr-per').value),
                     impostos_venda_percent: unmaskPercent(document.getElementById('fin-imp-venda-per').value)
@@ -1473,25 +1683,35 @@
                 document.getElementById('fin-itiv-per').value = formatPercent(fin.itiv_percent);
                 document.getElementById('fin-reg-per').value = formatPercent(fin.registro_cartorio_percent);
                 document.getElementById('fin-iptu-attr').value = formatBRL(res.financeiro.iptu_atrasado);
+                document.getElementById('fin-iptu-attr-ate').value = fin.iptu_atrasado_ate || '';
+                document.getElementById('fin-iptu-attr-obs').value = fin.iptu_atrasado_obs || '';
                 document.getElementById('fin-iptu-fut').value = formatBRL(fin.iptu_futuro);
+                document.getElementById('fin-iptu-fut-meses').value = fin.iptu_futuro_meses || '';
                 document.getElementById('fin-condo-attr').value = formatBRL(res.financeiro.condominio_atrasado);
+                document.getElementById('fin-condo-attr-ate').value = fin.condo_atrasado_ate || '';
+                document.getElementById('fin-condo-attr-obs').value = fin.condo_atrasado_obs || '';
                 document.getElementById('fin-condo-fut').value = formatBRL(fin.condominio_futuro);
-                document.getElementById('fin-reforma').value = formatBRL(res.financeiro.reforma);
+                document.getElementById('fin-condo-fut-meses').value = fin.condo_futuro_meses || '';
+                document.getElementById('fin-desocupacao').value = formatBRL(fin.desocupacao);
+                document.getElementById('fin-desocupacao-obs').value = fin.desocupacao_obs || '';
+                document.getElementById('fin-reforma').value = formatBRL(fin.reforma_prevista);
+                document.getElementById('fin-reforma-obs').value = fin.reforma_obs || '';
+                document.getElementById('fin-limpeza').value = formatBRL(fin.limpeza);
+                document.getElementById('fin-limpeza-obs').value = fin.limpeza_obs || '';
                 document.getElementById('fin-conting').value = formatBRL(fin.contingencia);
+                document.getElementById('fin-conting-obs').value = fin.contingencia_obs || '';
+                document.getElementById('fin-cap-meses').value = fin.custo_capital_meses || '';
+                document.getElementById('fin-cap-percent').value = formatPercent(fin.custo_capital_percent);
+                document.getElementById('fin-lucro-min-per').value = formatPercent(fin.lucro_minimo_percent);
+                document.getElementById('fin-lucro-min-vlr').value = formatBRL(fin.lucro_minimo_vlr);
                 document.getElementById('fin-venda-proj').value = formatBRL(fin.valor_venda_projetado);
                 document.getElementById('fin-com-corr-per').value = formatPercent(fin.comissao_corretor_percent);
                 document.getElementById('fin-imp-venda-per').value = formatPercent(fin.impostos_venda_percent);
-                
+
+                window._vendaRapida = res.valor_estimado || 0;
+                window._vendaNormal = res.avaliacao ? (res.avaliacao.valor_venda_normal || 0) : 0;
+
                 updateFinanceCalcs();
-                
-                // Update UI Calcs
-                if (res.kpis) {
-                    document.getElementById('calc-com-leilao').innerText = 'R$ ' + res.kpis.custos_detalhe.comissao_leiloeiro.toLocaleString('pt-BR');
-                    document.getElementById('calc-venda-liq').innerText = 'R$ ' + res.kpis.venda_liquida_02.toLocaleString('pt-BR');
-                    document.getElementById('calc-inv-total').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
-                    document.getElementById('calc-lucro-estimado').innerText = 'R$ ' + res.kpis.lucro_bruto.toLocaleString('pt-BR');
-                    document.getElementById('calc-roi-per').innerText = res.kpis.roi + '%';
-                }
 
                 // Others
                 renderChecklist(res.documentacao.checklist);

@@ -148,13 +148,31 @@ def get_imovel(id):
                 "itiv_vlr": f.itiv_vlr if f else 0,
                 "registro_cartorio_percent": f.registro_cartorio_percent if f else 0,
                 "registro_cartorio": f.registro_cartorio if f else 0,
-                "condominio_futuro": f.condominio_futuro if f else 0,
+                "iptu_futuro": (f.iptu_futuro or 0) if f else 0,
+                "iptu_futuro_meses": (f.iptu_futuro_meses or 0) if f else 0,
+                "iptu_atrasado_ate": (f.iptu_atrasado_ate or "") if f else "",
+                "iptu_atrasado_obs": (f.iptu_atrasado_obs or "") if f else "",
+                "condo_atrasado_ate": (f.condo_atrasado_ate or "") if f else "",
+                "condo_atrasado_obs": (f.condo_atrasado_obs or "") if f else "",
+                "condo_futuro_meses": (f.condo_futuro_meses or 0) if f else 0,
+                "condominio_futuro": (f.condominio_futuro or 0) if f else 0,
+                "desocupacao": (f.desocupacao or 0) if f else 0,
+                "desocupacao_obs": (f.desocupacao_obs or "") if f else "",
+                "reforma_prevista": (f.reforma_prevista or 0) if f else 0,
+                "reforma_obs": (f.reforma_obs or "") if f else "",
+                "limpeza": (f.limpeza or 0) if f else 0,
+                "limpeza_obs": (f.limpeza_obs or "") if f else "",
+                "contingencia": (f.contingencia or 0) if f else 0,
+                "contingencia_obs": (f.contingencia_obs or "") if f else "",
+                "custo_capital_meses": (f.custo_capital_meses or 0) if f else 0,
+                "custo_capital_percent": (f.custo_capital_percent or 0) if f else 0,
+                "lucro_minimo_percent": (f.lucro_minimo_percent or 0) if f else 0,
+                "lucro_minimo_vlr": (f.lucro_minimo_vlr or 0) if f else 0,
                 "honorarios_advogado": (f.honorarios_advogado or 0) if f else 0,
                 "valor_venda_projetado": f.valor_venda_projetado if f else 0,
                 "comissao_corretor_percent": f.comissao_corretor_percent if f else 5,
                 "impostos_venda_percent": f.impostos_venda_percent if f else 0,
-                "despesas_operacionais": f.despesas_operacionais if f else 0,
-                "contingencia": f.contingencia if f else 0
+                "despesas_operacionais": f.despesas_operacionais if f else 0
             }
         },
         "kpis": FinanceService.calculate_full_sheet({
@@ -478,12 +496,27 @@ def update_financeiro(id):
         f.registro_cartorio = f.valor_arrematacao * (f.registro_cartorio_percent / 100)
         
         f.iptu_atrasado = float(data.get('iptu_atrasado', 0) or 0)
+        f.iptu_atrasado_ate = data.get('iptu_atrasado_ate', '')
+        f.iptu_atrasado_obs = data.get('iptu_atrasado_obs', '')
         f.iptu_futuro = float(data.get('iptu_futuro', 0) or 0)
+        f.iptu_futuro_meses = int(data.get('iptu_futuro_meses', 0) or 0)
         f.condominio_atrasado = float(data.get('condominio_atrasado', 0) or 0)
+        f.condo_atrasado_ate = data.get('condo_atrasado_ate', '')
+        f.condo_atrasado_obs = data.get('condo_atrasado_obs', '')
         f.condominio_futuro = float(data.get('condominio_futuro', 0) or 0)
-        
+        f.condo_futuro_meses = int(data.get('condo_futuro_meses', 0) or 0)
+        f.desocupacao = float(data.get('desocupacao', 0) or 0)
+        f.desocupacao_obs = data.get('desocupacao_obs', '')
         f.reforma_prevista = float(data.get('reforma_prevista', 0) or 0)
+        f.reforma_obs = data.get('reforma_obs', '')
+        f.limpeza = float(data.get('limpeza', 0) or 0)
+        f.limpeza_obs = data.get('limpeza_obs', '')
         f.contingencia = float(data.get('contingencia', 0) or 0)
+        f.contingencia_obs = data.get('contingencia_obs', '')
+        f.custo_capital_meses = int(data.get('custo_capital_meses', 0) or 0)
+        f.custo_capital_percent = float(data.get('custo_capital_percent', 0) or 0)
+        f.lucro_minimo_percent = float(data.get('lucro_minimo_percent', 0) or 0)
+        f.lucro_minimo_vlr = float(data.get('lucro_minimo_vlr', 0) or 0)
         
         f.valor_venda_projetado = float(data.get('valor_venda_projetado', 0) or 0)
         f.comissao_corretor_percent = float(data.get('comissao_corretor_percent', 5) or 0)
