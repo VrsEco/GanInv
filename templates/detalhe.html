@@ -136,6 +136,23 @@
                 <!-- Lado Esquerdo: Avaliação / Financeiro (Col 3) -->
                 <div class="lg:col-span-3 space-y-4">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Dados do Imóvel</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Tipo</span>
+                                <span class="font-bold text-slate-800" id="resumo-tipo">--</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1 border-b">
+                                <span class="text-slate-500">Área Privativa</span>
+                                <span class="font-bold text-slate-800" id="resumo-area-privativa">--</span>
+                            </div>
+                            <div class="flex justify-between text-xs py-1">
+                                <span class="text-slate-500">Ocupação</span>
+                                <span class="font-bold text-slate-800" id="resumo-ocupacao">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h3 class="font-bold text-slate-800 mb-4 uppercase text-[10px] tracking-widest border-b pb-2">Avaliação & Financeiro</h3>
                         <div class="space-y-3">
                             <div class="flex justify-between text-xs py-1 border-b">
@@ -149,10 +166,6 @@
                             <div class="flex justify-between text-xs py-1 border-b text-red-500">
                                 <span class="text-slate-500">Débitos Condo/IPTU</span>
                                 <span class="font-bold" id="resumo-debitos">R$ 0</span>
-                            </div>
-                            <div class="flex justify-between text-xs py-1 border-b">
-                                <span class="text-slate-500">Está Ocupado?</span>
-                                <span class="font-bold text-slate-700" id="resumo-ocupado">--</span>
                             </div>
                             <div class="flex justify-between text-xs py-1 border-b">
                                 <span class="text-slate-500">Total de Custos</span>
@@ -176,12 +189,12 @@
                         <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden relative group">
                             <img id="detail-main-photo" src="/static/img/placeholder-imovel.jpg" alt="Imóvel" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
-                                <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-left"></i></button>
-                                <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-right"></i></button>
+                                <button onclick="event.stopPropagation(); changeSummaryPhoto(-1)" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition"><i class="fas fa-chevron-left"></i></button>
+                                <button onclick="event.stopPropagation(); changeSummaryPhoto(1)" class="p-3 bg-white/20 backdrop-blur rounded-full text-white hover:bg-white/30 transition"><i class="fas fa-chevron-right"></i></button>
                             </div>
                             <div id="detail-photo-counter" class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">0 / 0</div>
                         </div>
-                        <div class="grid grid-cols-4 gap-2 mt-4">
+                        <div id="detail-summary-thumbs" class="grid grid-cols-4 gap-2 mt-4">
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
@@ -517,10 +530,6 @@
                             <div class="flex justify-between border-b pb-2">
                                 <span class="text-slate-500">Cidade/UF</span>
                                 <span id="detail-cidade-uf">--</span>
-                            </div>
-                            <div class="flex justify-between border-b pb-2">
-                                <span class="text-slate-500">Leiloeiro</span>
-                                <span id="detail-leiloeiro">--</span>
                             </div>
                             <div class="flex justify-between border-b pb-2">
                                 <span class="text-slate-500">Bairro</span>
@@ -1082,6 +1091,8 @@
         const imovelId = pathParts[pathParts.length - 1];
         let currentStatus = '';
         let currentAnexos = [];
+        let currentPhotoIndex = 0;
+        let currentLeiloes = [];
         const MAX_UPLOAD_SIZE_MB = {{ config.get('MAX_UPLOAD_SIZE_MB', 15) }};
         const POST_PURCHASE_STATUSES = ['Arrematado', 'Em reforma', 'Vendido'];
 
@@ -1195,6 +1206,67 @@
             return `${unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`;
         }
 
+        function formatAuctionLabel(tipo) {
+            const raw = String(tipo || '').trim();
+            if (!raw) return 'Pregão';
+            const numeric = raw.match(/^(\d+)$/);
+            if (numeric) return `${numeric[1]}º Leilão`;
+            const ordinal = raw.match(/^(\d+)[º°o]?$/i);
+            if (ordinal) return `${ordinal[1]}º Leilão`;
+            return raw;
+        }
+
+        function formatAuctionDate(value) {
+            if (!value) return '--';
+            const date = new Date(value);
+            if (!Number.isNaN(date.getTime())) {
+                return date.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            return String(value).replace('T', ' ');
+        }
+
+        function renderAuctionHistory(leiloes, variant = 'light') {
+            const items = Array.isArray(leiloes) ? leiloes : [];
+            if (!items.length) {
+                return variant === 'presentation'
+                    ? '<p class="text-white/35 text-base italic">Sem pregões registrados</p>'
+                    : '<p class="text-[10px] text-slate-400">Nenhum leilão.</p>';
+            }
+
+            return items.map((l) => {
+                const label = formatAuctionLabel(l.tipo);
+                const date = formatAuctionDate(l.data_iso || l.data);
+                const valor = Number(l.valor || 0).toLocaleString('pt-BR');
+                if (variant === 'presentation') {
+                    return `
+                        <div class="bg-slate-900/70 border border-white/10 rounded-2xl p-4">
+                            <div class="flex items-start justify-between gap-5">
+                                <div>
+                                    <p class="text-white font-black text-xl">${label}</p>
+                                    <p class="text-white/50 text-base mt-1">${date}</p>
+                                </div>
+                                <p class="text-emerald-400 font-black text-2xl whitespace-nowrap">R$ ${valor}</p>
+                            </div>
+                        </div>`;
+                }
+
+                return `
+                    <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-800">${label}</p>
+                            <p class="text-[9px] text-slate-500">${date}</p>
+                        </div>
+                        <p class="text-[11px] font-bold text-slate-700">R$ ${valor}</p>
+                    </div>`;
+            }).join('');
+        }
+
         function getAnexosByCategory(categoria) {
             return currentAnexos.filter(a => a.categoria === categoria);
         }
@@ -1238,14 +1310,72 @@
             await deleteAnexo(event, anexo.id);
         }
 
-        function renderPhotoGallery(anexos) {
-            const fotosGallery = document.getElementById('fotos-gallery');
-            const fotos = anexos.filter(a => a.categoria === 'Foto');
+        function getPhotoAnexos() {
+            return currentAnexos.filter(a => a.categoria === 'Foto');
+        }
+
+        function setSummaryPhoto(index) {
+            const fotos = getPhotoAnexos();
             const mainPhoto = document.getElementById('detail-main-photo');
             const counter = document.getElementById('detail-photo-counter');
 
-            mainPhoto.src = fotos.length ? fotos[0].url : '/static/img/placeholder-imovel.jpg';
-            counter.innerText = fotos.length ? `1 / ${fotos.length}` : '0 / 0';
+            if (!fotos.length) {
+                currentPhotoIndex = 0;
+                mainPhoto.src = '/static/img/placeholder-imovel.jpg';
+                counter.innerText = '0 / 0';
+                renderSummaryPhotoThumbs(fotos);
+                return;
+            }
+
+            currentPhotoIndex = ((index % fotos.length) + fotos.length) % fotos.length;
+            mainPhoto.src = fotos[currentPhotoIndex].url;
+            counter.innerText = `${currentPhotoIndex + 1} / ${fotos.length}`;
+            renderSummaryPhotoThumbs(fotos);
+        }
+
+        function changeSummaryPhoto(direction) {
+            const fotos = getPhotoAnexos();
+            if (!fotos.length) return;
+            setSummaryPhoto(currentPhotoIndex + direction);
+        }
+
+        function renderSummaryPhotoThumbs(fotos) {
+            const thumbs = document.getElementById('detail-summary-thumbs');
+            if (!thumbs) return;
+
+            if (!fotos.length) {
+                thumbs.innerHTML = Array(4).fill('<div class="aspect-square bg-slate-100 rounded-lg border border-dashed border-slate-200"></div>').join('');
+                return;
+            }
+
+            const visible = fotos.slice(0, 3);
+            const remaining = Math.max(0, fotos.length - visible.length);
+            thumbs.innerHTML = visible.map((a, index) => {
+                const isActive = index === currentPhotoIndex;
+                const overlay = remaining > 0 && index === 2
+                    ? `<div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-black">+${remaining}</div>`
+                    : '';
+                return `
+                    <button type="button" onclick="setSummaryPhoto(${index})" class="relative aspect-square rounded-lg overflow-hidden border ${isActive ? 'border-emerald-500 ring-2 ring-emerald-200' : 'border-slate-200'} bg-slate-100 hover:opacity-90 transition">
+                        <img src="${a.url}" class="w-full h-full object-cover" alt="${a.nome_original || 'Foto do imóvel'}">
+                        ${overlay}
+                    </button>`;
+            }).join('') + `
+                <button type="button" onclick="triggerUpload('Foto')" class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 text-slate-400 text-xs font-bold hover:border-emerald-500 hover:text-emerald-500 transition">
+                    <i class="fas fa-plus"></i>
+                </button>`;
+        }
+
+        function setPresentationPhoto(src) {
+            const main = document.getElementById('pres-foto-main');
+            if (main && src) main.src = src;
+        }
+
+        function renderPhotoGallery(anexos) {
+            const fotosGallery = document.getElementById('fotos-gallery');
+            const fotos = anexos.filter(a => a.categoria === 'Foto');
+            currentPhotoIndex = Math.min(currentPhotoIndex, Math.max(0, fotos.length - 1));
+            setSummaryPhoto(currentPhotoIndex);
 
             fotosGallery.innerHTML = fotos.map(a => `
                 <div class="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
@@ -1766,7 +1896,6 @@
                 document.getElementById('detail-endereco').innerText = res.endereco;
                 document.getElementById('detail-status-badge').innerText = res.status;
                 document.getElementById('detail-cidade-uf').innerText = `${res.cidade} - ${res.estado}`;
-                document.getElementById('detail-leiloeiro').innerText = res.leiloeiro;
                 document.getElementById('detail-bairro').innerText = res.bairro || 'Não informado';
                 document.getElementById('detail-link').href = res.link_leilao;
 
@@ -1781,7 +1910,6 @@
                     document.getElementById('resumo-venda-normal').innerText = 'R$ ' + (res.avaliacao.valor_venda_normal || 0).toLocaleString('pt-BR');
                     document.getElementById('resumo-venda-rapida').innerText = 'R$ ' + (res.valor_estimado || 0).toLocaleString('pt-BR');
                     document.getElementById('resumo-debitos').innerText = 'R$ ' + (res.financeiro.iptu_atrasado + res.financeiro.condominio_atrasado).toLocaleString('pt-BR');
-                    document.getElementById('resumo-ocupado').innerText = res.avaliacao.ocupado ? 'SIM' : 'NÃO';
                     document.getElementById('resumo-total-custos').innerText = 'R$ ' + res.kpis.investimento_total.toLocaleString('pt-BR');
                     document.getElementById('resumo-total-despesas').innerText = 'R$ ' + (res.kpis.comissao_vlr + res.kpis.impostos_vlr).toLocaleString('pt-BR');
                     
@@ -1791,25 +1919,22 @@
                     document.getElementById('resumo-lance-max').innerText = 'R$ ' + Math.max(0, bidMax).toLocaleString('pt-BR');
                 }
 
+                document.getElementById('resumo-tipo').innerText = res.tipo_imovel || '--';
+                document.getElementById('resumo-area-privativa').innerText = res.area_privativa ? `${res.area_privativa.toLocaleString('pt-BR')} m²` : '--';
+                document.getElementById('resumo-ocupacao').innerText = res.avaliacao?.ocupado ? 'Ocupado' : 'Desocupado';
+
                 // Right Column: Auctions History
+                currentLeiloes = Array.isArray(res.leiloes) ? res.leiloes : [];
                 const auctionList = document.getElementById('resumo-lista-leiloes');
-                auctionList.innerHTML = res.leiloes.map(l => `
-                    <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-0">
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-800">${l.tipo}</p>
-                            <p class="text-[9px] text-slate-500">${l.data}</p>
-                        </div>
-                        <p class="text-[11px] font-bold text-slate-700">R$ ${l.valor.toLocaleString('pt-BR')}</p>
-                    </div>
-                `).join('') || '<p class="text-[10px] text-slate-400">Nenhum leilão.</p>';
+                auctionList.innerHTML = renderAuctionHistory(currentLeiloes, 'light');
 
                 // Get Vencedor (simplified, usually the last arrematado or highest bid)
-                const vencedor = res.leiloes.find(l => l.status === 'Ganhamos' || l.status === 'Arrematado');
+                const vencedor = currentLeiloes.find(l => l.status === 'Ganhamos' || l.status === 'Arrematado');
                 if (vencedor) {
-                    document.getElementById('resumo-lance-vencedor').innerText = 'R$ ' + vencedor.valor.toLocaleString('pt-BR');
+                    document.getElementById('resumo-lance-vencedor').innerText = 'R$ ' + Number(vencedor.valor || 0).toLocaleString('pt-BR');
                     document.getElementById('resumo-resultado-status').innerText = 'VENCEMOS';
                     document.getElementById('resumo-resultado-status').className = "px-2 py-1 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700";
-                    document.getElementById('resumo-resultado-data').innerText = vencedor.data;
+                    document.getElementById('resumo-resultado-data').innerText = formatAuctionDate(vencedor.data_iso || vencedor.data);
                 } else {
                     document.getElementById('resumo-lance-vencedor').innerText = '--';
                     document.getElementById('resumo-resultado-status').innerText = 'PENDENTE';
@@ -1910,7 +2035,6 @@
 
                 window._vendaRapida = res.valor_estimado || 0;
                 window._vendaNormal = res.avaliacao ? (res.avaliacao.valor_venda_normal || 0) : 0;
-                window._leiloeiro = res.leiloeiro || '--';
 
                 updateFinanceCalcs();
 
@@ -1944,15 +2068,15 @@
 
                 // Leiloes list
                 const list = document.getElementById('list-leiloes');
-                list.innerHTML = res.leiloes.map(l => `
+                list.innerHTML = currentLeiloes.length ? currentLeiloes.map(l => `
                     <div class="flex items-center p-2 bg-slate-50 rounded border text-[10px]">
                         <div class="flex-1">
-                            <p class="font-bold">${l.tipo}</p>
-                            <p class="text-slate-500">${l.data}</p>
+                            <p class="font-bold">${formatAuctionLabel(l.tipo)}</p>
+                            <p class="text-slate-500">${formatAuctionDate(l.data_iso || l.data)}</p>
                         </div>
-                        <p class="font-bold">R$ ${l.valor.toLocaleString('pt-BR')}</p>
+                        <p class="font-bold">R$ ${Number(l.valor || 0).toLocaleString('pt-BR')}</p>
                     </div>
-                `).join('');
+                `).join('') : '<p class="text-[10px] text-slate-400">Nenhum leilão.</p>';
 
                 // Listeners
                 initMasks();
@@ -1977,24 +2101,24 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-5 border-b border-white/10 pb-6">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-2">
-                        <span id="pres-status" class="bg-emerald-500 text-slate-900 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest flex-shrink-0">--</span>
-                        <span id="pres-codigo" class="text-white/40 font-bold tracking-widest text-sm">--</span>
+                        <span id="pres-status" class="bg-emerald-500 text-slate-900 px-4 py-1.5 rounded-full text-sm font-black uppercase tracking-widest flex-shrink-0">--</span>
+                        <span id="pres-codigo" class="text-white/40 font-bold tracking-widest text-lg">--</span>
                     </div>
-                    <h1 id="pres-endereco" class="text-3xl md:text-5xl font-black text-white leading-tight truncate">--</h1>
-                    <p id="pres-cidade-uf" class="text-base text-emerald-400 font-medium mt-1">--</p>
+                    <h1 id="pres-endereco" class="text-4xl md:text-6xl font-black text-white leading-tight truncate">--</h1>
+                    <p id="pres-cidade-uf" class="text-xl md:text-2xl text-emerald-400 font-semibold mt-2">--</p>
                 </div>
                 <div class="flex gap-3 flex-shrink-0">
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10 text-center min-w-[130px]">
-                        <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">ROI Projetado</p>
-                        <p id="pres-roi" class="text-4xl font-black text-emerald-400">0%</p>
+                        <p class="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">ROI Projetado</p>
+                        <p id="pres-roi" class="text-5xl font-black text-emerald-400">0%</p>
                     </div>
                     <div class="bg-emerald-500 p-5 rounded-2xl text-center min-w-[150px] shadow-[0_0_30px_rgba(16,185,129,0.25)]">
-                        <p class="text-[9px] font-bold text-slate-900/60 uppercase tracking-widest mb-1">Lucro Estimado</p>
-                        <p id="pres-lucro" class="text-2xl font-black text-slate-900">R$ 0</p>
+                        <p class="text-xs font-bold text-slate-900/60 uppercase tracking-widest mb-1">Lucro Estimado</p>
+                        <p id="pres-lucro" class="text-3xl font-black text-slate-900">R$ 0</p>
                     </div>
                     <div class="bg-white/5 p-5 rounded-2xl border border-white/10 text-center min-w-[150px]">
-                        <p class="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1">Investimento Total</p>
-                        <p id="pres-invest" class="text-2xl font-black text-white">R$ 0</p>
+                        <p class="text-xs font-bold text-white/40 uppercase tracking-widest mb-1">Investimento Total</p>
+                        <p id="pres-invest" class="text-3xl font-black text-white">R$ 0</p>
                     </div>
                 </div>
             </div>
@@ -2019,22 +2143,18 @@
                         <div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>
                     </div>
                     <!-- Quick specs -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-3 gap-3">
                         <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Tipo</p>
-                            <p id="pres-tipo" class="text-white font-bold text-sm">--</p>
+                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Tipo</p>
+                            <p id="pres-tipo" class="text-white font-black text-xl">--</p>
                         </div>
                         <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Área Privativa</p>
-                            <p id="pres-area" class="text-white font-bold text-sm">--</p>
+                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Área Privativa</p>
+                            <p id="pres-area" class="text-white font-black text-xl">--</p>
                         </div>
                         <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Ocupação</p>
-                            <p id="pres-ocupado" class="text-white font-bold text-sm">--</p>
-                        </div>
-                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10">
-                            <p class="text-[9px] font-bold text-white/40 uppercase mb-1">Leiloeiro</p>
-                            <p id="pres-leiloeiro" class="text-white font-bold text-sm">--</p>
+                            <p class="text-xs font-bold text-white/40 uppercase mb-1">Ocupação</p>
+                            <p id="pres-ocupado" class="text-white font-black text-xl">--</p>
                         </div>
                     </div>
                 </div>
@@ -2042,25 +2162,35 @@
                 <!-- Coluna de Dados (7 cols) -->
                 <div class="lg:col-span-7 space-y-4">
 
+                    <!-- Histórico de Pregões -->
+                    <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
+                        <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
+                            <i class="fas fa-gavel mr-2 text-emerald-400"></i> Histórico de Pregões
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="pres-leiloes">
+                            <p class="text-white/20 text-base italic">Carregando...</p>
+                        </div>
+                    </div>
+
                     <!-- Inteligência de Mercado -->
                     <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
-                        <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-4 flex items-center">
+                        <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
                             <i class="fas fa-chart-line mr-2 text-emerald-400"></i> Inteligência de Mercado
                         </h3>
                         <div class="grid grid-cols-3 gap-5">
                             <div>
-                                <p class="text-[9px] font-bold text-white/30 uppercase mb-1">Avaliação Oficial</p>
-                                <p id="pres-vlr-av" class="text-2xl font-black text-white">R$ 0</p>
+                                <p class="text-xs font-bold text-white/30 uppercase mb-1">Avaliação Oficial</p>
+                                <p id="pres-vlr-av" class="text-3xl md:text-4xl font-black text-white">R$ 0</p>
                                 <div class="h-0.5 bg-white/20 rounded-full mt-3"></div>
                             </div>
                             <div>
-                                <p class="text-[9px] font-bold text-blue-400/60 uppercase mb-1">Venda Normal</p>
-                                <p id="pres-vlr-normal" class="text-2xl font-black text-blue-400">R$ 0</p>
+                                <p class="text-xs font-bold text-blue-400/60 uppercase mb-1">Venda Normal</p>
+                                <p id="pres-vlr-normal" class="text-3xl md:text-4xl font-black text-blue-400">R$ 0</p>
                                 <div class="h-0.5 bg-blue-400/30 rounded-full mt-3"></div>
                             </div>
                             <div>
-                                <p class="text-[9px] font-bold text-emerald-400/60 uppercase mb-1">Venda Rápida</p>
-                                <p id="pres-vlr-rapida" class="text-2xl font-black text-emerald-400">R$ 0</p>
+                                <p class="text-xs font-bold text-emerald-400/60 uppercase mb-1">Venda Rápida</p>
+                                <p id="pres-vlr-rapida" class="text-3xl md:text-4xl font-black text-emerald-400">R$ 0</p>
                                 <div class="h-0.5 bg-emerald-400/30 rounded-full mt-3"></div>
                             </div>
                         </div>
@@ -2068,50 +2198,50 @@
 
                     <!-- Lance Máximo -->
                     <div class="bg-slate-800 rounded-[2rem] border border-white/10 p-6">
-                        <h3 class="text-emerald-400 font-bold uppercase tracking-widest text-[10px] mb-4 flex items-center">
+                        <h3 class="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-4 flex items-center">
                             <i class="fas fa-gavel mr-2"></i> Sugestão de Lance Máximo
                         </h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-slate-900 p-5 rounded-2xl">
-                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-2">Venda Normal</p>
-                                <p id="pres-lance-normal" class="text-2xl font-black text-blue-400">R$ 0</p>
-                                <p class="text-[9px] text-slate-500 mt-1">Cenário mercado</p>
+                                <p class="text-xs font-bold text-slate-400 uppercase mb-2">Venda Normal</p>
+                                <p id="pres-lance-normal" class="text-3xl md:text-4xl font-black text-blue-400">R$ 0</p>
+                                <p class="text-xs text-slate-500 mt-1">Cenário mercado</p>
                             </div>
                             <div class="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/30">
-                                <p class="text-[9px] font-bold text-emerald-400 uppercase mb-2">Venda Rápida</p>
-                                <p id="pres-lance-rapida" class="text-2xl font-black text-emerald-400">R$ 0</p>
-                                <p class="text-[9px] text-emerald-400/60 mt-1">Maior margem de segurança</p>
+                                <p class="text-xs font-bold text-emerald-400 uppercase mb-2">Venda Rápida</p>
+                                <p id="pres-lance-rapida" class="text-3xl md:text-4xl font-black text-emerald-400">R$ 0</p>
+                                <p class="text-xs text-emerald-400/60 mt-1">Maior margem de segurança</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Composição + Pregões -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-5">
-                            <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-4">Composição do Investimento</h3>
-                            <div class="space-y-2 text-xs">
+                    <!-- Composição do Investimento -->
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-6">
+                            <h3 class="text-white font-bold uppercase tracking-widest text-sm mb-4">Composição do Investimento</h3>
+                            <div class="space-y-3 text-base">
                                 <div class="flex justify-between border-b border-white/10 pb-2">
                                     <span class="text-white/50">A. Arrematação</span>
-                                    <span id="pres-sub-a" class="text-white font-bold">R$ 0</span>
+                                    <span id="pres-sub-a" class="text-white font-black">R$ 0</span>
                                 </div>
                                 <div class="flex justify-between border-b border-white/10 pb-2">
                                     <span class="text-white/50">B. Impostos e Taxas</span>
-                                    <span id="pres-sub-b" class="text-white font-bold">R$ 0</span>
+                                    <span id="pres-sub-b" class="text-white font-black">R$ 0</span>
                                 </div>
                                 <div class="flex justify-between border-b border-white/10 pb-2">
                                     <span class="text-white/50">C. Custos Operacionais</span>
-                                    <span id="pres-sub-c" class="text-amber-400 font-bold">R$ 0</span>
+                                    <span id="pres-sub-c" class="text-amber-400 font-black">R$ 0</span>
                                 </div>
                                 <div class="flex justify-between border-b border-white/10 pb-2">
                                     <span class="text-white/50">D. Custo de Capital</span>
-                                    <span id="pres-sub-d" class="text-blue-400 font-bold">R$ 0</span>
+                                    <span id="pres-sub-d" class="text-blue-400 font-black">R$ 0</span>
                                 </div>
                                 <div class="flex justify-between pt-1">
-                                    <span class="text-white/80 font-black uppercase text-[10px]">Total A+B+C+D</span>
-                                    <span id="pres-invest-total" class="text-emerald-400 font-black">R$ 0</span>
+                                    <span class="text-white/80 font-black uppercase text-sm">Total A+B+C+D</span>
+                                    <span id="pres-invest-total" class="text-emerald-400 font-black text-2xl">R$ 0</span>
                                 </div>
                             </div>
-                            <div class="mt-4 pt-3 border-t border-white/10 text-xs space-y-1">
+                            <div class="mt-4 pt-3 border-t border-white/10 text-base space-y-2">
                                 <div class="flex justify-between">
                                     <span class="text-white/40">Venda Alvo</span>
                                     <span id="pres-venda-proj" class="text-white font-bold">R$ 0</span>
@@ -2120,12 +2250,6 @@
                                     <span class="text-emerald-400/80">Venda Líquida</span>
                                     <span id="pres-venda-liq" class="text-emerald-400 font-bold">R$ 0</span>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="bg-white/5 rounded-[2rem] border border-white/10 p-5">
-                            <h3 class="text-white font-bold uppercase tracking-widest text-[10px] mb-4">Histórico de Pregões</h3>
-                            <div class="space-y-2" id="pres-leiloes">
-                                <p class="text-white/20 text-xs italic">Carregando...</p>
                             </div>
                         </div>
                     </div>
@@ -2169,7 +2293,6 @@
             const area = document.getElementById('cad-area-priv')?.value;
             document.getElementById('pres-area').innerText = area ? area + ' m²' : "--";
             document.getElementById('pres-ocupado').innerText = document.getElementById('eval-ocupado')?.value === 'true' ? 'Ocupado' : 'Desocupado';
-            document.getElementById('pres-leiloeiro').innerText = window._leiloeiro || "--";
 
             // Inteligência de Mercado
             document.getElementById('pres-vlr-av').innerText = fmtBRL(unmaskMoney(document.getElementById('cad-vlr-av')?.value));
@@ -2197,21 +2320,19 @@
             document.getElementById('pres-venda-liq').innerText = document.getElementById('calc-venda-liq').innerText;
 
             // Fotos
-            const fotos = document.querySelectorAll('#fotos-gallery img');
-            document.getElementById('pres-foto-main').src = fotos.length > 0 ? fotos[0].src : '/static/img/placeholder-imovel.jpg';
+            const fotos = getPhotoAnexos();
+            document.getElementById('pres-foto-main').src = fotos.length > 0 ? fotos[currentPhotoIndex]?.url || fotos[0].url : '/static/img/placeholder-imovel.jpg';
             const presGallery = document.getElementById('pres-mini-gallery');
-            const extraFotos = Array.from(fotos).slice(1, 4);
-            const blanks = Math.max(0, 4 - extraFotos.length);
-            presGallery.innerHTML = extraFotos.map(img =>
-                `<div class="aspect-square bg-white/5 rounded-2xl border border-white/10 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="window.open('${img.src}','_blank')">
-                    <img src="${img.src}" class="w-full h-full object-cover">
-                </div>`
+            const visibleFotos = fotos.slice(0, 4);
+            const blanks = Math.max(0, 4 - visibleFotos.length);
+            presGallery.innerHTML = visibleFotos.map((foto) =>
+                `<button type="button" class="aspect-square bg-white/5 rounded-2xl border border-white/10 overflow-hidden cursor-pointer hover:opacity-80 transition" onclick="setPresentationPhoto('${foto.url}')">
+                    <img src="${foto.url}" class="w-full h-full object-cover" alt="${foto.nome_original || 'Foto do imóvel'}">
+                </button>`
             ).join('') + Array(blanks).fill('<div class="aspect-square bg-white/5 rounded-2xl border border-white/10"></div>').join('');
 
             // Pregões
-            document.getElementById('pres-leiloes').innerHTML =
-                document.getElementById('resumo-lista-leiloes')?.innerHTML ||
-                '<p class="text-white/20 text-xs italic">Sem pregões registrados</p>';
+            document.getElementById('pres-leiloes').innerHTML = renderAuctionHistory(currentLeiloes, 'presentation');
 
             // Metadata
             document.getElementById('pres-data-geracao').innerText = new Date().toLocaleDateString('pt-BR');
