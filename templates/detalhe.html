@@ -1756,6 +1756,10 @@
                 
                 currentStatus = res.status;
                 const isUnlocked = POST_PURCHASE_STATUSES.includes(currentStatus);
+                currentAnexos = Array.isArray(res.anexos) ? res.anexos : [];
+                renderPhotoGallery(currentAnexos);
+                renderDocumentCards(currentAnexos);
+                renderDocumentsList(currentAnexos);
 
                 // Header
                 document.getElementById('detail-codigo').innerText = res.codigo;
@@ -1868,7 +1872,9 @@
                 document.getElementById('eval-venda-normal').value = formatBRL(av.valor_venda_normal);
                 document.getElementById('eval-venda-rapida').value = formatBRL(res.valor_estimado);
                 
-                calcTotalDebitos();
+                if (typeof calcTotalDebitos === 'function') {
+                    calcTotalDebitos();
+                }
 
                 // 4. Tab Ficha Financeira
                 const fin = res.financeiro.full_data;
@@ -1911,10 +1917,6 @@
                 // Others
                 renderChecklist(res.documentacao.checklist);
                 document.getElementById('doc-status-text').innerText = res.documentacao.status;
-                currentAnexos = Array.isArray(res.anexos) ? res.anexos : [];
-                renderPhotoGallery(currentAnexos);
-                renderDocumentCards(currentAnexos);
-                renderDocumentsList(currentAnexos);
 
                 // Status Badge logic
                 const badge = document.getElementById('detail-status-badge');
