@@ -1479,12 +1479,70 @@
             `).join('');
         }
 
+        function openPhotoSourceSelector(options = {}) {
+            const existing = document.getElementById('photo-source-sheet');
+            if (existing) existing.remove();
+
+            const sheet = document.createElement('div');
+            sheet.id = 'photo-source-sheet';
+            sheet.className = 'fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100000] flex items-end sm:items-center justify-center p-4';
+            sheet.innerHTML = `
+                <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+                    <div class="p-5 border-b border-slate-100">
+                        <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Upload de Foto</p>
+                        <h3 class="text-lg font-black text-slate-900">Como deseja enviar a imagem?</h3>
+                        <p class="text-xs text-slate-500 mt-1">Escolha uma foto já salva ou abra a câmera do dispositivo.</p>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <button type="button" data-photo-source="gallery" class="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition text-left">
+                            <span class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fas fa-images"></i></span>
+                            <span>
+                                <span class="block text-sm font-black text-slate-800">Escolher da galeria</span>
+                                <span class="block text-xs text-slate-500">Abrir fotos/arquivos do aparelho</span>
+                            </span>
+                        </button>
+                        <button type="button" data-photo-source="camera" class="w-full flex items-center gap-4 p-4 rounded-2xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition text-left">
+                            <span class="w-11 h-11 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center"><i class="fas fa-camera"></i></span>
+                            <span>
+                                <span class="block text-sm font-black text-slate-800">Abrir câmera</span>
+                                <span class="block text-xs text-slate-500">Tirar uma foto agora</span>
+                            </span>
+                        </button>
+                        <button type="button" data-photo-cancel class="w-full p-3 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition">Cancelar</button>
+                    </div>
+                </div>`;
+
+            const close = () => sheet.remove();
+            sheet.addEventListener('click', (event) => {
+                if (event.target === sheet) close();
+            });
+            sheet.querySelector('[data-photo-cancel]').addEventListener('click', close);
+            sheet.querySelector('[data-photo-source="gallery"]').addEventListener('click', () => {
+                close();
+                triggerUpload('Foto', { ...options, source: 'gallery' });
+            });
+            sheet.querySelector('[data-photo-source="camera"]').addEventListener('click', () => {
+                close();
+                triggerUpload('Foto', { ...options, source: 'camera' });
+            });
+
+            document.body.appendChild(sheet);
+        }
+
         async function triggerUpload(categoria, options = {}) {
+            if (categoria === 'Foto' && !options.source) {
+                openPhotoSourceSelector(options);
+                return;
+            }
+
             const input = document.createElement('input');
             input.type = 'file';
             input.style.display = 'none';
             if (categoria === 'Foto') {
                 input.accept = 'image/*';
+                if (options.source === 'camera') {
+                    input.setAttribute('capture', 'environment');
+                }
             } else {
                 input.accept = '.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
             }
