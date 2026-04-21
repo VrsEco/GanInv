@@ -83,8 +83,8 @@
                 <button onclick="window.print()" class="bg-white border text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-50 transition">
                     <i class="fas fa-print mr-2"></i> PDF Executivo
                 </button>
-                <button class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-emerald-700 shadow-lg transition">
-                    <i class="fas fa-edit mr-2"></i> Editar
+                <button onclick="excluirImovel()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 shadow-lg transition">
+                    <i class="fas fa-trash mr-2"></i> Excluir
                 </button>
             </div>
         </div>
@@ -1766,6 +1766,19 @@
     </div>
 
     <script>
+        function excluirImovel() {
+            const id = window.location.pathname.split('/').pop();
+            if (!confirm('Tem certeza que deseja excluir este imóvel? Esta ação não pode ser desfeita.')) return;
+            fetch(`/api/imoveis/${id}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) { alert('Erro: ' + data.error); return; }
+                    alert('Imóvel excluído com sucesso!');
+                    window.location.href = '/';
+                })
+                .catch(() => alert('Erro ao excluir imóvel.'));
+        }
+
         function openPresentation() {
             // Populate Presentation Dashboard
             document.getElementById('pres-codigo').innerText = document.getElementById('detail-codigo').innerText;

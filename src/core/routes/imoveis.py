@@ -585,6 +585,28 @@ def upload_arquivo(id):
     finally:
         session.close()
 
+@imoveis_bp.route('/<int:id>', methods=['DELETE'])
+def excluir_imovel(id):
+    session = Session()
+    try:
+        i = session.query(Imovel).get(id)
+        if not i:
+            return jsonify({"error": "Não encontrado"}), 404
+
+        session.query(Leilao).filter_by(imovel_id=id).delete()
+        session.query(FichaFinanceira).filter_by(imovel_id=id).delete()
+        session.query(Documentacao).filter_by(imovel_id=id).delete()
+        session.query(Reforma).filter_by(imovel_id=id).delete()
+        session.query(Anexo).filter_by(imovel_id=id).delete()
+        session.delete(i)
+        session.commit()
+        return jsonify({"message": "Imóvel excluído com sucesso"})
+    except Exception as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
 @imoveis_bp.route('/<int:id>/descartar', methods=['POST'])
 def descartar_imovel(id):
     session = Session()
