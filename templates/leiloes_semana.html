@@ -14,13 +14,12 @@
 </head>
 <body class="flex min-h-screen">
 
-    <!-- Sidebar Reusado -->
+    <!-- Sidebar -->
     <aside class="w-64 sidebar text-white flex-col hidden md:flex">
         <div class="p-6">
             <h1 class="text-2xl font-bold text-emerald-400">Gandu<span class="text-white">Invest</span></h1>
-            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1 text-center">Auction Intelligence</p>
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Auction Intelligence</p>
         </div>
-        
         <nav class="flex-1 px-4 space-y-6 overflow-y-auto">
             <div>
                 <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Funil de Oportunidades</p>
@@ -44,13 +43,10 @@
                     </a>
                 </div>
             </div>
-            <div>
-                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Pós-Leilão</p>
-                <div class="space-y-1">
-                    <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
-                        <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
-                    </a>
-                </div>
+            <div class="pt-4 mt-4 border-t border-slate-800">
+                <a href="/imoveis?status=Arrematado" class="flex items-center p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white text-sm">
+                    <i class="fas fa-briefcase mr-3 w-4"></i> Minha Carteira
+                </a>
             </div>
         </nav>
     </aside>
