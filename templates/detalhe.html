@@ -418,27 +418,6 @@
                             </div>
                             
                             <div class="space-y-4">
-                                <div class="p-4 bg-red-50 rounded-2xl border border-red-100 space-y-3">
-                                    <p class="text-[10px] font-bold text-red-600 uppercase">Resumo de Dívidas</p>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-[9px] text-red-400">IPTU Atrasado (R$)</label>
-                                            <input type="text" id="eval-debito-iptu" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
-                                        </div>
-                                        <div>
-                                            <label class="block text-[9px] text-red-400">Condomínio Atrasado (R$)</label>
-                                            <input type="text" id="eval-debito-condo" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[9px] text-red-400">Outros Débitos (R$)</label>
-                                        <input type="text" id="eval-vlr-outros" oninput="calcTotalDebitos()" class="w-full p-2 bg-white border border-red-200 rounded-lg text-sm font-bold text-red-700 mask-money">
-                                    </div>
-                                    <div class="pt-2 border-t border-red-200 flex justify-between items-center">
-                                        <span class="text-xs font-bold text-red-600">TOTAL DE DÉBITOS</span>
-                                        <span class="text-lg font-black text-red-700" id="eval-total-debitos">R$ 0</span>
-                                    </div>
-                                </div>
 
                                 <div class="flex items-center space-x-2 p-3 bg-slate-50 rounded-lg border border-slate-100">
                                     <input type="checkbox" id="eval-contato-sindico" class="w-4 h-4 rounded text-emerald-600">
@@ -1330,12 +1309,9 @@
                     relato_morador: document.getElementById('eval-relato-morador').value,
                     contato_sindico: document.getElementById('eval-contato-sindico').checked,
                     relato_sindico: document.getElementById('eval-relato-sindico').value,
-                    outros_debitos: unmaskMoney(document.getElementById('eval-vlr-outros').value),
                     observacoes_internas: document.getElementById('eval-observacoes').value,
                     valor_venda_normal: unmaskMoney(document.getElementById('eval-venda-normal').value),
-                    valor_estimado_venda: unmaskMoney(document.getElementById('eval-venda-rapida').value),
-                    debitos_condominio: unmaskMoney(document.getElementById('eval-debito-condo').value),
-                    debitos_iptu: unmaskMoney(document.getElementById('eval-debito-iptu').value)
+                    valor_estimado_venda: unmaskMoney(document.getElementById('eval-venda-rapida').value)
                 };
 
                 const res = await fetch(`/api/imoveis/${imovelId}/avaliacao`, {
@@ -1484,9 +1460,6 @@
                 document.getElementById('eval-relato-morador').value = av.relato_morador;
                 document.getElementById('eval-contato-sindico').checked = av.contato_sindico;
                 document.getElementById('eval-relato-sindico').value = av.relato_sindico;
-                document.getElementById('eval-vlr-outros').value = formatBRL(av.outros_debitos);
-                document.getElementById('eval-debito-iptu').value = formatBRL(res.financeiro.iptu_atrasado);
-                document.getElementById('eval-debito-condo').value = formatBRL(res.financeiro.condominio_atrasado);
                 document.getElementById('eval-observacoes').value = av.observacoes_internas;
                 document.getElementById('eval-venda-normal').value = formatBRL(av.valor_venda_normal);
                 document.getElementById('eval-venda-rapida').value = formatBRL(res.valor_estimado);
