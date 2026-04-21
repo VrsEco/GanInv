@@ -96,11 +96,12 @@ def get_imovel(id):
     f = i.financeiro
     leiloes = [
         {
-            "tipo": l.tipo_leilao, 
-            "data": l.data_hora.isoformat() if l.data_hora else "", 
-            "data_iso": l.data_hora.isoformat() if l.data_hora else "", 
-            "valor": l.valor_minimo, 
+            "tipo": l.tipo_leilao,
+            "data": l.data_hora.isoformat() if l.data_hora else "",
+            "data_iso": l.data_hora.isoformat() if l.data_hora else "",
+            "valor": l.valor_minimo,
             "modalidade": l.modalidade,
+            "leiloeiro": l.leiloeiro or "",
             "status": l.resultado,
             "observacoes": l.observacoes
         } for l in i.leiloes
@@ -347,6 +348,7 @@ def update_cadastro(id):
                 tipo_leilao=l_data.get('tipo'),
                 valor_minimo=float(l_data.get('valor') or 0),
                 modalidade=l_data.get('modalidade'),
+                leiloeiro=l_data.get('leiloeiro'),
                 observacoes=l_data.get('observacoes')
             )
             if l_data.get('data'):

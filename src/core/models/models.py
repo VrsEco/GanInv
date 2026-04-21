@@ -113,6 +113,7 @@ class Leilao(Base):
     data_hora = Column(DateTime)
     valor_minimo = Column(Float)
     modalidade = Column(String(100))
+    leiloeiro = Column(String(100))
     valor_arrematado = Column(Float)
     resultado = Column(String(50)) # Pendente, Ganhamos, Perdemos, Suspenso
     observacoes = Column(Text)

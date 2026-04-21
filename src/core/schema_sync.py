@@ -7,6 +7,9 @@ from sqlalchemy import create_engine, text
 
 
 EXPECTED_COLUMNS = {
+    "leiloes": [
+        ("leiloeiro", "VARCHAR(100)"),
+    ],
     "fichas_financeiras": [
         ("valor_arrematacao", "FLOAT DEFAULT 0"),
         ("comissao_leiloeiro_percent", "FLOAT DEFAULT 5"),

@@ -326,7 +326,12 @@
                         </div>
                         <div>
                              <label class="block text-[10px] text-slate-500 font-bold uppercase">Link do Leilão</label>
-                             <input type="text" id="cad-link" class="w-full p-2 border rounded-lg text-sm text-blue-600">
+                             <div class="flex gap-2">
+                                 <input type="text" id="cad-link" class="flex-1 p-2 border rounded-lg text-sm text-blue-600">
+                                 <button onclick="const u=document.getElementById('cad-link').value; if(u) window.open(u,'_blank');" class="px-3 py-2 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 transition text-xs font-bold" title="Abrir link">
+                                     <i class="fas fa-external-link-alt"></i>
+                                 </button>
+                             </div>
                         </div>
                     </div>
 
@@ -361,13 +366,13 @@
                             <!-- Outros -->
                             <div id="doc-card-outros" onclick="triggerUpload('Outros')" class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between border-dashed group hover:border-emerald-500 transition cursor-pointer">
                                 <div class="flex items-center">
-                                    <i class="fas fa-plus-circle text-slate-400 text-xl mr-3"></i>
+                                    <i id="doc-icon-outros" class="fas fa-plus-circle text-slate-400 text-xl mr-3"></i>
                                     <div>
                                         <p class="text-xs font-bold text-slate-500">Outros Documentos</p>
                                         <p id="doc-status-outros" class="text-[9px] text-slate-400 font-bold uppercase">Upar Arquivo</p>
                                     </div>
                                 </div>
-                                <i class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                                <i id="doc-action-outros" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
                             </div>
                         </div>
                     </div>
@@ -1087,13 +1092,17 @@
             if (displayVal && typeof displayVal === 'number') displayVal = displayVal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
             div.innerHTML = `
-                <div class="md:col-span-2">
+                <div class="md:col-span-1">
                     <label class="block text-[8px] font-bold text-slate-400 uppercase">Ordem</label>
-                    <input type="text" class="l-ordem w-full p-2 border rounded-lg text-xs bg-slate-50 font-bold" value="${data.tipo || ''}" placeholder="1º Leilão">
+                    <input type="text" class="l-ordem w-full p-2 border rounded-lg text-xs bg-slate-50 font-bold" value="${data.tipo || ''}" placeholder="1º">
                 </div>
                 <div class="md:col-span-2">
                     <label class="block text-[8px] font-bold text-slate-400 uppercase">Tipo</label>
                     <input type="text" class="l-tipo w-full p-2 border rounded-lg text-xs" value="${data.modalidade || ''}" placeholder="Online">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-[8px] font-bold text-slate-400 uppercase">Leiloeiro</label>
+                    <input type="text" class="l-leiloeiro w-full p-2 border rounded-lg text-xs" value="${data.leiloeiro || ''}" placeholder="Ex: Zukerman">
                 </div>
                 <div class="md:col-span-3">
                     <label class="block text-[8px] font-bold text-slate-400 uppercase">Data/Hora</label>
@@ -1103,7 +1112,7 @@
                     <label class="block text-[8px] font-bold text-slate-400 uppercase">Lance (R$)</label>
                     <input type="text" class="l-valor mask-money w-full p-2 border rounded-lg text-xs font-bold text-slate-700" value="${displayVal}">
                 </div>
-                <div class="md:col-span-2">
+                <div class="md:col-span-1">
                     <label class="block text-[8px] font-bold text-slate-400 uppercase">Obs.</label>
                     <input type="text" class="l-obs w-full p-2 border rounded-lg text-xs" value="${data.observacoes || ''}">
                 </div>
@@ -1263,6 +1272,7 @@
                     leiloes: Array.from(document.querySelectorAll('#leiloes-container > div')).map(row => ({
                         tipo: row.querySelector('.l-ordem').value,
                         modalidade: row.querySelector('.l-tipo').value,
+                        leiloeiro: row.querySelector('.l-leiloeiro').value,
                         data: row.querySelector('.l-data').value,
                         valor: unmaskMoney(row.querySelector('.l-valor').value),
                         observacoes: row.querySelector('.l-obs').value
@@ -1447,6 +1457,7 @@
                         addLeilaoRow({
                             tipo: l.tipo,
                             modalidade: l.modalidade,
+                            leiloeiro: l.leiloeiro,
                             data: l.data_iso,
                             valor: l.valor,
                             observacoes: l.observacoes
@@ -1552,6 +1563,13 @@
                         document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-blue-500 text-xl mr-3';
                         document.getElementById('doc-card-matricula').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
                         document.getElementById('doc-action-matricula').className = 'fas fa-download text-emerald-500';
+                    }
+                    if (a.categoria === 'Outros') {
+                        document.getElementById('doc-status-outros').innerText = 'Disponível';
+                        document.getElementById('doc-status-outros').classList.add('text-emerald-500');
+                        document.getElementById('doc-icon-outros').className = 'far fa-file text-amber-500 text-xl mr-3';
+                        document.getElementById('doc-card-outros').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
+                        document.getElementById('doc-action-outros').className = 'fas fa-download text-emerald-500';
                     }
                 });
 
