@@ -4,8 +4,13 @@ __pycache__/
 .env
 static/uploads/*
 !static/uploads/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
 .DS_Store
 *.xlsx
 *.webp
 scratch/
 .gemini/
+.claude/worktrees/
+.pytest_cache/
+tests/.pytest_cache/

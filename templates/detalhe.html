@@ -174,12 +174,12 @@
                 <div class="lg:col-span-6">
                     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 h-full">
                         <div class="aspect-video bg-slate-100 rounded-xl overflow-hidden relative group">
-                            <img src="/static/img/placeholder-imovel.jpg" alt="Imóvel" class="w-full h-full object-cover">
+                            <img id="detail-main-photo" src="/static/img/placeholder-imovel.jpg" alt="Imóvel" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4">
                                 <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-left"></i></button>
                                 <button class="p-3 bg-white/20 backdrop-blur rounded-full text-white"><i class="fas fa-chevron-right"></i></button>
                             </div>
-                            <div class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">1 / 5</div>
+                            <div id="detail-photo-counter" class="absolute bottom-4 right-4 bg-black/60 px-3 py-1 rounded-full text-[10px] text-white font-bold">0 / 0</div>
                         </div>
                         <div class="grid grid-cols-4 gap-2 mt-4">
                             <div class="aspect-square bg-slate-100 rounded-lg"></div>
@@ -332,39 +332,58 @@
                         <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Central de Documentos (PDF/Docs)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <!-- Edital -->
-                            <div id="doc-card-edital" onclick="triggerUpload('Edital')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
-                                <div class="flex items-center">
-                                    <i id="doc-icon-edital" class="far fa-file-pdf text-slate-300 text-xl mr-3"></i>
-                                    <div>
-                                        <p class="text-xs font-bold text-slate-700 uppercase">Edital do Leilão</p>
-                                        <p id="doc-status-edital" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                            <div>
+                                <div id="doc-card-edital" onclick="triggerUpload('Edital')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
+                                    <div class="flex items-center">
+                                        <i id="doc-icon-edital" class="far fa-file-pdf text-slate-300 text-xl mr-3"></i>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-700 uppercase">Edital do Leilão</p>
+                                            <p id="doc-status-edital" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                                        </div>
                                     </div>
+                                    <i id="doc-action-edital" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
                                 </div>
-                                <i id="doc-action-edital" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                                <div class="mt-2 flex gap-2" id="doc-buttons-edital">
+                                    <button id="btn-open-edital" onclick="openSingleCategoryFile(event, 'Edital')" class="px-2 py-1 rounded border text-[10px] font-bold text-slate-400 border-slate-200 bg-white disabled:opacity-40" disabled>Abrir</button>
+                                    <button onclick="triggerUpload('Edital', { replace: true })" class="px-2 py-1 rounded border text-[10px] font-bold text-emerald-600 border-emerald-200 bg-emerald-50">Substituir</button>
+                                    <button id="btn-delete-edital" onclick="deleteSingleCategoryFile(event, 'Edital')" class="px-2 py-1 rounded border text-[10px] font-bold text-rose-600 border-rose-200 bg-rose-50 disabled:opacity-40" disabled>Excluir</button>
+                                </div>
                             </div>
 
                             <!-- Certidão -->
-                            <div id="doc-card-matricula" onclick="triggerUpload('Matricula')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
-                                <div class="flex items-center">
-                                    <i id="doc-icon-matricula" class="far fa-file-alt text-slate-300 text-xl mr-3"></i>
-                                    <div>
-                                        <p class="text-xs font-bold text-slate-700 uppercase">Certidão de Ônus</p>
-                                        <p id="doc-status-matricula" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                            <div>
+                                <div id="doc-card-matricula" onclick="triggerUpload('Matricula')" class="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between group hover:border-emerald-500 transition cursor-pointer">
+                                    <div class="flex items-center">
+                                        <i id="doc-icon-matricula" class="far fa-file-alt text-slate-300 text-xl mr-3"></i>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-700 uppercase">Certidão de Ônus</p>
+                                            <p id="doc-status-matricula" class="text-[9px] text-slate-400 font-bold uppercase">Pendente</p>
+                                        </div>
                                     </div>
+                                    <i id="doc-action-matricula" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
                                 </div>
-                                <i id="doc-action-matricula" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                                <div class="mt-2 flex gap-2" id="doc-buttons-matricula">
+                                    <button id="btn-open-matricula" onclick="openSingleCategoryFile(event, 'Matricula')" class="px-2 py-1 rounded border text-[10px] font-bold text-slate-400 border-slate-200 bg-white disabled:opacity-40" disabled>Abrir</button>
+                                    <button onclick="triggerUpload('Matricula', { replace: true })" class="px-2 py-1 rounded border text-[10px] font-bold text-emerald-600 border-emerald-200 bg-emerald-50">Substituir</button>
+                                    <button id="btn-delete-matricula" onclick="deleteSingleCategoryFile(event, 'Matricula')" class="px-2 py-1 rounded border text-[10px] font-bold text-rose-600 border-rose-200 bg-rose-50 disabled:opacity-40" disabled>Excluir</button>
+                                </div>
                             </div>
 
                             <!-- Outros -->
-                            <div id="doc-card-outros" onclick="triggerUpload('Outros')" class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between border-dashed group hover:border-emerald-500 transition cursor-pointer">
-                                <div class="flex items-center">
-                                    <i id="doc-icon-outros" class="fas fa-plus-circle text-slate-400 text-xl mr-3"></i>
-                                    <div>
-                                        <p class="text-xs font-bold text-slate-500">Outros Documentos</p>
-                                        <p id="doc-status-outros" class="text-[9px] text-slate-400 font-bold uppercase">Upar Arquivo</p>
+                            <div>
+                                <div id="doc-card-outros" onclick="triggerUpload('Outros')" class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between border-dashed group hover:border-emerald-500 transition cursor-pointer">
+                                    <div class="flex items-center">
+                                        <i id="doc-icon-outros" class="fas fa-plus-circle text-slate-400 text-xl mr-3"></i>
+                                        <div>
+                                            <p class="text-xs font-bold text-slate-500">Outros Documentos</p>
+                                            <p id="doc-status-outros" class="text-[9px] text-slate-400 font-bold uppercase">Upar Arquivo</p>
+                                        </div>
                                     </div>
+                                    <i id="doc-action-outros" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
                                 </div>
-                                <i id="doc-action-outros" class="fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500"></i>
+                                <div class="mt-2 flex gap-2">
+                                    <button onclick="triggerUpload('Outros')" class="px-2 py-1 rounded border text-[10px] font-bold text-emerald-600 border-emerald-200 bg-emerald-50">Novo arquivo</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -577,22 +596,14 @@
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-bold text-slate-800">Documentos Anexos</h3>
-                            <button class="text-emerald-600 text-xs font-bold">+ Novo</button>
+                            <button onclick="triggerUpload('Outros')" class="text-emerald-600 text-xs font-bold">+ Novo</button>
                         </div>
-                        <div class="space-y-3">
-                            <div class="flex items-center p-3 hover:bg-slate-50 rounded-lg border border-transparent hover:border-slate-100 transition cursor-pointer group">
-                                <i class="fas fa-file-pdf text-red-500 mr-3 text-xl"></i>
+                        <div class="space-y-3" id="documents-list">
+                            <div class="flex items-center p-3 opacity-50 rounded-lg border border-dashed">
+                                <i class="fas fa-file text-slate-300 mr-3 text-xl"></i>
                                 <div class="flex-1">
-                                    <p class="text-xs font-bold text-slate-700">Edital do Leilão</p>
-                                    <p class="text-[10px] text-slate-400">PDF • 1.2 MB</p>
-                                </div>
-                                <i class="fas fa-download text-slate-300 group-hover:text-emerald-500"></i>
-                            </div>
-                            <div class="flex items-center p-3 opacity-50">
-                                <i class="fas fa-file-image text-slate-300 mr-3 text-xl"></i>
-                                <div class="flex-1">
-                                    <p class="text-xs font-bold text-slate-400">Guia ITBI Paga</p>
-                                    <p class="text-[10px] text-slate-300">Aguardando upload</p>
+                                    <p class="text-xs font-bold text-slate-400">Nenhum documento adicional enviado</p>
+                                    <p class="text-[10px] text-slate-300">Use “+ Novo” para anexar arquivos.</p>
                                 </div>
                             </div>
                         </div>
@@ -1070,6 +1081,8 @@
         const pathParts = window.location.pathname.split('/');
         const imovelId = pathParts[pathParts.length - 1];
         let currentStatus = '';
+        let currentAnexos = [];
+        const MAX_UPLOAD_SIZE_MB = {{ config.get('MAX_UPLOAD_SIZE_MB', 15) }};
         const POST_PURCHASE_STATUSES = ['Arrematado', 'Em reforma', 'Vendido'];
 
         function switchTab(tabId) {
@@ -1169,7 +1182,174 @@
             });
         }
 
-        async function triggerUpload(categoria) {
+        function formatFileSize(bytes) {
+            const size = Number(bytes || 0);
+            if (!size) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let value = size;
+            let unitIndex = 0;
+            while (value >= 1024 && unitIndex < units.length - 1) {
+                value = value / 1024;
+                unitIndex += 1;
+            }
+            return `${unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`;
+        }
+
+        function getAnexosByCategory(categoria) {
+            return currentAnexos.filter(a => a.categoria === categoria);
+        }
+
+        function getPrimaryAnexo(categoria) {
+            const anexos = getAnexosByCategory(categoria);
+            return anexos.length ? anexos[0] : null;
+        }
+
+        function openSingleCategoryFile(event, categoria) {
+            event.stopPropagation();
+            const anexo = getPrimaryAnexo(categoria);
+            if (!anexo) {
+                triggerUpload(categoria);
+                return;
+            }
+            window.open(anexo.url, '_blank');
+        }
+
+        async function deleteAnexo(event, anexoId) {
+            if (event) event.stopPropagation();
+            if (!confirm('Deseja realmente excluir este arquivo?')) return;
+
+            try {
+                const res = await fetch(`/api/imoveis/${imovelId}/anexos/${anexoId}`, {
+                    method: 'DELETE'
+                }).then(r => r.json());
+
+                if (res.error) throw new Error(res.error);
+                alert(res.message || 'Arquivo excluído com sucesso.');
+                loadDetail();
+            } catch (err) {
+                alert('Erro ao excluir arquivo: ' + err.message);
+            }
+        }
+
+        async function deleteSingleCategoryFile(event, categoria) {
+            event.stopPropagation();
+            const anexo = getPrimaryAnexo(categoria);
+            if (!anexo) return;
+            await deleteAnexo(event, anexo.id);
+        }
+
+        function renderPhotoGallery(anexos) {
+            const fotosGallery = document.getElementById('fotos-gallery');
+            const fotos = anexos.filter(a => a.categoria === 'Foto');
+            const mainPhoto = document.getElementById('detail-main-photo');
+            const counter = document.getElementById('detail-photo-counter');
+
+            mainPhoto.src = fotos.length ? fotos[0].url : '/static/img/placeholder-imovel.jpg';
+            counter.innerText = fotos.length ? `1 / ${fotos.length}` : '0 / 0';
+
+            fotosGallery.innerHTML = fotos.map(a => `
+                <div class="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                    <img src="${a.url}" class="w-full h-full object-cover cursor-pointer hover:opacity-80 transition" onclick="window.open('${a.url}','_blank')" onerror="this.parentElement.innerHTML='<div class=\\'flex items-center justify-center h-full text-slate-300\\'><i class=\\'fas fa-image text-2xl\\'></i></div>'">
+                    <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                        <button onclick="event.stopPropagation(); triggerUpload('Foto', { replace: true, anexoId: ${a.id} })" class="w-7 h-7 rounded-full bg-white/95 text-blue-600 shadow text-[10px]"><i class="fas fa-rotate"></i></button>
+                        <button onclick="deleteAnexo(event, ${a.id})" class="w-7 h-7 rounded-full bg-white/95 text-rose-600 shadow text-[10px]"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('') + `
+                <div onclick="triggerUpload('Foto')" class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
+                    <i class="fas fa-plus text-slate-300 group-hover:text-emerald-500"></i>
+                </div>`;
+        }
+
+        function renderDocumentCards(anexos) {
+            const edital = getPrimaryAnexo('Edital');
+            const matricula = getPrimaryAnexo('Matricula');
+            const outros = getAnexosByCategory('Outros');
+
+            const config = [
+                { categoria: 'Edital', anexo: edital, statusId: 'doc-status-edital', iconId: 'doc-icon-edital', cardId: 'doc-card-edital', actionId: 'doc-action-edital', openBtnId: 'btn-open-edital', deleteBtnId: 'btn-delete-edital', iconClass: 'far fa-file-pdf text-red-500 text-xl mr-3' },
+                { categoria: 'Matricula', anexo: matricula, statusId: 'doc-status-matricula', iconId: 'doc-icon-matricula', cardId: 'doc-card-matricula', actionId: 'doc-action-matricula', openBtnId: 'btn-open-matricula', deleteBtnId: 'btn-delete-matricula', iconClass: 'far fa-file-alt text-blue-500 text-xl mr-3' },
+            ];
+
+            config.forEach(item => {
+                const statusEl = document.getElementById(item.statusId);
+                const iconEl = document.getElementById(item.iconId);
+                const cardEl = document.getElementById(item.cardId);
+                const actionEl = document.getElementById(item.actionId);
+                const openBtn = document.getElementById(item.openBtnId);
+                const deleteBtn = document.getElementById(item.deleteBtnId);
+
+                statusEl.classList.remove('text-emerald-500');
+                openBtn.disabled = !item.anexo;
+                deleteBtn.disabled = !item.anexo;
+
+                if (item.anexo) {
+                    statusEl.innerText = `${item.anexo.nome_original} • ${formatFileSize(item.anexo.tamanho_bytes)}`;
+                    statusEl.classList.add('text-emerald-500');
+                    iconEl.className = item.iconClass;
+                    cardEl.onclick = (e) => { e.stopPropagation(); window.open(item.anexo.url, '_blank'); };
+                    actionEl.className = 'fas fa-download text-emerald-500';
+                } else {
+                    statusEl.innerText = 'Pendente';
+                    iconEl.className = item.categoria === 'Edital' ? 'far fa-file-pdf text-slate-300 text-xl mr-3' : 'far fa-file-alt text-slate-300 text-xl mr-3';
+                    cardEl.onclick = () => triggerUpload(item.categoria);
+                    actionEl.className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
+                }
+            });
+
+            const outrosStatus = document.getElementById('doc-status-outros');
+            const outrosIcon = document.getElementById('doc-icon-outros');
+            const outrosCard = document.getElementById('doc-card-outros');
+            const outrosAction = document.getElementById('doc-action-outros');
+
+            if (outros.length) {
+                outrosStatus.innerText = `${outros.length} arquivo(s) anexado(s)`;
+                outrosStatus.classList.add('text-emerald-500');
+                outrosIcon.className = 'far fa-folder-open text-amber-500 text-xl mr-3';
+                outrosCard.onclick = () => triggerUpload('Outros');
+                outrosAction.className = 'fas fa-plus text-emerald-500';
+            } else {
+                outrosStatus.innerText = 'Upar Arquivo';
+                outrosStatus.classList.remove('text-emerald-500');
+                outrosIcon.className = 'fas fa-plus-circle text-slate-400 text-xl mr-3';
+                outrosCard.onclick = () => triggerUpload('Outros');
+                outrosAction.className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
+            }
+        }
+
+        function renderDocumentsList(anexos) {
+            const list = document.getElementById('documents-list');
+            const documentos = anexos.filter(a => a.categoria !== 'Foto');
+
+            if (!documentos.length) {
+                list.innerHTML = `
+                    <div class="flex items-center p-3 opacity-50 rounded-lg border border-dashed">
+                        <i class="fas fa-file text-slate-300 mr-3 text-xl"></i>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-slate-400">Nenhum documento adicional enviado</p>
+                            <p class="text-[10px] text-slate-300">Use “+ Novo” para anexar arquivos.</p>
+                        </div>
+                    </div>`;
+                return;
+            }
+
+            list.innerHTML = documentos.map(a => `
+                <div class="flex items-center p-3 hover:bg-slate-50 rounded-lg border border-transparent hover:border-slate-100 transition group">
+                    <i class="fas ${a.eh_imagem ? 'fa-image text-sky-500' : 'fa-file-alt text-slate-500'} mr-3 text-xl"></i>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-slate-700 truncate">${a.nome_original || a.categoria}</p>
+                        <p class="text-[10px] text-slate-400 uppercase">${a.categoria} • ${formatFileSize(a.tamanho_bytes)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.open('${a.url}','_blank')" class="px-2 py-1 rounded border text-[10px] font-bold text-slate-600 border-slate-200 bg-white">Abrir</button>
+                        <button onclick="triggerUpload('${a.categoria}', { replace: true, anexoId: ${a.id} })" class="px-2 py-1 rounded border text-[10px] font-bold text-emerald-600 border-emerald-200 bg-emerald-50">Substituir</button>
+                        <button onclick="deleteAnexo(event, ${a.id})" class="px-2 py-1 rounded border text-[10px] font-bold text-rose-600 border-rose-200 bg-rose-50">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function triggerUpload(categoria, options = {}) {
             const input = document.createElement('input');
             input.type = 'file';
             input.style.display = 'none';
@@ -1184,9 +1364,18 @@
                 document.body.removeChild(input);
                 if (!file) return;
 
+                if (file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
+                    alert(`Arquivo acima do limite de ${MAX_UPLOAD_SIZE_MB} MB.`);
+                    return;
+                }
+
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('categoria', categoria);
+                if (options.replace) {
+                    const targetAnexo = options.anexoId || getPrimaryAnexo(categoria)?.id;
+                    if (targetAnexo) formData.append('replace_anexo_id', targetAnexo);
+                }
 
                 try {
                     const res = await fetch(`/api/imoveis/${imovelId}/upload`, {
@@ -1722,55 +1911,10 @@
                 // Others
                 renderChecklist(res.documentacao.checklist);
                 document.getElementById('doc-status-text').innerText = res.documentacao.status;
-
-                // Documentos UI Reset
-                document.getElementById('doc-status-edital').innerText = 'Pendente';
-                document.getElementById('doc-status-edital').classList.remove('text-emerald-500');
-                document.getElementById('doc-icon-edital').className = 'far fa-file-pdf text-slate-300 text-xl mr-3';
-                document.getElementById('doc-card-edital').onclick = () => triggerUpload('Edital');
-                document.getElementById('doc-action-edital').className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
-
-                document.getElementById('doc-status-matricula').innerText = 'Pendente';
-                document.getElementById('doc-status-matricula').classList.remove('text-emerald-500');
-                document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-slate-300 text-xl mr-3';
-                document.getElementById('doc-card-matricula').onclick = () => triggerUpload('Matricula');
-                document.getElementById('doc-action-matricula').className = 'fas fa-cloud-upload-alt text-slate-300 group-hover:text-emerald-500';
-
-                // Fotos
-                const fotosGallery = document.getElementById('fotos-gallery');
-                const fotos = res.anexos.filter(a => a.categoria === 'Foto');
-                fotosGallery.innerHTML = fotos.map(a => `
-                    <div class="aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 cursor-pointer hover:opacity-80 transition" onclick="window.open('${a.url}','_blank')">
-                        <img src="${a.url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full text-slate-300\'><i class=\'fas fa-image text-2xl\'></i></div>'">
-                    </div>
-                `).join('') + `
-                    <div onclick="triggerUpload('Foto')" class="aspect-square bg-slate-100 rounded-lg flex items-center justify-center border border-dashed border-slate-200 overflow-hidden group hover:border-emerald-500 transition cursor-pointer">
-                        <i class="fas fa-plus text-slate-300 group-hover:text-emerald-500"></i>
-                    </div>`;
-
-                res.anexos.forEach(a => {
-                    if (a.categoria === 'Edital') {
-                        document.getElementById('doc-status-edital').innerText = 'Disponível';
-                        document.getElementById('doc-status-edital').classList.add('text-emerald-500');
-                        document.getElementById('doc-icon-edital').className = 'far fa-file-pdf text-red-500 text-xl mr-3';
-                        document.getElementById('doc-card-edital').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
-                        document.getElementById('doc-action-edital').className = 'fas fa-download text-emerald-500';
-                    }
-                    if (a.categoria === 'Matricula') {
-                        document.getElementById('doc-status-matricula').innerText = 'Disponível';
-                        document.getElementById('doc-status-matricula').classList.add('text-emerald-500');
-                        document.getElementById('doc-icon-matricula').className = 'far fa-file-alt text-blue-500 text-xl mr-3';
-                        document.getElementById('doc-card-matricula').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
-                        document.getElementById('doc-action-matricula').className = 'fas fa-download text-emerald-500';
-                    }
-                    if (a.categoria === 'Outros') {
-                        document.getElementById('doc-status-outros').innerText = 'Disponível';
-                        document.getElementById('doc-status-outros').classList.add('text-emerald-500');
-                        document.getElementById('doc-icon-outros').className = 'far fa-file text-amber-500 text-xl mr-3';
-                        document.getElementById('doc-card-outros').onclick = (e) => { e.stopPropagation(); window.open(a.url, '_blank'); };
-                        document.getElementById('doc-action-outros').className = 'fas fa-download text-emerald-500';
-                    }
-                });
+                currentAnexos = Array.isArray(res.anexos) ? res.anexos : [];
+                renderPhotoGallery(currentAnexos);
+                renderDocumentCards(currentAnexos);
+                renderDocumentsList(currentAnexos);
 
                 // Status Badge logic
                 const badge = document.getElementById('detail-status-badge');

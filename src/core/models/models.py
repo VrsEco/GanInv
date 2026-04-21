@@ -197,8 +197,15 @@ class Anexo(Base):
     __tablename__ = 'anexos'
     id = Column(Integer, primary_key=True)
     imovel_id = Column(Integer, ForeignKey('imoveis.id'), nullable=False)
+    company_id = Column(Integer, ForeignKey('companies.id'))
     url = Column(String(512))
     categoria = Column(String(50)) # Foto, Edital, Contrato
+    nome_original = Column(String(255))
+    nome_arquivo = Column(String(255))
+    storage_path = Column(String(1024))
+    mime_type = Column(String(255))
+    tamanho_bytes = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     imovel = relationship("Imovel", back_populates="anexos")

@@ -12,6 +12,7 @@ try:
     from flask import Flask, jsonify, request, render_template, session, redirect, url_for
     from functools import wraps
     from dotenv import load_dotenv
+    from werkzeug.exceptions import RequestEntityTooLarge
     load_dotenv()
     from src.core.routes.imoveis import imoveis_bp
     from src.core.schema_sync import sync_schema
@@ -33,8 +34,17 @@ except Exception as e:
 app = Flask(__name__)
 # app.debug = True
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'gandu_secret_key_123')
-app.config['UPLOAD_FOLDER'] = os.path.join(_APP_DIR, 'static', 'uploads')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+_DEFAULT_UPLOAD_ROOT = os.path.join(_APP_DIR, 'storage', 'uploads')
+_MAX_UPLOAD_SIZE_MB = int(os.environ.get('MAX_UPLOAD_SIZE_MB', '15'))
+
+app.config['UPLOAD_ROOT'] = os.environ.get('UPLOAD_ROOT', _DEFAULT_UPLOAD_ROOT)
+app.config['UPLOAD_FOLDER'] = app.config['UPLOAD_ROOT']
+app.config['MAX_UPLOAD_SIZE_MB'] = _MAX_UPLOAD_SIZE_MB
+app.config['MAX_UPLOAD_SIZE_BYTES'] = _MAX_UPLOAD_SIZE_MB * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = app.config['MAX_UPLOAD_SIZE_BYTES']
+
+os.makedirs(app.config['UPLOAD_ROOT'], exist_ok=True)
 
 # Decorator de Proteção de Rotas
 def login_required(f):
@@ -46,6 +56,17 @@ def login_required(f):
     return decorated_function
 
 app.register_blueprint(imoveis_bp)
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_large_upload(_error):
+    max_mb = app.config.get('MAX_UPLOAD_SIZE_MB', 15)
+    message = f"Arquivo excede o limite configurado de {max_mb} MB."
+
+    if request.path.startswith('/api/'):
+        return jsonify({"error": message}), 413
+
+    return render_template('login.html', error=message), 413
 
 @app.route('/admin/sync-schema')
 def admin_sync_schema():

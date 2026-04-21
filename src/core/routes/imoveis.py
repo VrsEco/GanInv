@@ -1,12 +1,22 @@
-from flask import Blueprint, jsonify, request, render_template, current_app
-from werkzeug.utils import secure_filename
+from flask import Blueprint, jsonify, request, render_template, current_app, send_file
 from src.core.models.models import Imovel, Leilao, Company, FichaFinanceira, Documentacao, Reforma, Anexo
 from src.intelligence.auction_parser import AuctionParser
 from src.core.services.finance_service import FinanceService
+from src.core.services.storage_service import (
+    UploadValidationError,
+    delete_physical_file,
+    format_size_bytes,
+    is_single_file_category,
+    normalize_category,
+    resolve_absolute_path,
+    save_upload,
+)
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from urllib.parse import quote_plus
+from werkzeug.exceptions import RequestEntityTooLarge
 import os
+from io import BytesIO
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -26,6 +36,78 @@ def _build_db_url():
 imoveis_bp = Blueprint('imoveis', __name__, url_prefix='/api/imoveis')
 engine = create_engine(_build_db_url())
 Session = sessionmaker(bind=engine)
+
+
+def _build_anexo_url(imovel_id, anexo_id):
+    return f"/api/imoveis/{imovel_id}/anexos/{anexo_id}/arquivo"
+
+
+def _upload_too_large_response():
+    max_mb = current_app.config.get('MAX_UPLOAD_SIZE_MB', 15)
+    return jsonify({"error": f"Arquivo excede o limite configurado de {max_mb} MB."}), 413
+
+
+def _serialize_anexo(anexo):
+    return {
+        "id": anexo.id,
+        "categoria": normalize_category(anexo.categoria),
+        "url": _build_anexo_url(anexo.imovel_id, anexo.id),
+        "nome_original": anexo.nome_original or anexo.nome_arquivo or os.path.basename(anexo.url or '') or "arquivo",
+        "nome_arquivo": anexo.nome_arquivo,
+        "mime_type": anexo.mime_type or "",
+        "tamanho_bytes": anexo.tamanho_bytes or 0,
+        "tamanho_humano": format_size_bytes(anexo.tamanho_bytes),
+        "created_at": anexo.created_at.isoformat() if anexo.created_at else None,
+        "updated_at": anexo.updated_at.isoformat() if getattr(anexo, 'updated_at', None) else None,
+        "eh_imagem": normalize_category(anexo.categoria) == 'Foto',
+    }
+
+
+def _resolve_legacy_static_path(anexo):
+    url = (anexo.url or '').strip()
+    prefix = '/static/uploads/'
+    if not url.startswith(prefix):
+        return None
+
+    filename = url[len(prefix):]
+    if not filename:
+        return None
+
+    return os.path.join(current_app.root_path, 'static', 'uploads', os.path.basename(filename))
+
+
+def _resolve_anexo_path(anexo):
+    storage_root = current_app.config['UPLOAD_ROOT']
+    relative_path = getattr(anexo, 'storage_path', None)
+
+    if relative_path:
+        try:
+            absolute_path = resolve_absolute_path(storage_root, relative_path)
+            if os.path.exists(absolute_path):
+                return absolute_path
+        except UploadValidationError:
+            return None
+
+    legacy_path = _resolve_legacy_static_path(anexo)
+    if legacy_path and os.path.exists(legacy_path):
+        return legacy_path
+
+    return None
+
+
+def _delete_anexo_physical_file(anexo):
+    storage_root = current_app.config['UPLOAD_ROOT']
+    deleted = False
+
+    if getattr(anexo, 'storage_path', None):
+        deleted = delete_physical_file(storage_root, anexo.storage_path) or deleted
+
+    legacy_path = _resolve_legacy_static_path(anexo)
+    if legacy_path and os.path.exists(legacy_path):
+        os.remove(legacy_path)
+        deleted = True
+
+    return deleted
 
 @imoveis_bp.route('/', methods=['GET'])
 def get_imoveis():
@@ -214,7 +296,7 @@ def get_imovel(id):
             "valor_venda_normal": i.valor_venda_normal or 0,
             "outros_debitos": i.outros_debitos or 0
         },
-        "anexos": [{"id": a.id, "url": a.url, "categoria": a.categoria} for a in i.anexos]
+        "anexos": [_serialize_anexo(a) for a in i.anexos]
     }
     session.close()
     return jsonify(data)
@@ -588,32 +670,242 @@ def get_calendar():
 @imoveis_bp.route('/<int:id>/upload', methods=['POST'])
 def upload_arquivo(id):
     session = Session()
+    saved_absolute_path = None
+    old_files_to_delete = []
     try:
         if 'file' not in request.files:
             return jsonify({"error": "Nenhum arquivo enviado"}), 400
-            
+
         file = request.files['file']
-        categoria = request.form.get('categoria', 'Outros')
-        
+        categoria = normalize_category(request.form.get('categoria', 'Outros'))
+        replace_anexo_id = request.form.get('replace_anexo_id', type=int)
         if file.filename == '':
             return jsonify({"error": "Nome do arquivo vazio"}), 400
-            
-        filename = secure_filename(file.filename)
-        # Prepend id and category to avoid collisions
-        unique_name = f"imov_{id}_{categoria.lower()}_{filename}"
-        file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], unique_name)
-        file.save(file_path)
-        
-        # Save to DB
-        anexo = Anexo(
+
+        imovel = session.query(Imovel).get(id)
+        if not imovel:
+            return jsonify({"error": "Imóvel não encontrado"}), 404
+
+        upload_root = current_app.config['UPLOAD_ROOT']
+        max_size_bytes = current_app.config['MAX_UPLOAD_SIZE_BYTES']
+        anexo = None
+        mensagem = "Upload realizado com sucesso"
+
+        if replace_anexo_id:
+            anexo = session.query(Anexo).filter(
+                Anexo.id == replace_anexo_id,
+                Anexo.imovel_id == id
+            ).first()
+            if not anexo:
+                return jsonify({"error": "Anexo para substituição não encontrado"}), 404
+            old_files_to_delete.append(Anexo(
+                id=anexo.id,
+                imovel_id=anexo.imovel_id,
+                company_id=anexo.company_id,
+                url=anexo.url,
+                categoria=anexo.categoria,
+                nome_original=anexo.nome_original,
+                nome_arquivo=anexo.nome_arquivo,
+                storage_path=anexo.storage_path,
+                mime_type=anexo.mime_type,
+                tamanho_bytes=anexo.tamanho_bytes,
+            ))
+            mensagem = "Arquivo substituído com sucesso"
+        elif is_single_file_category(categoria):
+            antigos = session.query(Anexo).filter(
+                Anexo.imovel_id == id,
+                Anexo.categoria == categoria
+            ).order_by(Anexo.id.asc()).all()
+
+            if antigos:
+                old_files_to_delete.extend(antigos)
+
+        if anexo is None:
+            anexo = Anexo(
+                imovel_id=id,
+                company_id=imovel.company_id,
+                categoria=categoria,
+            )
+            session.add(anexo)
+            session.flush()
+
+        saved = save_upload(
+            file,
+            upload_root=upload_root,
+            company_id=imovel.company_id,
             imovel_id=id,
-            url=f"/static/uploads/{unique_name}",
-            categoria=categoria
+            category=categoria,
+            max_size_bytes=max_size_bytes,
+            anexo_id=anexo.id,
         )
-        session.add(anexo)
+        saved_absolute_path = saved.absolute_path
+
+        anexo.company_id = imovel.company_id
+        anexo.categoria = saved.category
+        anexo.url = _build_anexo_url(id, anexo.id)
+        anexo.nome_original = saved.original_filename
+        anexo.nome_arquivo = saved.stored_filename
+        anexo.storage_path = saved.relative_path
+        anexo.mime_type = saved.mime_type
+        anexo.tamanho_bytes = saved.size_bytes
+        anexo.updated_at = datetime.utcnow()
+
+        for antigo in old_files_to_delete:
+            if antigo.id != anexo.id:
+                session.delete(antigo)
+
         session.commit()
-        
-        return jsonify({"message": "Upload realizado com sucesso", "url": anexo.url, "categoria": categoria})
+
+        for antigo in old_files_to_delete:
+            if antigo.id != anexo.id or replace_anexo_id:
+                _delete_anexo_physical_file(antigo)
+
+        return jsonify({
+            "message": mensagem,
+            "anexo": _serialize_anexo(anexo),
+            "categoria": categoria,
+            "limite_mb": current_app.config['MAX_UPLOAD_SIZE_MB'],
+        })
+    except UploadValidationError as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 400
+    except RequestEntityTooLarge:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return _upload_too_large_response()
+    except Exception as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/<int:id>/anexos/<int:anexo_id>/arquivo', methods=['GET'])
+def get_anexo_arquivo(id, anexo_id):
+    session = Session()
+    try:
+        anexo = session.query(Anexo).filter(
+            Anexo.id == anexo_id,
+            Anexo.imovel_id == id
+        ).first()
+        if not anexo:
+            return jsonify({"error": "Anexo não encontrado"}), 404
+
+        absolute_path = _resolve_anexo_path(anexo)
+        if not absolute_path:
+            return jsonify({"error": "Arquivo físico não encontrado"}), 404
+
+        with open(absolute_path, 'rb') as file_stream:
+            content = file_stream.read()
+
+        return send_file(
+            BytesIO(content),
+            mimetype=anexo.mime_type or None,
+            as_attachment=False,
+            download_name=anexo.nome_original or anexo.nome_arquivo or os.path.basename(absolute_path),
+            max_age=0,
+        )
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/<int:id>/anexos/<int:anexo_id>/replace', methods=['POST'])
+def replace_anexo(id, anexo_id):
+    session = Session()
+    saved_absolute_path = None
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "Nenhum arquivo enviado"}), 400
+
+        anexo = session.query(Anexo).filter(
+            Anexo.id == anexo_id,
+            Anexo.imovel_id == id
+        ).first()
+        if not anexo:
+            return jsonify({"error": "Anexo não encontrado"}), 404
+
+        file = request.files['file']
+        categoria = normalize_category(request.form.get('categoria') or anexo.categoria or 'Outros')
+        imovel = session.query(Imovel).get(id)
+        if not imovel:
+            return jsonify({"error": "Imóvel não encontrado"}), 404
+
+        saved = save_upload(
+            file,
+            upload_root=current_app.config['UPLOAD_ROOT'],
+            company_id=imovel.company_id,
+            imovel_id=id,
+            category=categoria,
+            max_size_bytes=current_app.config['MAX_UPLOAD_SIZE_BYTES'],
+            anexo_id=anexo.id,
+        )
+        saved_absolute_path = saved.absolute_path
+
+        antigo = Anexo(
+            id=anexo.id,
+            imovel_id=anexo.imovel_id,
+            company_id=anexo.company_id,
+            url=anexo.url,
+            categoria=anexo.categoria,
+            nome_original=anexo.nome_original,
+            nome_arquivo=anexo.nome_arquivo,
+            storage_path=anexo.storage_path,
+            mime_type=anexo.mime_type,
+            tamanho_bytes=anexo.tamanho_bytes,
+        )
+
+        anexo.company_id = imovel.company_id
+        anexo.categoria = saved.category
+        anexo.url = _build_anexo_url(id, anexo.id)
+        anexo.nome_original = saved.original_filename
+        anexo.nome_arquivo = saved.stored_filename
+        anexo.storage_path = saved.relative_path
+        anexo.mime_type = saved.mime_type
+        anexo.tamanho_bytes = saved.size_bytes
+        anexo.updated_at = datetime.utcnow()
+
+        session.commit()
+        _delete_anexo_physical_file(antigo)
+        return jsonify({"message": "Arquivo substituído com sucesso", "anexo": _serialize_anexo(anexo)})
+    except UploadValidationError as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 400
+    except RequestEntityTooLarge:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return _upload_too_large_response()
+    except Exception as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 500
+    finally:
+        session.close()
+
+
+@imoveis_bp.route('/<int:id>/anexos/<int:anexo_id>', methods=['DELETE'])
+def delete_anexo(id, anexo_id):
+    session = Session()
+    try:
+        anexo = session.query(Anexo).filter(
+            Anexo.id == anexo_id,
+            Anexo.imovel_id == id
+        ).first()
+        if not anexo:
+            return jsonify({"error": "Anexo não encontrado"}), 404
+
+        _delete_anexo_physical_file(anexo)
+        session.delete(anexo)
+        session.commit()
+        return jsonify({"message": "Anexo excluído com sucesso"})
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -632,7 +924,10 @@ def excluir_imovel(id):
         session.query(FichaFinanceira).filter_by(imovel_id=id).delete()
         session.query(Documentacao).filter_by(imovel_id=id).delete()
         session.query(Reforma).filter_by(imovel_id=id).delete()
-        session.query(Anexo).filter_by(imovel_id=id).delete()
+        anexos = session.query(Anexo).filter_by(imovel_id=id).all()
+        for anexo in anexos:
+            _delete_anexo_physical_file(anexo)
+            session.delete(anexo)
         session.delete(i)
         session.commit()
         return jsonify({"message": "Imóvel excluído com sucesso"})

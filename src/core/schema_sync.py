@@ -67,6 +67,15 @@ EXPECTED_COLUMNS = {
         ("data_disponibilizacao", "TIMESTAMP"),
         ("data_venda", "TIMESTAMP"),
     ],
+    "anexos": [
+        ("company_id", "INTEGER"),
+        ("nome_original", "VARCHAR(255)"),
+        ("nome_arquivo", "VARCHAR(255)"),
+        ("storage_path", "VARCHAR(1024)"),
+        ("mime_type", "VARCHAR(255)"),
+        ("tamanho_bytes", "INTEGER DEFAULT 0"),
+        ("updated_at", "TIMESTAMP"),
+    ],
 }
 
 
@@ -81,3 +90,11 @@ def sync_schema():
                 conn.execute(text(
                     f'ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {coltype}'
                 ))
+
+        conn.execute(text("""
+            UPDATE anexos AS a
+               SET company_id = i.company_id
+              FROM imoveis AS i
+             WHERE a.imovel_id = i.id
+               AND a.company_id IS NULL
+        """))
