@@ -33,6 +33,10 @@ class UploadValidationError(ValueError):
     pass
 
 
+class UploadTooLargeError(UploadValidationError):
+    pass
+
+
 @dataclass
 class SavedUpload:
     category: str
@@ -96,7 +100,7 @@ def validate_file(file_storage, category: str, max_size_bytes: int) -> tuple[str
 
     if size_bytes > max_size_bytes:
         max_size_mb = round(max_size_bytes / (1024 * 1024), 2)
-        raise UploadValidationError(f'Arquivo excede o limite de {max_size_mb} MB.')
+        raise UploadTooLargeError(f'Arquivo excede o limite de {max_size_mb} MB.')
 
     mime_type = (file_storage.mimetype or '').strip() or 'application/octet-stream'
     return extension, mime_type, size_bytes

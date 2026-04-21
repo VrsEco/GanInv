@@ -3,6 +3,7 @@ from src.core.models.models import Imovel, Leilao, Company, FichaFinanceira, Doc
 from src.intelligence.auction_parser import AuctionParser
 from src.core.services.finance_service import FinanceService
 from src.core.services.storage_service import (
+    UploadTooLargeError,
     UploadValidationError,
     delete_physical_file,
     format_size_bytes,
@@ -766,6 +767,11 @@ def upload_arquivo(id):
             "categoria": categoria,
             "limite_mb": current_app.config['MAX_UPLOAD_SIZE_MB'],
         })
+    except UploadTooLargeError as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 413
     except UploadValidationError as e:
         session.rollback()
         if saved_absolute_path and os.path.exists(saved_absolute_path):
@@ -872,6 +878,11 @@ def replace_anexo(id, anexo_id):
         session.commit()
         _delete_anexo_physical_file(antigo)
         return jsonify({"message": "Arquivo substituído com sucesso", "anexo": _serialize_anexo(anexo)})
+    except UploadTooLargeError as e:
+        session.rollback()
+        if saved_absolute_path and os.path.exists(saved_absolute_path):
+            os.remove(saved_absolute_path)
+        return jsonify({"error": str(e)}), 413
     except UploadValidationError as e:
         session.rollback()
         if saved_absolute_path and os.path.exists(saved_absolute_path):

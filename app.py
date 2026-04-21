@@ -37,12 +37,18 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'gandu_secret_key_123')
 
 _DEFAULT_UPLOAD_ROOT = os.path.join(_APP_DIR, 'storage', 'uploads')
 _MAX_UPLOAD_SIZE_MB = int(os.environ.get('MAX_UPLOAD_SIZE_MB', '15'))
+_DEFAULT_REQUEST_SIZE_MB = max(_MAX_UPLOAD_SIZE_MB, 50)
+_MAX_REQUEST_SIZE_MB = int(os.environ.get('MAX_REQUEST_SIZE_MB', str(_DEFAULT_REQUEST_SIZE_MB)))
+if _MAX_REQUEST_SIZE_MB < _MAX_UPLOAD_SIZE_MB:
+    _MAX_REQUEST_SIZE_MB = _MAX_UPLOAD_SIZE_MB
 
 app.config['UPLOAD_ROOT'] = os.environ.get('UPLOAD_ROOT', _DEFAULT_UPLOAD_ROOT)
 app.config['UPLOAD_FOLDER'] = app.config['UPLOAD_ROOT']
 app.config['MAX_UPLOAD_SIZE_MB'] = _MAX_UPLOAD_SIZE_MB
 app.config['MAX_UPLOAD_SIZE_BYTES'] = _MAX_UPLOAD_SIZE_MB * 1024 * 1024
-app.config['MAX_CONTENT_LENGTH'] = app.config['MAX_UPLOAD_SIZE_BYTES']
+app.config['MAX_REQUEST_SIZE_MB'] = _MAX_REQUEST_SIZE_MB
+app.config['MAX_REQUEST_SIZE_BYTES'] = _MAX_REQUEST_SIZE_MB * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = app.config['MAX_REQUEST_SIZE_BYTES']
 
 os.makedirs(app.config['UPLOAD_ROOT'], exist_ok=True)
 
@@ -61,7 +67,11 @@ app.register_blueprint(imoveis_bp)
 @app.errorhandler(RequestEntityTooLarge)
 def handle_large_upload(_error):
     max_mb = app.config.get('MAX_UPLOAD_SIZE_MB', 15)
-    message = f"Arquivo excede o limite configurado de {max_mb} MB."
+    request_mb = app.config.get('MAX_REQUEST_SIZE_MB', max_mb)
+    if request_mb > max_mb:
+        message = f"Requisição excede o limite técnico de {request_mb} MB. Limite por arquivo: {max_mb} MB."
+    else:
+        message = f"Arquivo excede o limite configurado de {max_mb} MB."
 
     if request.path.startswith('/api/'):
         return jsonify({"error": message}), 413
