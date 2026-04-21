@@ -230,7 +230,7 @@
         let triagemMotivos = [];
 
         function formatCurrency(value) {
-            return 'R$ ' + Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function formatDate(value) {
