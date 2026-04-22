@@ -20,6 +20,8 @@ class ExecutivePdfService:
     PAGE_SIZE = landscape(A4)
     PAGE_WIDTH, PAGE_HEIGHT = PAGE_SIZE
     PAGE_MARGIN = 22
+    MOBILE_PAGE_SIZE = (390, 844)
+    MOBILE_MARGIN = 14
 
     COLOR_BG = colors.HexColor("#F3F6FB")
     COLOR_CARD = colors.white
@@ -387,7 +389,7 @@ class ExecutivePdfService:
         pdf.restoreState()
 
     @classmethod
-    def _build_analysis_table(cls, payload, width):
+    def _build_analysis_table(cls, payload, width, *, compact=False):
         analysis = payload["analise"]
         rows = [
             [
@@ -416,21 +418,33 @@ class ExecutivePdfService:
                 rapida_value = cls.sanitize_text(rapida)
             rows.append([cls.sanitize_text(label), normal_value, rapida_value, tone])
 
-        col_widths = [width * 0.42, width * 0.29, width * 0.29]
+        if compact:
+            col_widths = [width * 0.45, width * 0.275, width * 0.275]
+            base_font_size = 6.8
+            base_leading = 8
+            row_padding = 3.6
+            highlight_font_size = 7.2
+        else:
+            col_widths = [width * 0.42, width * 0.29, width * 0.29]
+            base_font_size = 9.2
+            base_leading = 11
+            row_padding = 6
+            highlight_font_size = 10
+
         table_data = [row[:3] for row in rows]
         table = Table(table_data, colWidths=col_widths)
         style = TableStyle([
             ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9.2),
-            ("LEADING", (0, 0), (-1, -1), 11),
+            ("FONTSIZE", (0, 0), (-1, -1), base_font_size),
+            ("LEADING", (0, 0), (-1, -1), base_leading),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("ROWPADDING", (0, 0), (-1, -1), 6),
+            ("ROWPADDING", (0, 0), (-1, -1), row_padding),
             ("BOX", (0, 0), (-1, -1), 0.8, cls.COLOR_BORDER),
             ("INNERGRID", (0, 0), (-1, -1), 0.5, cls.COLOR_BORDER),
             ("BACKGROUND", (0, 0), (-1, 0), cls.COLOR_EMERALD_SOFT),
             ("TEXTCOLOR", (0, 0), (0, 0), cls.COLOR_EMERALD),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 10.2),
+            ("FONTSIZE", (0, 0), (-1, 0), 7.8 if compact else 10.2),
             ("BACKGROUND", (0, 1), (-1, 1), cls.COLOR_BLUE_SOFT),
             ("TEXTCOLOR", (0, 1), (0, 1), cls.COLOR_MUTED),
             ("FONTNAME", (1, 1), (2, 1), "Helvetica-Bold"),
@@ -462,11 +476,150 @@ class ExecutivePdfService:
                 style.add("TEXTCOLOR", (0, row_index), (0, row_index), label_color)
                 if tone in {"total", "result"}:
                     style.add("FONTNAME", (0, row_index), (-1, row_index), "Helvetica-Bold")
-                    style.add("FONTSIZE", (0, row_index), (-1, row_index), 10)
+                    style.add("FONTSIZE", (0, row_index), (-1, row_index), highlight_font_size)
             row_index += 1
 
         table.setStyle(style)
         return table
+
+
+    @classmethod
+    def render_mobile_pdf(cls, payload, *, output_path=None):
+        """Renderiza uma versão vertical, compacta e legível em celulares."""
+        buffer = BytesIO()
+        page_w, page_h = cls.MOBILE_PAGE_SIZE
+        margin = cls.MOBILE_MARGIN
+        pdf = canvas.Canvas(buffer, pagesize=cls.MOBILE_PAGE_SIZE)
+        pdf.setTitle(f"PDF Executivo Mobile - {payload['codigo']}")
+
+        body_x = margin
+        body_y = margin
+        body_w = page_w - (margin * 2)
+
+        pdf.setFillColor(cls.COLOR_BG)
+        pdf.rect(0, 0, page_w, page_h, fill=1, stroke=0)
+
+        header_h = 94
+        header_y = page_h - margin - header_h
+        cls._draw_rounded_card(pdf, body_x, header_y, body_w, header_h, fill_color=cls.COLOR_HEADER, stroke_color=cls.COLOR_HEADER, radius=18, stroke_width=0)
+
+        title_width = body_w - 22
+        title_lines = simpleSplit(payload["endereco"], "Helvetica-Bold", 18, title_width)[:2]
+        title_style = ParagraphStyle(
+            "executive_mobile_title",
+            fontName="Helvetica-Bold",
+            fontSize=18,
+            leading=20,
+            textColor=colors.white,
+        )
+        title_paragraph = Paragraph("<br/>".join(title_lines), title_style)
+        title_paragraph.wrapOn(pdf, title_width, 44)
+        title_paragraph.drawOn(pdf, body_x + 12, header_y + 48)
+
+        chip_y = header_y + 16
+        status_fill, status_text = cls.status_theme(payload["status"])
+        used = cls._draw_chip(pdf, body_x + 12, chip_y, payload["status"].upper(), status_fill, status_text, height=18, padding_x=8, font_size=7.6)
+        cls._draw_chip(pdf, body_x + 20 + used, chip_y, payload["codigo"], colors.HexColor("#1E293B"), colors.white, border_color=colors.HexColor("#334155"), height=18, padding_x=8, font_size=7.6)
+        pdf.setFont("Helvetica-Bold", 7.4)
+        pdf.setFillColor(colors.HexColor("#CBD5E1"))
+        pdf.drawRightString(body_x + body_w - 12, chip_y + 5.5, payload["cidade_uf"])
+
+        content_y = header_y - 10
+        photo_h = 150
+        photo_y = content_y - photo_h
+        cls._draw_image_cover(pdf, payload["foto_path"], body_x, photo_y, body_w, photo_h, radius=16)
+
+        pdf.saveState()
+        pdf.setFillColor(colors.Color(0, 0, 0, alpha=0.42))
+        pdf.rect(body_x, photo_y, body_w, 28, fill=1, stroke=0)
+        pdf.restoreState()
+        pdf.setFont("Helvetica-Bold", 9.2)
+        pdf.setFillColor(colors.white)
+        pdf.drawString(body_x + 12, photo_y + 16.5, "Vista principal")
+        pdf.setFont("Helvetica", 7)
+        pdf.drawRightString(body_x + body_w - 12, photo_y + 16.5, "Registro fotografico")
+
+        specs_y = photo_y - 58
+        spec_gap = 6
+        spec_w = (body_w - (spec_gap * 2)) / 3
+        specs = [
+            ("Tipo", payload["tipo"]),
+            ("Area", payload["area_privativa"]),
+            ("Ocupacao", payload["ocupacao"]),
+        ]
+        for index, (label, value) in enumerate(specs):
+            box_x = body_x + (index * (spec_w + spec_gap))
+            cls._draw_rounded_card(pdf, box_x, specs_y, spec_w, 48, fill_color=cls.COLOR_CARD, stroke_color=cls.COLOR_BORDER, radius=12)
+            pdf.setFillColor(cls.COLOR_MUTED)
+            pdf.setFont("Helvetica-Bold", 6.7)
+            pdf.drawString(box_x + 8, specs_y + 32, cls.sanitize_text(label).upper())
+            pdf.setFillColor(cls.COLOR_TEXT)
+            value_text = cls.sanitize_text(value)
+            font_size = 10.6
+            value_lines = simpleSplit(value_text, "Helvetica-Bold", font_size, spec_w - 14)
+            while len(value_lines) > 2 and font_size > 8:
+                font_size -= 0.4
+                value_lines = simpleSplit(value_text, "Helvetica-Bold", font_size, spec_w - 14)
+            pdf.setFont("Helvetica-Bold", font_size)
+            draw_y = specs_y + (18 if len(value_lines[:2]) > 1 else 16)
+            for line in value_lines[:2]:
+                pdf.drawString(box_x + 8, draw_y, line)
+                draw_y -= font_size + 1
+
+        leiloes = payload["leiloes"] or [{"tipo": "Sem pregoes", "data": "Sem dados", "valor": cls.format_currency(0)}]
+        visible_leiloes = leiloes[:3]
+        history_h = 92
+        history_y = specs_y - history_h - 10
+        cls._draw_rounded_card(pdf, body_x, history_y, body_w, history_h, fill_color=cls.COLOR_CARD, stroke_color=cls.COLOR_BORDER, radius=16)
+        pdf.setFont("Helvetica-Bold", 10.5)
+        pdf.setFillColor(cls.COLOR_TEXT)
+        pdf.drawString(body_x + 12, history_y + history_h - 20, "Historico de Pregoes")
+        row_top = history_y + history_h - 34
+        for index, leilao in enumerate(visible_leiloes):
+            row_y = row_top - 18 - (index * 19)
+            cls._draw_rounded_card(pdf, body_x + 10, row_y, body_w - 20, 16, fill_color=cls.COLOR_GRAY_SOFT, stroke_color=cls.COLOR_BORDER, radius=7, stroke_width=0.4)
+            pdf.setFont("Helvetica-Bold", 7.4)
+            pdf.setFillColor(cls.COLOR_TEXT)
+            pdf.drawString(body_x + 18, row_y + 5.3, cls.sanitize_text(leilao["tipo"]))
+            pdf.setFont("Helvetica", 6.7)
+            pdf.setFillColor(cls.COLOR_MUTED)
+            pdf.drawString(body_x + 92, row_y + 5.3, cls.sanitize_text(leilao["data"]))
+            pdf.setFont("Helvetica-Bold", 7.2)
+            pdf.setFillColor(cls.COLOR_EMERALD)
+            pdf.drawRightString(body_x + body_w - 18, row_y + 5.3, cls.sanitize_text(leilao["valor"]))
+
+        analysis_y = margin + 24
+        analysis_h = history_y - analysis_y - 10
+        cls._draw_rounded_card(pdf, body_x, analysis_y, body_w, analysis_h, fill_color=cls.COLOR_CARD, stroke_color=cls.COLOR_BORDER, radius=16)
+        pdf.setFont("Helvetica-Bold", 10.5)
+        pdf.setFillColor(cls.COLOR_TEXT)
+        pdf.drawString(body_x + 12, analysis_y + analysis_h - 19, "Analise do Negocio")
+        pdf.setFont("Helvetica-Bold", 6.9)
+        pdf.setFillColor(cls.COLOR_MUTED)
+        pdf.drawRightString(body_x + body_w - 12, analysis_y + analysis_h - 18, "Normal x Rapida")
+
+        table = cls._build_analysis_table(payload, body_w - 18, compact=True)
+        _, table_h = table.wrap(body_w - 18, analysis_h - 42)
+        table_y = max(analysis_y + 10, analysis_y + analysis_h - 34 - table_h)
+        table.drawOn(pdf, body_x + 9, table_y)
+
+        pdf.setFont("Helvetica-Bold", 6.8)
+        pdf.setFillColor(cls.COLOR_MUTED)
+        pdf.drawString(body_x + 2, margin + 5, "GanduInvest | PDF Executivo Mobile")
+        pdf.drawRightString(body_x + body_w - 2, margin + 5, f"ID: {cls.sanitize_text(payload['report_id'])}")
+
+        pdf.showPage()
+        pdf.save()
+
+        pdf_bytes = buffer.getvalue()
+        buffer.close()
+
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "wb") as handler:
+                handler.write(pdf_bytes)
+
+        return pdf_bytes
 
     @classmethod
     def render_pdf(cls, payload, *, output_path=None):
@@ -631,7 +784,7 @@ class ExecutivePdfService:
         return pdf_bytes
 
     @classmethod
-    def generate_for_imovel(cls, session, *, imovel_id, company_id, root_path, upload_root, output_root=None):
+    def generate_for_imovel(cls, session, *, imovel_id, company_id, root_path, upload_root, output_root=None, layout="desktop"):
         imovel = session.query(Imovel).filter(
             Imovel.id == imovel_id,
             Imovel.company_id == company_id,
@@ -641,7 +794,13 @@ class ExecutivePdfService:
             raise ValueError("Imóvel não encontrado para o company_id informado.")
 
         payload = cls.build_report_payload(imovel, root_path=root_path, upload_root=upload_root)
-        filename = f"pdf-executivo-{cls._slugify_filename(payload['codigo'])}.pdf"
+        normalized_layout = (layout or "desktop").strip().lower()
+        if normalized_layout not in {"desktop", "mobile"}:
+            normalized_layout = "desktop"
+
+        suffix = "mobile" if normalized_layout == "mobile" else "desktop"
+        filename = f"pdf-executivo-{suffix}-{cls._slugify_filename(payload['codigo'])}.pdf"
         output_path = os.path.join(output_root, filename) if output_root else None
-        pdf_bytes = cls.render_pdf(payload, output_path=output_path)
+        renderer = cls.render_mobile_pdf if normalized_layout == "mobile" else cls.render_pdf
+        pdf_bytes = renderer(payload, output_path=output_path)
         return filename, pdf_bytes, payload, output_path

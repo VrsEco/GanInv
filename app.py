@@ -129,6 +129,10 @@ def detalhe_pdf_executivo(id):
         raise
 
     company_id = int(session.get('company_id') or request.args.get('company_id', 1))
+    layout = (request.args.get('layout') or 'desktop').strip().lower()
+    if layout not in {'desktop', 'mobile'}:
+        layout = 'desktop'
+
     db_session = Session()
     try:
         filename, pdf_bytes, _, _ = ExecutivePdfService.generate_for_imovel(
@@ -138,6 +142,7 @@ def detalhe_pdf_executivo(id):
             root_path=app.root_path,
             upload_root=app.config['UPLOAD_ROOT'],
             output_root=os.path.join(app.root_path, 'output', 'pdf'),
+            layout=layout,
         )
     except ValueError as err:
         return jsonify({"error": str(err)}), 404

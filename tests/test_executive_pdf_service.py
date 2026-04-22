@@ -125,3 +125,57 @@ def test_render_pdf_generates_single_page_with_core_sections(tmp_path):
     assert "Histórico de Pregões" in text
     assert "Análise do Negócio" in text
     assert "Sugestão de Lance Máximo" in text
+
+
+def test_render_mobile_pdf_generates_phone_optimized_single_page(tmp_path):
+    payload = {
+        "id": 8,
+        "codigo": "GND-008",
+        "endereco": "Teste 02",
+        "status": "Em análise",
+        "cidade_uf": "Cidade Teste - TS",
+        "tipo": "Apartamento",
+        "area_privativa": "50 m²",
+        "ocupacao": "Ocupado",
+        "foto_path": r"C:\GanduInvest\static\img\placeholder-imovel.jpg",
+        "gerado_em": "21/04/2026",
+        "report_id": "GND-008-20260421103000",
+        "leiloes": [
+            {"tipo": "1º Leilão", "data": "25/04/2026, 10:00", "valor": "R$ 250.000,00"},
+            {"tipo": "2º Leilão", "data": "29/04/2026, 10:00", "valor": "R$ 290.000,00"},
+        ],
+        "analise": {
+            "lance_normal": 339571.86,
+            "lance_rapida": 316696.54,
+            "lance_considerado": 359000.0,
+            "comissao_corretor_percent": 5.0,
+            "impostos_venda_percent": 6.93,
+            "rows": [
+                ("Preço de Venda", 550000.0, 520000.0, "money", "primary"),
+                ("Comissões de Venda", 27500.0, 26000.0, "money", "negative"),
+                ("Impostos Sobre Vendas", 38115.0, 36036.0, "money", "negative"),
+                ("Vendas Líquidas", 484385.0, 457964.0, "money", "positive"),
+                ("A. Arrematação", 377950.0, 377950.0, "money", "default"),
+                ("B. Impostos e Taxas", 17950.0, 17950.0, "money", "default"),
+                ("C. Custos Operacionais", 52500.0, 52500.0, "money", "warning"),
+                ("D. Custo de Capital", 22322.50, 22322.50, "money", "primary"),
+                ("Total (A+B+C+D)", 470722.5, 470722.5, "money", "total"),
+                ("Resultado", 13662.5, -12758.5, "money", "result"),
+            ],
+        },
+    }
+
+    output_path = tmp_path / "executivo-mobile.pdf"
+    pdf_bytes = ExecutivePdfService.render_mobile_pdf(payload, output_path=str(output_path))
+
+    assert pdf_bytes.startswith(b"%PDF")
+    assert output_path.exists()
+
+    reader = PdfReader(BytesIO(pdf_bytes))
+    assert len(reader.pages) == 1
+    page = reader.pages[0]
+    assert round(float(page.mediabox.width)) == 390
+    assert round(float(page.mediabox.height)) == 844
+    text = page.extract_text()
+    assert "Analise do Negocio" in text
+    assert "PDF Executivo Mobile" in text
