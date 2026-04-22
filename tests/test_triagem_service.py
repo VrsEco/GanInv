@@ -65,6 +65,7 @@ def build_imovel(**overrides):
         valor_venda_normal=620000.0,
         valor_estimado_venda=580000.0,
         banco='Caixa',
+        filtro_auxiliar='',
         leiloeiro='Mega Leilões',
         leiloes=[],
     )
@@ -155,3 +156,17 @@ def test_build_stats_agrega_pendentes_aprovados_descartados():
     assert stats['taxa_aprovacao'] == 25.0
     assert stats['principais_motivos'][0]['label'] == 'Baixa margem esperada'
     assert stats['principais_motivos'][0]['quantidade'] == 2
+
+
+def test_list_imoveis_filtra_por_filtro_auxiliar():
+    items = [
+        build_imovel(id=1, codigo_interno='GND-001', filtro_auxiliar='A'),
+        build_imovel(id=2, codigo_interno='GND-002', filtro_auxiliar='B'),
+        build_imovel(id=3, codigo_interno='GND-003', filtro_auxiliar='A'),
+    ]
+    session = FakeSession(items)
+
+    result = TriagemService.list_imoveis(session, company_id=1, filtro_auxiliar='A')
+
+    assert [item['codigo'] for item in result] == ['GND-001', 'GND-003']
+    assert all(item['filtro_auxiliar'] == 'A' for item in result)

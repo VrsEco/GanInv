@@ -4,6 +4,8 @@ from datetime import datetime
 
 Base = declarative_base()
 
+FILTRO_AUXILIAR_OPTIONS = ("A", "B", "C", "E")
+
 class Company(Base):
     __tablename__ = 'companies'
     id = Column(Integer, primary_key=True)
@@ -35,6 +37,7 @@ class Imovel(Base):
     estado = Column(String(2))
     cep = Column(String(10))
     tipo_imovel = Column(String(50)) # Casa, Apartamento, etc
+    filtro_auxiliar = Column(String(1)) # Classificação auxiliar: A, B, C, E
     modalidade_venda = Column(String(100)) # Leilão, Venda Direta, etc
     area_terreno = Column(Float)
     area_privativa = Column(Float)

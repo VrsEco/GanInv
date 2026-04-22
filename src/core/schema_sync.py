@@ -3,6 +3,8 @@ Auto-migração idempotente: garante que colunas/tabelas esperadas pelos modelos
 existam no banco. Usa ALTER TABLE ... ADD COLUMN IF NOT EXISTS do PostgreSQL.
 """
 import os
+from urllib.parse import quote_plus
+
 from sqlalchemy import create_engine, text
 
 
@@ -54,6 +56,7 @@ EXPECTED_COLUMNS = {
         ("data_descarte", "TIMESTAMP"),
         ("obs_descarte", "TEXT"),
         ("triagem_status", "VARCHAR(20) DEFAULT 'Pendente'"),
+        ("filtro_auxiliar", "VARCHAR(1)"),
         ("triagem_motivo_codigo", "VARCHAR(50)"),
         ("triagem_motivo_label", "VARCHAR(120)"),
         ("triagem_observacao", "TEXT"),
@@ -86,8 +89,22 @@ EXPECTED_COLUMNS = {
 }
 
 
-def sync_schema():
+def _build_db_url():
     db_url = os.getenv("DATABASE_URL")
+    if db_url:
+        return db_url
+    host = os.getenv('DB_HOST')
+    user = os.getenv('DB_USER')
+    name = os.getenv('DB_NAME')
+    if not host or not user or not name:
+        return None
+    port = os.getenv('DB_PORT', '5432')
+    password = os.getenv('DB_PASS', '')
+    return f"postgresql://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{name}"
+
+
+def sync_schema():
+    db_url = _build_db_url()
     if not db_url:
         return
     engine = create_engine(db_url)

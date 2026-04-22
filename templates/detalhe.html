@@ -309,7 +309,7 @@
                     <!-- Seção 3: Tipo e Áreas -->
                     <div class="md:col-span-2 space-y-4">
                         <h4 class="text-xs font-bold text-slate-800 uppercase tracking-widest border-b pb-2">Características e Áreas</h4>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-[10px] text-slate-500">Tipo de Imóvel</label>
                                 <input type="text" id="cad-tipo" placeholder="Ex: Apartamento" class="w-full p-2 border rounded-lg text-sm">
@@ -317,6 +317,16 @@
                             <div>
                                 <label class="block text-[10px] text-slate-500">Banco Credor</label>
                                 <input type="text" id="cad-banco" placeholder="Ex: Caixa / Itau" class="w-full p-2 border rounded-lg text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500">Filtro Auxiliar</label>
+                                <select id="cad-filtro-auxiliar" class="w-full p-2 border rounded-lg text-sm bg-white">
+                                    <option value="">Sem filtro</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="E">E</option>
+                                </select>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
@@ -2121,6 +2131,7 @@
                     estado: document.getElementById('cad-uf').value,
                     valor_avaliacao: unmaskMoney(document.getElementById('cad-vlr-av').value),
                     tipo_imovel: document.getElementById('cad-tipo').value,
+                    filtro_auxiliar: document.getElementById('cad-filtro-auxiliar').value,
                     banco: document.getElementById('cad-banco').value,
                     area_privativa: document.getElementById('cad-area-priv').value,
                     area_construida: document.getElementById('cad-area-const').value,
@@ -2267,6 +2278,7 @@
                 document.getElementById('cad-area-terr').value = res.area_terreno || 0;
                 document.getElementById('cad-vlr-av').value = formatBRL(res.valor_avaliacao);
                 document.getElementById('cad-tipo').value = res.tipo_imovel || '';
+                document.getElementById('cad-filtro-auxiliar').value = res.filtro_auxiliar || '';
                 document.getElementById('cad-banco').value = res.banco || '';
                 document.getElementById('cad-desc').value = res.descritivo_imovel || '';
                 document.getElementById('cad-insc-imob').value = res.inscricao_imobiliaria || '';

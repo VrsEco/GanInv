@@ -127,6 +127,12 @@
                             <option value="">Todos</option>
                         </select>
                     </div>
+                    <div class="w-full xl:w-44">
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Filtro Auxiliar</label>
+                        <select id="triagem-filter-auxiliar" class="w-full py-3 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
                     <div class="w-full xl:w-64">
                         <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Motivo de descarte</label>
                         <select id="triagem-filter-motivo" class="w-full py-3 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
@@ -274,11 +280,13 @@
             const cidade = document.getElementById('triagem-filter-cidade').value;
             const banco = document.getElementById('triagem-filter-banco').value;
             const motivo = document.getElementById('triagem-filter-motivo').value;
+            const filtroAuxiliar = document.getElementById('triagem-filter-auxiliar').value;
 
             if (search) params.set('search', search);
             if (cidade) params.set('cidade', cidade);
             if (banco) params.set('banco', banco);
             if (motivo) params.set('motivo_codigo', motivo);
+            if (filtroAuxiliar) params.set('filtro_auxiliar', filtroAuxiliar);
 
             return params.toString();
         }
@@ -393,10 +401,12 @@
             const cidadeSelect = document.getElementById('triagem-filter-cidade');
             const bancoSelect = document.getElementById('triagem-filter-banco');
             const motivoSelect = document.getElementById('triagem-filter-motivo');
+            const filtroAuxiliarSelect = document.getElementById('triagem-filter-auxiliar');
             const discardMotivoSelect = document.getElementById('disc-motivo');
 
             cidadeSelect.innerHTML = '<option value="">Todas</option>' + (filtros.cidades || []).map(item => `<option value="${item}">${item}</option>`).join('');
             bancoSelect.innerHTML = '<option value="">Todos</option>' + (filtros.bancos || []).map(item => `<option value="${item}">${item}</option>`).join('');
+            filtroAuxiliarSelect.innerHTML = '<option value="">Todos</option>' + (filtros.filtros_auxiliares || ['A','B','C','E']).map(item => `<option value="${item}">Filtro ${item}</option>`).join('');
 
             const motivosHtml = '<option value="">Todos</option>' + triagemMotivos.map(item => `<option value="${item.codigo}">${item.label}</option>`).join('');
             motivoSelect.innerHTML = motivosHtml;
@@ -461,6 +471,7 @@
                             <td class="p-4">
                                 <div class="font-bold text-slate-900 text-sm">${item.endereco || '--'}</div>
                                 <div class="text-xs text-slate-500 mt-1">${item.cidade || '--'} - ${item.estado || '--'}</div>
+                                ${item.filtro_auxiliar ? `<span class="inline-flex mt-2 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-black uppercase">Filtro ${item.filtro_auxiliar}</span>` : ''}
                             </td>
                             <td class="p-4">
                                 ${triagemBadge}
@@ -500,6 +511,7 @@
             document.getElementById('triagem-filter-cidade').value = '';
             document.getElementById('triagem-filter-banco').value = '';
             document.getElementById('triagem-filter-motivo').value = '';
+            document.getElementById('triagem-filter-auxiliar').value = '';
             setTabStatus('Pendente');
         }
 

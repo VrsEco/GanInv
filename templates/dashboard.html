@@ -129,6 +129,16 @@
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estado</label>
                         <input type="text" id="manual-estado" placeholder="Ex: SP" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                     </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Filtro Auxiliar</label>
+                        <select id="manual-filtro-auxiliar" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none bg-white">
+                            <option value="">Sem filtro</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="E">E</option>
+                        </select>
+                    </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Valor de Avaliação (R$)</label>
                         <input type="number" id="manual-avaliacao" placeholder="Ex: 500000" class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
@@ -183,6 +193,13 @@
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                         <select id="filter-bairro" onchange="loadDashboard()" class="text-xs bg-slate-50 border rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-emerald-500">
                             <option value="">Todos os Bairros</option>
+                        </select>
+                        <select id="filter-auxiliar" onchange="loadDashboard()" class="text-xs bg-slate-50 border rounded-lg px-2 py-1 outline-none focus:ring-1 focus:ring-emerald-500">
+                            <option value="">Filtro Auxiliar: Todos</option>
+                            <option value="A">Filtro A</option>
+                            <option value="B">Filtro B</option>
+                            <option value="C">Filtro C</option>
+                            <option value="E">Filtro E</option>
                         </select>
                         <button class="text-xs bg-slate-100 px-3 py-1 rounded border hover:bg-slate-200">Exportar PDF</button>
                     </div>
@@ -264,7 +281,8 @@
                         bairro: document.getElementById('manual-bairro').value,
                         cidade: document.getElementById('manual-cidade').value,
                         estado: document.getElementById('manual-estado').value,
-                        valor_avaliacao: document.getElementById('manual-avaliacao').value
+                        valor_avaliacao: document.getElementById('manual-avaliacao').value,
+                        filtro_auxiliar: document.getElementById('manual-filtro-auxiliar').value
                     })
                 }).then(r => r.json());
 
@@ -277,6 +295,7 @@
                 document.getElementById('manual-cidade').value = '';
                 document.getElementById('manual-estado').value = '';
                 document.getElementById('manual-avaliacao').value = '';
+                document.getElementById('manual-filtro-auxiliar').value = '';
                 
                 loadDashboard();
                 alert("Imóvel cadastrado com sucesso!");
@@ -301,9 +320,11 @@
 
                 // Load Table
                 const bairroFilter = document.getElementById('filter-bairro').value;
+                const filtroAuxiliar = document.getElementById('filter-auxiliar').value;
                 let apiUrl = '/api/imoveis/?';
                 if (statusFilter) apiUrl += `status=${encodeURIComponent(statusFilter)}&`;
                 if (bairroFilter) apiUrl += `bairro=${encodeURIComponent(bairroFilter)}&`;
+                if (filtroAuxiliar) apiUrl += `filtro_auxiliar=${encodeURIComponent(filtroAuxiliar)}&`;
 
                 const imoveis = await fetch(apiUrl).then(r => r.json());
                 const tbody = document.getElementById('imoveis-table');
@@ -318,6 +339,7 @@
                         <td class="p-4">
                             <div class="font-semibold text-slate-800">${i.endereco}</div>
                             <div class="text-xs text-slate-500">${i.cidade} - ${i.estado}</div>
+                            ${i.filtro_auxiliar ? `<span class="inline-flex mt-2 px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-black uppercase">Filtro ${i.filtro_auxiliar}</span>` : ''}
                         </td>
                         <td class="p-4">
                             <span class="px-2 py-1 rounded-full text-xs font-semibold 

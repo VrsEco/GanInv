@@ -71,7 +71,7 @@
                 <p class="text-slate-500">Aqui entram somente os leilões das oportunidades selecionadas para disputa.</p>
             </div>
             <section class="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm">
-                <div class="grid grid-cols-1 lg:grid-cols-[1.1fr,0.75fr,0.75fr,auto] gap-4 items-end">
+                <div class="grid grid-cols-1 lg:grid-cols-[1.1fr,0.75fr,0.75fr,0.7fr,auto] gap-4 items-end">
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Período</label>
                         <select id="periodo-tipo" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
@@ -87,6 +87,16 @@
                     <div>
                         <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Data final</label>
                         <input id="periodo-end" type="date" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Filtro Auxiliar</label>
+                        <select id="filtro-auxiliar" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Todos</option>
+                            <option value="A">Filtro A</option>
+                            <option value="B">Filtro B</option>
+                            <option value="C">Filtro C</option>
+                            <option value="E">Filtro E</option>
+                        </select>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-2">
                         <button id="btn-filtrar-leiloes" class="px-4 py-3 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition">Aplicar</button>
@@ -121,6 +131,7 @@
         const periodoEndEl = document.getElementById('periodo-end');
         const periodoLabelEl = document.getElementById('periodo-label');
         const periodoRangeEl = document.getElementById('periodo-range');
+        const filtroAuxiliarEl = document.getElementById('filtro-auxiliar');
 
         function formatCurrency(value) {
             return Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -153,6 +164,7 @@
                 if (periodoStartEl.value) params.set('start', periodoStartEl.value);
                 if (periodoEndEl.value) params.set('end', periodoEndEl.value);
             }
+            if (filtroAuxiliarEl.value) params.set('filtro_auxiliar', filtroAuxiliarEl.value);
             return params.toString();
         }
 
@@ -200,6 +212,7 @@
                                 <div class="space-y-2">
                                     <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase">${l.tipo}</span>
                                     <div class="px-3 py-1 rounded-full text-[10px] font-black uppercase inline-flex ${statusClass}">${l.triagem_status}</div>
+                                    ${l.filtro_auxiliar ? `<div class="px-3 py-1 rounded-full text-[10px] font-black uppercase inline-flex bg-blue-50 text-blue-700 border border-blue-100">Filtro ${l.filtro_auxiliar}</div>` : ''}
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[10px] font-bold text-slate-400 uppercase">Gandu ID</p>
@@ -284,6 +297,7 @@
             periodoTipoEl.value = 'semana';
             periodoStartEl.value = '';
             periodoEndEl.value = '';
+            filtroAuxiliarEl.value = '';
             applyPeriodoState();
             loadLeiloes();
         });

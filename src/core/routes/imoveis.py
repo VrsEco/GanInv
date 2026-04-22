@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, render_template, current_app, send_file, session as flask_session
-from src.core.models.models import Imovel, Leilao, Company, FichaFinanceira, Documentacao, Reforma, Anexo
+from src.core.models.models import FILTRO_AUXILIAR_OPTIONS, Imovel, Leilao, Company, FichaFinanceira, Documentacao, Reforma, Anexo
 from src.intelligence.auction_parser import AuctionParser
 from src.core.services.finance_service import FinanceService
 from src.core.services.triagem_service import (
@@ -117,6 +117,16 @@ def _delete_anexo_physical_file(anexo):
     return deleted
 
 
+
+
+def _normalize_filtro_auxiliar(value):
+    normalized = (value or '').strip().upper()
+    if not normalized:
+        return None
+    if normalized not in FILTRO_AUXILIAR_OPTIONS:
+        raise ValueError("Filtro auxiliar inválido. Use A, B, C ou E.")
+    return normalized
+
 def _safe_float(value):
     try:
         return float(value or 0)
@@ -203,6 +213,7 @@ def _serialize_leilao_oportunidade(leilao, imovel):
         "venda_normal": _safe_float(getattr(imovel, 'valor_venda_normal', 0)),
         "venda_rapida": _safe_float(getattr(imovel, 'valor_estimado_venda', 0)),
         "status": getattr(imovel, 'status', '') or 'Em análise',
+        "filtro_auxiliar": getattr(imovel, 'filtro_auxiliar', None) or "",
         "triagem_status": triagem_status,
         "status_label": status_label,
         "venda_estimada": _safe_float(getattr(imovel, 'valor_estimado_venda', 0)),
@@ -217,6 +228,11 @@ def get_imoveis():
     bairro_filter = request.args.get('bairro')
     show_descartados = request.args.get('descartados', 'false') == 'true'
     motivo_filter = request.args.get('motivo')
+    try:
+        filtro_auxiliar = _normalize_filtro_auxiliar(request.args.get('filtro_auxiliar'))
+    except ValueError as err:
+        session.close()
+        return jsonify({"error": str(err)}), 400
     
     query = session.query(Imovel).filter(Imovel.company_id == company_id)
     
@@ -225,6 +241,9 @@ def get_imoveis():
     
     if bairro_filter:
         query = query.filter(Imovel.bairro == bairro_filter)
+
+    if filtro_auxiliar:
+        query = query.filter(Imovel.filtro_auxiliar == filtro_auxiliar)
     
     if not show_descartados:
         query = query.filter(Imovel.descartado == False)
@@ -244,6 +263,7 @@ def get_imoveis():
             "cidade": i.cidade,
             "estado": i.estado,
             "status": i.status,
+            "filtro_auxiliar": i.filtro_auxiliar or "",
             "valor_avaliacao": i.valor_avaliacao or 0.0,
             "valor_estimado": i.valor_estimado_venda or 0.0,
             "leiloeiro": i.leiloeiro,
@@ -270,6 +290,7 @@ def get_triagem():
         motivo_codigo = request.args.get('motivo_codigo', '')
         cidade = request.args.get('cidade', '')
         banco = request.args.get('banco', '')
+        filtro_auxiliar = request.args.get('filtro_auxiliar', '')
         search = request.args.get('search', '')
         items = TriagemService.list_imoveis(
             session,
@@ -278,6 +299,7 @@ def get_triagem():
             motivo_codigo=motivo_codigo,
             cidade=cidade,
             banco=banco,
+            filtro_auxiliar=filtro_auxiliar,
             search=search,
         )
         return jsonify(items)
@@ -347,6 +369,7 @@ def get_imovel(id):
         "estado": i.estado,
         "cep": i.cep,
         "tipo_imovel": i.tipo_imovel,
+        "filtro_auxiliar": i.filtro_auxiliar or "",
         "banco": i.banco or "",
         "area_privativa": i.area_privativa or 0,
         "area_construida": i.area_construida or 0,
@@ -468,6 +491,7 @@ def import_from_link():
             estado=extracted.get('estado') or "??",
             status='Em análise',
             triagem_status='Pendente',
+            filtro_auxiliar=_normalize_filtro_auxiliar(extracted.get('filtro_auxiliar')),
             leiloeiro=extracted.get('leiloeiro') or "Desconhecido",
             link_leilao=url,
             valor_avaliacao=float(extracted.get('valor_avaliacao') or 0.0),
@@ -511,6 +535,7 @@ def register_manual():
             estado=data.get('estado'),
             status='Em análise',
             triagem_status='Pendente',
+            filtro_auxiliar=_normalize_filtro_auxiliar(data.get('filtro_auxiliar')),
             valor_avaliacao=float(data.get('valor_avaliacao') or 0.0),
             valor_estimado_venda=float(data.get('valor_avaliacao') or 0.0) * 1.3
         )
@@ -522,6 +547,9 @@ def register_manual():
         session.commit()
         
         return jsonify({"message": "Sucesso", "id": new_im.id})
+    except ValueError as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500
@@ -581,6 +609,7 @@ def update_cadastro(id):
         i.desconto = float(data.get('desconto') or 0)
         i.modalidade_venda = data.get('modalidade_venda')
         i.tipo_imovel = data.get('tipo_imovel')
+        i.filtro_auxiliar = _normalize_filtro_auxiliar(data.get('filtro_auxiliar'))
         i.banco = data.get('banco')
         i.area_privativa = float(data.get('area_privativa') or 0)
         i.area_construida = float(data.get('area_construida') or 0)
@@ -614,7 +643,11 @@ def update_cadastro(id):
 
         session.commit()
         return jsonify({"message": "Cadastro atualizado!"})
+    except ValueError as e:
+        session.rollback()
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
+        session.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         session.close()
@@ -671,9 +704,10 @@ def get_leiloes_semana():
         periodo = request.args.get('periodo', 'semana')
         start_raw = request.args.get('start')
         end_raw = request.args.get('end')
+        filtro_auxiliar = _normalize_filtro_auxiliar(request.args.get('filtro_auxiliar'))
         inicio, fim, periodo_resolvido = _resolve_periodo_leiloes(periodo, start_raw, end_raw)
 
-        leiloes = session.query(Leilao).join(Imovel).filter(
+        query = session.query(Leilao).join(Imovel).filter(
             Imovel.company_id == company_id,
             Leilao.data_hora != None,
             Leilao.data_hora >= inicio,
@@ -682,7 +716,11 @@ def get_leiloes_semana():
                 Imovel.triagem_status == TRIAGEM_STATUS_APROVADO,
                 Imovel.status == STATUS_IMOVEL_APROVADO,
             )
-        ).order_by(Leilao.data_hora.asc()).all()
+        )
+        if filtro_auxiliar:
+            query = query.filter(Imovel.filtro_auxiliar == filtro_auxiliar)
+
+        leiloes = query.order_by(Leilao.data_hora.asc()).all()
 
         output = [_serialize_leilao_oportunidade(leilao, leilao.imovel) for leilao in leiloes]
         res = {
@@ -804,10 +842,14 @@ def get_calendar():
     session = Session()
     try:
         company_id = int(request.args.get('company_id', 1))
-        leiloes = session.query(Leilao).join(Imovel).filter(
+        filtro_auxiliar = _normalize_filtro_auxiliar(request.args.get('filtro_auxiliar'))
+        query = session.query(Leilao).join(Imovel).filter(
             Imovel.company_id == company_id,
             Leilao.data_hora != None,
-        ).order_by(Leilao.data_hora.asc()).all()
+        )
+        if filtro_auxiliar:
+            query = query.filter(Imovel.filtro_auxiliar == filtro_auxiliar)
+        leiloes = query.order_by(Leilao.data_hora.asc()).all()
         events = []
         for l in leiloes:
             im = l.imovel
@@ -824,12 +866,15 @@ def get_calendar():
                     "triagem_status": triagem_status,
                     "status_label": status_label,
                     "status_operacional": getattr(im, 'status', '') or 'Em análise',
+                    "filtro_auxiliar": getattr(im, 'filtro_auxiliar', None) or "",
                     "cidade": getattr(im, 'cidade', '') or '',
                     "estado": getattr(im, 'estado', '') or '',
                     "valor_minimo": _safe_float(getattr(l, 'valor_minimo', 0)),
                 }
             })
         return jsonify(events)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     finally:
         session.close()
 

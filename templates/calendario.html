@@ -98,6 +98,13 @@
                         <p class="text-sm text-slate-500">Cada evento mostra o estágio atual da oportunidade dentro do funil.</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                        <select id="calendar-filter-auxiliar" class="px-3 py-2 rounded-full bg-slate-50 text-slate-600 border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="">Filtro Auxiliar: Todos</option>
+                            <option value="A">Filtro A</option>
+                            <option value="B">Filtro B</option>
+                            <option value="C">Filtro C</option>
+                            <option value="E">Filtro E</option>
+                        </select>
                         <span class="px-3 py-2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">Selecionada</span>
                         <span class="px-3 py-2 rounded-full bg-amber-50 text-amber-700 border border-amber-100">Em análise</span>
                         <span class="px-3 py-2 rounded-full bg-rose-50 text-rose-700 border border-rose-100">Descartada</span>
@@ -131,7 +138,13 @@
 
         document.addEventListener('DOMContentLoaded', async function() {
             var calendarEl = document.getElementById('calendar');
-            const events = await fetch('/api/imoveis/calendar').then(r => r.json());
+            const filtroAuxiliarEl = document.getElementById('calendar-filter-auxiliar');
+            async function fetchEvents() {
+                const params = new URLSearchParams();
+                if (filtroAuxiliarEl.value) params.set('filtro_auxiliar', filtroAuxiliarEl.value);
+                return fetch(`/api/imoveis/calendar?${params.toString()}`).then(r => r.json());
+            }
+            const events = await fetchEvents();
             updateCalendarStats(events);
 
             var calendar = new FullCalendar.Calendar(calendarEl, {
@@ -153,6 +166,7 @@
                                 <div class="font-black text-[11px] leading-tight">${props.codigo || info.event.title}</div>
                                 <div class="text-[10px] leading-tight opacity-90">${props.tipo_leilao || ''}</div>
                                 <div class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${getStatusPillClass(status)}">${status}</div>
+                                ${props.filtro_auxiliar ? `<div class="inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-blue-50 text-blue-700">Filtro ${props.filtro_auxiliar}</div>` : ''}
                             </div>
                         `
                     };
@@ -162,6 +176,12 @@
                 }
             });
             calendar.render();
+            filtroAuxiliarEl.addEventListener('change', async () => {
+                const nextEvents = await fetchEvents();
+                calendar.removeAllEvents();
+                calendar.addEventSource(nextEvents);
+                updateCalendarStats(nextEvents);
+            });
         });
     </script>
 </body>

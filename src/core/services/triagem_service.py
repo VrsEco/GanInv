@@ -4,7 +4,7 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 
-from src.core.models.models import Imovel
+from src.core.models.models import FILTRO_AUXILIAR_OPTIONS, Imovel
 
 
 TRIAGEM_STATUS_PENDENTE = "Pendente"
@@ -83,6 +83,7 @@ class TriagemService:
             "cidade": imovel.cidade or "",
             "estado": imovel.estado or "",
             "status": imovel.status or STATUS_IMOVEL_EM_ANALISE,
+            "filtro_auxiliar": (getattr(imovel, "filtro_auxiliar", None) or ""),
             "triagem_status": triagem_status,
             "triagem_motivo_codigo": getattr(imovel, "triagem_motivo_codigo", None),
             "triagem_motivo_label": getattr(imovel, "triagem_motivo_label", None) or getattr(imovel, "motivo_descarte", None),
@@ -99,7 +100,7 @@ class TriagemService:
         }
 
     @staticmethod
-    def list_imoveis(session, *, company_id: int, triagem_status: str = "", motivo_codigo: str = "", cidade: str = "", banco: str = "", search: str = ""):
+    def list_imoveis(session, *, company_id: int, triagem_status: str = "", motivo_codigo: str = "", cidade: str = "", banco: str = "", filtro_auxiliar: str = "", search: str = ""):
         query = session.query(Imovel).filter(Imovel.company_id == company_id).order_by(Imovel.id.desc())
         items = query.all()
 
@@ -107,6 +108,9 @@ class TriagemService:
         normalized_motivo = (motivo_codigo or "").strip()
         normalized_city = (cidade or "").strip().lower()
         normalized_bank = (banco or "").strip().lower()
+        normalized_filtro_auxiliar = (filtro_auxiliar or "").strip().upper()
+        if normalized_filtro_auxiliar not in FILTRO_AUXILIAR_OPTIONS:
+            normalized_filtro_auxiliar = ""
         normalized_search = (search or "").strip().lower()
 
         filtered = []
@@ -125,6 +129,9 @@ class TriagemService:
             if normalized_bank and normalized_bank not in (imovel.banco or "").lower():
                 continue
 
+            if normalized_filtro_auxiliar and (getattr(imovel, "filtro_auxiliar", None) or "").strip().upper() != normalized_filtro_auxiliar:
+                continue
+
             haystack = " ".join([
                 imovel.codigo_interno or "",
                 imovel.endereco or "",
@@ -132,6 +139,7 @@ class TriagemService:
                 imovel.estado or "",
                 imovel.banco or "",
                 imovel.leiloeiro or "",
+                getattr(imovel, "filtro_auxiliar", None) or "",
             ]).lower()
             if normalized_search and normalized_search not in haystack:
                 continue
@@ -149,6 +157,7 @@ class TriagemService:
             "cidades": cidades,
             "bancos": bancos,
             "motivos": TriagemService.list_motivos(),
+            "filtros_auxiliares": list(FILTRO_AUXILIAR_OPTIONS),
             "triagem_status": [
                 TRIAGEM_STATUS_PENDENTE,
                 TRIAGEM_STATUS_APROVADO,
